@@ -33,6 +33,12 @@ export interface Inventory {
     sold_at: string | null;
     paid_at: string | null;
     notes: string | null;
+    order_number: string | null;
+    order_date: string | null;
+    expected_delivery_start: string | null;
+    expected_delivery_end: string | null;
+    payment_card: string | null;
+    sold_to: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -54,6 +60,12 @@ export interface InventoryInput {
     sold_at?: string;
     paid_at?: string;
     notes?: string;
+    order_number?: string;
+    order_date?: string;
+    expected_delivery_start?: string;
+    expected_delivery_end?: string;
+    payment_card?: string;
+    sold_to?: string;
 }
 
 // Status labels and colors
@@ -72,6 +84,34 @@ export const STATUS_COLORS: Record<InventoryStatus, string> = {
     sold: 'bg-green-100 text-green-800',
     paid: 'bg-gray-100 text-gray-800',
 };
+
+// Payment card options
+export const PAYMENT_CARDS = [
+    'Mastercard',
+    'Visa',
+    'JCB',
+    'American Express',
+    'その他',
+] as const;
+
+// Sales destination options
+export const SOLD_TO_OPTIONS = [
+    'モバイルミックス',
+    'その他',
+] as const;
+
+// Parsed Apple order data
+export interface ParsedAppleOrder {
+    orderNumber: string;
+    orderDate: string;
+    modelName: string;
+    storage: string;
+    color: string;
+    price: number;
+    deliveryStart: string;
+    deliveryEnd: string;
+    paymentCard: string;
+}
 
 // Utility functions
 export function calculateProfit(purchasePrice: number | null, actualPrice: number | null): number | null {

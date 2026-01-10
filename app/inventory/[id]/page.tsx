@@ -127,8 +127,32 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                         <span className="ml-2 text-gray-900">{inventory.imei || '-'}</span>
                     </div>
                     <div>
+                        <span className="text-gray-500">注文番号:</span>
+                        <span className="ml-2 text-gray-900">{inventory.order_number || '-'}</span>
+                    </div>
+                    <div>
+                        <span className="text-gray-500">注文日:</span>
+                        <span className="ml-2 text-gray-900">{formatDate(inventory.order_date)}</span>
+                    </div>
+                    <div>
+                        <span className="text-gray-500">お届け予定:</span>
+                        <span className="ml-2 text-gray-900">
+                            {inventory.expected_delivery_start && inventory.expected_delivery_end
+                                ? `${formatDate(inventory.expected_delivery_start)} – ${formatDate(inventory.expected_delivery_end)}`
+                                : '-'}
+                        </span>
+                    </div>
+                    <div>
+                        <span className="text-gray-500">支払いカード:</span>
+                        <span className="ml-2 text-gray-900">{inventory.payment_card || '-'}</span>
+                    </div>
+                    <div>
                         <span className="text-gray-500">仕入先:</span>
                         <span className="ml-2 text-gray-900">{inventory.purchase_source || '-'}</span>
+                    </div>
+                    <div>
+                        <span className="text-gray-500">販売先:</span>
+                        <span className="ml-2 text-gray-900">{inventory.sold_to || '-'}</span>
                     </div>
                     <div>
                         <span className="text-gray-500">仕入価格:</span>
@@ -189,6 +213,12 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                         sold_at: inventory.sold_at || undefined,
                         paid_at: inventory.paid_at || undefined,
                         notes: inventory.notes || undefined,
+                        order_number: inventory.order_number || undefined,
+                        order_date: inventory.order_date || undefined,
+                        expected_delivery_start: inventory.expected_delivery_start || undefined,
+                        expected_delivery_end: inventory.expected_delivery_end || undefined,
+                        payment_card: inventory.payment_card || undefined,
+                        sold_to: inventory.sold_to || undefined,
                     }}
                 />
             </div>

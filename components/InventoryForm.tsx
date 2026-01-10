@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, PAYMENT_CARDS, SOLD_TO_OPTIONS } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -30,7 +30,35 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         sold_at: initialData?.sold_at || '',
         paid_at: initialData?.paid_at || '',
         notes: initialData?.notes || '',
+        order_number: initialData?.order_number || '',
+        order_date: initialData?.order_date || '',
+        expected_delivery_start: initialData?.expected_delivery_start || '',
+        expected_delivery_end: initialData?.expected_delivery_end || '',
+        payment_card: initialData?.payment_card || '',
+        sold_to: initialData?.sold_to || '',
     });
+
+    // Auto-fill expected price from price_history when model and storage are selected
+    useEffect(() => {
+        const fetchExpectedPrice = async () => {
+            if (formData.model_name && formData.storage && !formData.expected_price) {
+                try {
+                    const response = await fetch(`/api/price-history?model=${encodeURIComponent(formData.model_name)}&storage=${encodeURIComponent(formData.storage)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.length > 0) {
+                            // Get the most recent price
+                            const latestPrice = data[0].price;
+                            setFormData(prev => ({ ...prev, expected_price: latestPrice }));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching expected price:', error);
+                }
+            }
+        };
+        fetchExpectedPrice();
+    }, [formData.model_name, formData.storage]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -172,6 +200,70 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                     />
                 </div>
 
+                {/* Order Number */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        注文番号
+                    </label>
+                    <input
+                        type="text"
+                        name="order_number"
+                        value={formData.order_number || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Order Date */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        注文日
+                    </label>
+                    <input
+                        type="date"
+                        name="order_date"
+                        value={formData.order_date || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Payment Card */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        支払いカード
+                    </label>
+                    <select
+                        name="payment_card"
+                        value={formData.payment_card || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">選択してください</option>
+                        {PAYMENT_CARDS.map(card => (
+                            <option key={card} value={card}>{card}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Sold To */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        販売先
+                    </label>
+                    <select
+                        name="sold_to"
+                        value={formData.sold_to || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">選択してください</option>
+                        {SOLD_TO_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                    </select>
+                </div>
+
                 {/* Purchase Price */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -209,6 +301,34 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         type="number"
                         name="actual_price"
                         value={formData.actual_price || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Expected Delivery Start */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お届け予定日・開始
+                    </label>
+                    <input
+                        type="date"
+                        name="expected_delivery_start"
+                        value={formData.expected_delivery_start || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Expected Delivery End */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        お届け予定日・終了
+                    </label>
+                    <input
+                        type="date"
+                        name="expected_delivery_end"
+                        value={formData.expected_delivery_end || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
