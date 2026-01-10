@@ -36,3 +36,50 @@ export interface Inventory {
     created_at: string;
     updated_at: string;
 }
+
+export type InventoryStatus = 'ordered' | 'arrived' | 'selling' | 'sold' | 'paid';
+
+export interface InventoryInput {
+    model_name: string;
+    storage: string;
+    color?: string;
+    imei?: string;
+    status: InventoryStatus;
+    purchase_price?: number;
+    expected_price?: number;
+    actual_price?: number;
+    purchase_source?: string;
+    ordered_at?: string;
+    arrived_at?: string;
+    sold_at?: string;
+    paid_at?: string;
+    notes?: string;
+}
+
+// Status labels and colors
+export const STATUS_LABELS: Record<InventoryStatus, string> = {
+    ordered: '発注済み',
+    arrived: '納品済み',
+    selling: '販売中',
+    sold: '売却済み',
+    paid: '入金済み',
+};
+
+export const STATUS_COLORS: Record<InventoryStatus, string> = {
+    ordered: 'bg-blue-100 text-blue-800',
+    arrived: 'bg-purple-100 text-purple-800',
+    selling: 'bg-yellow-100 text-yellow-800',
+    sold: 'bg-green-100 text-green-800',
+    paid: 'bg-gray-100 text-gray-800',
+};
+
+// Utility functions
+export function calculateProfit(purchasePrice: number | null, actualPrice: number | null): number | null {
+    if (purchasePrice === null || actualPrice === null) return null;
+    return actualPrice - purchasePrice;
+}
+
+export function calculateProfitRate(purchasePrice: number | null, actualPrice: number | null): number | null {
+    if (purchasePrice === null || actualPrice === null || purchasePrice === 0) return null;
+    return ((actualPrice - purchasePrice) / purchasePrice) * 100;
+}
