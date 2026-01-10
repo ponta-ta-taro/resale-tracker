@@ -1,21 +1,25 @@
+import PriceChart from '@/components/PriceChart'
+import PriceTable from '@/components/PriceTable'
+
 export default function Home() {
     return (
-        <main className="min-h-screen p-8">
+        <main className="min-h-screen p-8 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8">ResaleTracker</h1>
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                        ResaleTracker
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        iPhone買取価格の推移を追跡
+                    </p>
+                </div>
 
                 <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">価格推移グラフ</h2>
-                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8 text-center">
-                        <p className="text-gray-500">グラフ表示エリア（Phase 4で実装予定）</p>
-                    </div>
+                    <PriceChart />
                 </div>
 
                 <div>
-                    <h2 className="text-2xl font-semibold mb-4">最新価格一覧</h2>
-                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8 text-center">
-                        <p className="text-gray-500">価格テーブル表示エリア（Phase 4で実装予定）</p>
-                    </div>
+                    <PriceTable />
                 </div>
             </div>
         </main>
