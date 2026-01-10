@@ -7,10 +7,32 @@ interface PriceTableProps {
     data?: PriceHistory[]
 }
 
+// カスタムソート関数（PriceChartと同じ）
+const sortModels = (data: PriceHistory[]) => {
+    const seriesOrder = ['iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone Air', 'iPhone 17']
+    const storageOrder = ['256GB', '512GB', '1TB', '2TB']
+
+    return data.sort((a, b) => {
+        // シリーズ順で比較
+        const seriesIndexA = seriesOrder.indexOf(a.model_name)
+        const seriesIndexB = seriesOrder.indexOf(b.model_name)
+
+        if (seriesIndexA !== seriesIndexB) {
+            return seriesIndexA - seriesIndexB
+        }
+
+        // 同じシリーズなら容量順で比較
+        const storageIndexA = storageOrder.indexOf(a.storage)
+        const storageIndexB = storageOrder.indexOf(b.storage)
+
+        return storageIndexA - storageIndexB
+    })
+}
+
 export default function PriceTable({ data: initialData }: PriceTableProps) {
     const [data, setData] = useState<PriceHistory[]>(initialData || [])
     const [loading, setLoading] = useState(!initialData)
-    const [sortBy, setSortBy] = useState<'model' | 'price'>('model')
+    const [sortBy, setSortBy] = useState<'model' | 'price' | 'default'>('default')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
     useEffect(() => {
@@ -44,15 +66,28 @@ export default function PriceTable({ data: initialData }: PriceTableProps) {
         }
     }
 
-    const sortedData = [...data].sort((a, b) => {
-        if (sortBy === 'model') {
-            const comparison = a.model_name.localeCompare(b.model_name)
-            return sortOrder === 'asc' ? comparison : -comparison
+    const sortedData = (() => {
+        const dataCopy = [...data]
+
+        if (sortBy === 'default') {
+            // デフォルトソート（カスタム順）
+            return sortModels(dataCopy)
+        } else if (sortBy === 'model') {
+            // 機種名でソート
+            const sorted = dataCopy.sort((a, b) => {
+                const comparison = a.model_name.localeCompare(b.model_name)
+                return sortOrder === 'asc' ? comparison : -comparison
+            })
+            return sorted
         } else {
-            const comparison = a.price - b.price
-            return sortOrder === 'asc' ? comparison : -comparison
+            // 価格でソート
+            const sorted = dataCopy.sort((a, b) => {
+                const comparison = a.price - b.price
+                return sortOrder === 'asc' ? comparison : -comparison
+            })
+            return sorted
         }
-    })
+    })()
 
     if (loading) {
         return (
