@@ -1,0 +1,16 @@
+# Render Blueprint for ResaleTracker Scraper
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Cron Job for daily price scraping
+  - type: cron
+    name: resale-tracker-scraper
+    env: docker
+    dockerfilePath: ./scraper/Dockerfile
+    dockerContext: ./scraper
+    schedule: "0 1 * * *"  # 毎日 AM 1:00 UTC (AM 10:00 JST)
+    envVars:
+      - key: SUPABASE_URL
+        sync: false  # Renderダッシュボードで手動設定
+      - key: SUPABASE_KEY
+        sync: false  # Renderダッシュボードで手動設定

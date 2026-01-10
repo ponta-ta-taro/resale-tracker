@@ -104,3 +104,38 @@ pytesseract.pytesseract.TesseractNotFoundError
 - `.env`ファイルの設定を確認
 - SupabaseのURLとKeyが正しいか確認
 - `price_history`テーブルが作成されているか確認
+
+---
+
+## Renderへのデプロイ
+
+### 概要
+
+スクレイパーをRenderにデプロイして、毎日自動で価格データを収集します。
+
+### デプロイ手順
+
+詳細は [RENDER_DEPLOY.md](RENDER_DEPLOY.md) を参照してください。
+
+**簡単な手順:**
+
+1. GitHubにプッシュ
+2. Renderアカウント作成
+3. Cron Jobを作成（Blueprint使用）
+4. 環境変数を設定
+5. 初回実行テスト
+
+**スケジュール:**
+- 毎日 AM 10:00 (JST) = AM 1:00 (UTC)
+- Cron式: `0 1 * * *`
+
+**必要な環境変数:**
+- `SUPABASE_URL`
+- `SUPABASE_KEY`
+
+### ファイル構成
+
+- `Dockerfile` - Docker設定
+- `../render.yaml` - Render Blueprint設定
+- `RENDER_DEPLOY.md` - デプロイガイド
+
