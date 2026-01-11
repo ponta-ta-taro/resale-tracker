@@ -17,9 +17,23 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     const orderDate = orderDateMatch ? orderDateMatch[1] : '';
 
     // Extract delivery date range: 2026/01/12 – 2026/01/14
-    const deliveryMatch = emailText.match(/(\d{4}\/\d{1,2}\/\d{1,2})\s*[–-]\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
-    const deliveryStart = deliveryMatch ? deliveryMatch[1] : '';
-    const deliveryEnd = deliveryMatch ? deliveryMatch[2] : '';
+    // Also handle single date format: 日 2026/01/11
+    let deliveryStart = '';
+    let deliveryEnd = '';
+
+    // Try date range format first
+    const deliveryRangeMatch = emailText.match(/(\d{4}\/\d{1,2}\/\d{1,2})\s*[–-]\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
+    if (deliveryRangeMatch) {
+        deliveryStart = deliveryRangeMatch[1];
+        deliveryEnd = deliveryRangeMatch[2];
+    } else {
+        // Try single date format with "日" prefix
+        const singleDateMatch = emailText.match(/日\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
+        if (singleDateMatch) {
+            deliveryStart = singleDateMatch[1];
+            deliveryEnd = singleDateMatch[1]; // Use same date for both start and end
+        }
+    }
 
     // Extract payment method: Mastercard, Visa, etc.
     const paymentMatch = emailText.match(/(Mastercard|Visa|JCB|American Express)/i);
