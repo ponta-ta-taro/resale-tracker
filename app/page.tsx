@@ -185,7 +185,7 @@ export default function Dashboard() {
                                 <p className={`text-3xl font-bold ${metrics.financial.expectedProfitAtOrder >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {formatCurrency(metrics.financial.expectedProfitAtOrder)}
                                 </p>
-                                <p className="text-sm text-gray-600 mt-1">注文時の予想価格で売却した場合</p>
+                                <p className="text-sm text-gray-600 mt-1">注文時の買取価格で売却した場合</p>
                             </div>
                         </div>
                     </div>
