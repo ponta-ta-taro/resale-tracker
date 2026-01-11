@@ -92,10 +92,20 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value === '' ? undefined : value,
-        }));
+
+        // Handle numeric fields
+        const numericFields = ['purchase_price', 'expected_price', 'actual_price'];
+        if (numericFields.includes(name)) {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value === '' ? undefined : Number(value),
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value === '' ? undefined : value,
+            }));
+        }
     };
 
     return (
