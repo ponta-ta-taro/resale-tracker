@@ -1,40 +1,48 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import PDFParser from 'pdf2json';
 
-// Force Node.js runtime for pdf-parse compatibility
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const pdf = require('pdf-parse');
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
 
         if (!file) {
-            return NextResponse.json(
-                { error: 'No file provided' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
-        // Convert file to buffer
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Parse PDF
-        const data = await pdf(buffer);
-        const text = data.text;
+        const text = await new Promise<string>((resolve, reject) => {
+            const pdfParser = new (PDFParser as any)(null, 1);
+
+            pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+                const text = pdfData.Pages.map((page: any) =>
+                    page.Texts.map((t: any) =>
+                        decodeURIComponent(t.R[0].T)
+                    ).join(' ')
+                ).join('\n');
+                resolve(text);
+            });
+
+            pdfParser.on('pdfParser_dataError', (error: any) => {
+                reject(error);
+            });
+
+            pdfParser.parseBuffer(buffer);
+        });
 
         // Extract order number
-        const orderNumberMatch = text.match(/ご注文番号[:\s：]+([A-Z0-9]+)/i) ||
-            text.match(/Order Number[:\s]+([A-Z0-9]+)/i);
+        const orderNumberMatch = text.match(/ご注文番号[:\s：]*([W\d]+)/i) ||
+            text.match(/Order Number[:\s]+([W\d]+)/i);
         const orderNumber = orderNumberMatch ? orderNumberMatch[1] : '';
 
         // Extract serial number
         // Look for "Serial Numbers for Item" followed by the serial number
         let serialNumber = '';
-        const serialSectionMatch = text.match(/Serial Numbers? for Item[:\s]*([A-Z0-9]+)/i);
+        const serialSectionMatch = text.match(/Serial Numbers? for Item\s*\d*\s*([A-Z0-9]{10,})/i);
         if (serialSectionMatch) {
             serialNumber = serialSectionMatch[1];
         } else {
