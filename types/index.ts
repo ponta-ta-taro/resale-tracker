@@ -163,6 +163,22 @@ export interface EarlyRepaymentInput {
     notes?: string | null;
 }
 
+// Apple Account types
+export interface AppleAccount {
+    id: string;
+    name: string;
+    email: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface AppleAccountInput {
+    name: string;
+    email: string;
+    notes?: string | null;
+}
+
 // Sales destination options
 export const SOLD_TO_OPTIONS = [
     'モバイルミックス',

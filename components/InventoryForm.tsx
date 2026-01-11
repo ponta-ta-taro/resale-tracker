@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod, AppleAccount } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -16,6 +16,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [appleAccounts, setAppleAccounts] = useState<AppleAccount[]>([]);
     const [formData, setFormData] = useState<InventoryInput>({
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
@@ -45,20 +46,29 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         apple_id_used: initialData?.apple_id_used || '',
     });
 
-    // Fetch payment methods on mount
+    // Fetch payment methods and apple accounts on mount
     useEffect(() => {
-        const fetchPaymentMethods = async () => {
+        const fetchMasterData = async () => {
             try {
-                const response = await fetch('/api/payment-methods');
-                const data = await response.json();
-                if (data.data) {
-                    setPaymentMethods(data.data.filter((pm: PaymentMethod) => pm.is_active));
+                const [pmRes, aaRes] = await Promise.all([
+                    fetch('/api/payment-methods'),
+                    fetch('/api/apple-accounts'),
+                ]);
+                
+                const pmData = await pmRes.json();
+                const aaData = await aaRes.json();
+                
+                if (pmData.data) {
+                    setPaymentMethods(pmData.data.filter((pm: PaymentMethod) => pm.is_active));
+                }
+                if (aaData.data) {
+                    setAppleAccounts(aaData.data);
                 }
             } catch (error) {
-                console.error('Error fetching payment methods:', error);
+                console.error('Error fetching master data:', error);
             }
         };
-        fetchPaymentMethods();
+        fetchMasterData();
     }, []);
 
     // Auto-fill expected price from price_history when model and storage are selected
@@ -284,19 +294,33 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                     )}
                 </div>
 
-                {/* Apple ID Used (Simple Text Field) */}
+                {/* Apple ID Used (Dropdown) */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         🍎 購入Apple ID
                     </label>
-                    <input
-                        type="text"
+                    <select
                         name="apple_id_used"
                         value={formData.apple_id_used || ''}
-                        onChange={handleChange}
-                        placeholder="example@icloud.com"
+                        onChange={(e) => {
+                            const selectedAccount = appleAccounts.find(aa => aa.name === e.target.value);
+                            setFormData(prev => ({
+                                ...prev,
+                                apple_id_used: selectedAccount ? selectedAccount.name : e.target.value,
+                            }));
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    >
+                        <option value="">選択してください</option>
+                        {appleAccounts.map(aa => (
+                            <option key={aa.id} value={aa.name}>{aa.name} ({aa.email})</option>
+                        ))}
+                    </select>
+                    {appleAccounts.length === 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            <a href="/apple-accounts" className="text-blue-600 hover:underline">Apple ID管理</a>で登録してください
+                        </p>
+                    )}
                 </div>
 
                 {/* Sold To */}
