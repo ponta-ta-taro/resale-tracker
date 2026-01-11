@@ -22,6 +22,11 @@ export default function AppleMailImporter() {
     const [processing, setProcessing] = useState<number[]>([]);
     const [error, setError] = useState('');
 
+    // PDF-related state
+    const [pdfData, setPdfData] = useState<{ orderNumber: string; serialNumber: string } | null>(null);
+    const [pdfInventory, setPdfInventory] = useState<Inventory | null>(null);
+    const [uploadingPdf, setUploadingPdf] = useState(false);
+
     const handleParse = async () => {
         setError('');
         setParsedOrders([]);
@@ -162,6 +167,90 @@ export default function AppleMailImporter() {
         }
     };
 
+    const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setUploadingPdf(true);
+        setError('');
+        setPdfData(null);
+        setPdfInventory(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/parse-pdf', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error('Failed to parse PDF');
+
+            const data = await response.json();
+
+            if (!data.orderNumber || !data.serialNumber) {
+                setError('PDFから注文番号またはシリアル番号を読み取れませんでした。');
+                return;
+            }
+
+            setPdfData({
+                orderNumber: data.orderNumber,
+                serialNumber: data.serialNumber,
+            });
+
+            // Search for existing inventory
+            try {
+                const searchResponse = await fetch(`/api/inventory/search?order_number=${data.orderNumber}`);
+                if (searchResponse.ok) {
+                    const inventory = await searchResponse.json();
+                    if (inventory) {
+                        setPdfInventory(inventory);
+                    } else {
+                        setError(`注文番号 ${data.orderNumber} に該当する在庫が見つかりません。`);
+                    }
+                }
+            } catch (err) {
+                console.error('Search error:', err);
+                setError('在庫の検索中にエラーが発生しました。');
+            }
+        } catch (err) {
+            console.error('PDF upload error:', err);
+            setError('PDFの解析中にエラーが発生しました。');
+        } finally {
+            setUploadingPdf(false);
+        }
+    };
+
+    const handleUpdateSerialNumber = async () => {
+        if (!pdfInventory || !pdfData) return;
+
+        setProcessing([0]);
+
+        try {
+            const updateData = {
+                serial_number: pdfData.serialNumber,
+            };
+
+            const response = await fetch(`/api/inventory/${pdfInventory.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData),
+            });
+
+            if (!response.ok) throw new Error('Failed to update inventory');
+
+            alert('シリアル番号を登録しました');
+            router.push('/inventory');
+            router.refresh();
+        } catch (err) {
+            console.error('Update error:', err);
+            alert('更新に失敗しました');
+        } finally {
+            setProcessing([]);
+        }
+    };
+
     return (
         <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Appleメールから登録</h2>
@@ -184,6 +273,70 @@ export default function AppleMailImporter() {
             >
                 解析
             </button>
+
+            {/* PDF Upload Section */}
+            <div className="mb-4 pt-4 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">PDFから登録</h3>
+                <label className="block">
+                    <span className="sr-only">PDFファイルを選択</span>
+                    <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handlePdfUpload}
+                        disabled={uploadingPdf}
+                        className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-purple-50 file:text-purple-700
+                            hover:file:bg-purple-100
+                            disabled:opacity-50"
+                    />
+                </label>
+                {uploadingPdf && (
+                    <p className="text-sm text-gray-600 mt-2">PDFを解析中...</p>
+                )}
+            </div>
+
+            {/* PDF Results */}
+            {pdfData && (
+                <div className="mb-4 space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">PDF解析結果</h3>
+                    <div className="border border-gray-200 rounded-md p-4">
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                            <div><span className="font-medium">注文番号:</span> {pdfData.orderNumber}</div>
+                            <div><span className="font-medium">シリアル番号:</span> {pdfData.serialNumber}</div>
+                        </div>
+
+                        {pdfInventory ? (
+                            <>
+                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                    <p className="text-sm text-blue-900 font-medium mb-2">該当する在庫が見つかりました:</p>
+                                    <p className="text-sm text-blue-800">
+                                        {pdfInventory.model_name} {pdfInventory.storage} {pdfInventory.color}
+                                    </p>
+                                    {pdfInventory.serial_number && (
+                                        <p className="text-sm text-blue-800">
+                                            現在のシリアル番号: {pdfInventory.serial_number}
+                                        </p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={handleUpdateSerialNumber}
+                                    disabled={processing.length > 0}
+                                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+                                >
+                                    {processing.length > 0 ? '更新中...' : 'シリアル番号を登録'}
+                                </button>
+                            </>
+                        ) : (
+                            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                <p className="text-sm text-yellow-800">該当する在庫が見つかりません</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {error && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
