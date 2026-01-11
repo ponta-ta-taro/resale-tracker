@@ -51,7 +51,7 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                             利益
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            発注日
+                            注文日
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             操作
@@ -89,7 +89,7 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                                     {formatProfit(item)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {formatDate(item.ordered_at)}
+                                    {formatDate(item.order_date)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <Link

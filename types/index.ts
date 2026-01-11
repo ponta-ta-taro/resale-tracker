@@ -28,7 +28,6 @@ export interface Inventory {
     expected_price: number | null;
     actual_price: number | null;
     purchase_source: string | null;
-    ordered_at: string | null;
     arrived_at: string | null;
     sold_at: string | null;
     paid_at: string | null;
@@ -55,7 +54,6 @@ export interface InventoryInput {
     expected_price?: number;
     actual_price?: number;
     purchase_source?: string;
-    ordered_at?: string;
     arrived_at?: string;
     sold_at?: string;
     paid_at?: string;

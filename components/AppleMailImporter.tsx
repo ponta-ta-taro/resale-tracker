@@ -42,7 +42,6 @@ export default function AppleMailImporter() {
                 expected_delivery_start: formatDateForInput(order.deliveryStart),
                 expected_delivery_end: formatDateForInput(order.deliveryEnd),
                 payment_card: order.paymentCard,
-                ordered_at: formatDateForInput(order.orderDate),
             };
 
             const response = await fetch('/api/inventory', {
