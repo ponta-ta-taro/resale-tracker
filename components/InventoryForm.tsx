@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod, AppleAccount, ShippingAddress, MobileLine } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -16,9 +16,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-    const [appleAccounts, setAppleAccounts] = useState<AppleAccount[]>([]);
-    const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([]);
-    const [mobileLines, setMobileLines] = useState<MobileLine[]>([]);
     const [formData, setFormData] = useState<InventoryInput>({
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
@@ -42,48 +39,26 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         tracking_number: initialData?.tracking_number || '',
         carrier: initialData?.carrier || '',
         serial_number: initialData?.serial_number || '',
-        // 外部キー
+        // 外部キー（支払い方法のみ）
         payment_method_id: initialData?.payment_method_id || '',
-        apple_account_id: initialData?.apple_account_id || '',
-        shipping_address_id: initialData?.shipping_address_id || '',
-        mobile_line_id: initialData?.mobile_line_id || '',
+        // シンプルなテキストフィールド
+        apple_id_used: initialData?.apple_id_used || '',
     });
 
-    // Fetch all master data on mount
+    // Fetch payment methods on mount
     useEffect(() => {
-        const fetchMasterData = async () => {
+        const fetchPaymentMethods = async () => {
             try {
-                const [pmRes, aaRes, saRes, mlRes] = await Promise.all([
-                    fetch('/api/payment-methods'),
-                    fetch('/api/apple-accounts'),
-                    fetch('/api/shipping-addresses'),
-                    fetch('/api/mobile-lines'),
-                ]);
-
-                const [pmData, aaData, saData, mlData] = await Promise.all([
-                    pmRes.json(),
-                    aaRes.json(),
-                    saRes.json(),
-                    mlRes.json(),
-                ]);
-
-                if (pmData.data) {
-                    setPaymentMethods(pmData.data.filter((pm: PaymentMethod) => pm.is_active));
-                }
-                if (aaData.data) {
-                    setAppleAccounts(aaData.data.filter((aa: AppleAccount) => aa.is_active));
-                }
-                if (saData.data) {
-                    setShippingAddresses(saData.data.filter((sa: ShippingAddress) => sa.is_active));
-                }
-                if (mlData.data) {
-                    setMobileLines(mlData.data.filter((ml: MobileLine) => ml.is_active));
+                const response = await fetch('/api/payment-methods');
+                const data = await response.json();
+                if (data.data) {
+                    setPaymentMethods(data.data.filter((pm: PaymentMethod) => pm.is_active));
                 }
             } catch (error) {
-                console.error('Error fetching master data:', error);
+                console.error('Error fetching payment methods:', error);
             }
         };
-        fetchMasterData();
+        fetchPaymentMethods();
     }, []);
 
     // Auto-fill expected price from price_history when model and storage are selected
@@ -309,73 +284,19 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                     )}
                 </div>
 
-                {/* Apple Account (Foreign Key) */}
+                {/* Apple ID Used (Simple Text Field) */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        🍎 Apple ID
+                        🍎 購入Apple ID
                     </label>
-                    <select
-                        name="apple_account_id"
-                        value={formData.apple_account_id || ''}
+                    <input
+                        type="text"
+                        name="apple_id_used"
+                        value={formData.apple_id_used || ''}
                         onChange={handleChange}
+                        placeholder="example@icloud.com"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">選択してください</option>
-                        {appleAccounts.map(aa => (
-                            <option key={aa.id} value={aa.id}>{aa.email}{aa.name ? ` (${aa.name})` : ''}</option>
-                        ))}
-                    </select>
-                    {appleAccounts.length === 0 && (
-                        <p className="text-xs text-gray-500 mt-1">
-                            <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録してください
-                        </p>
-                    )}
-                </div>
-
-                {/* Shipping Address (Foreign Key) */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        📦 配送先住所
-                    </label>
-                    <select
-                        name="shipping_address_id"
-                        value={formData.shipping_address_id || ''}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">選択してください</option>
-                        {shippingAddresses.map(sa => (
-                            <option key={sa.id} value={sa.id}>{sa.name} - {sa.address.substring(0, 20)}...</option>
-                        ))}
-                    </select>
-                    {shippingAddresses.length === 0 && (
-                        <p className="text-xs text-gray-500 mt-1">
-                            <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録してください
-                        </p>
-                    )}
-                </div>
-
-                {/* Mobile Line (Foreign Key) */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        📱 携帯回線
-                    </label>
-                    <select
-                        name="mobile_line_id"
-                        value={formData.mobile_line_id || ''}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">選択してください</option>
-                        {mobileLines.map(ml => (
-                            <option key={ml.id} value={ml.id}>{ml.name}{ml.carrier ? ` (${ml.carrier})` : ''}</option>
-                        ))}
-                    </select>
-                    {mobileLines.length === 0 && (
-                        <p className="text-xs text-gray-500 mt-1">
-                            <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録してください
-                        </p>
-                    )}
+                    />
                 </div>
 
                 {/* Sold To */}
