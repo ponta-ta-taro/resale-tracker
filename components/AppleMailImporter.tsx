@@ -9,6 +9,7 @@ import {
     normalizeModelName,
     ParsedShippingInfo
 } from '@/lib/appleMailParser';
+import { parsePdfFile } from '@/lib/pdfParser';
 import { ParsedAppleOrder, Inventory } from '@/types';
 import { useRouter } from 'next/navigation';
 
@@ -177,42 +178,48 @@ export default function AppleMailImporter() {
         setPdfInventory(null);
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
+            console.log('Starting PDF parsing for:', file.name);
+            
+            // Parse PDF on client side
+            const result = await parsePdfFile(file);
+            
+            console.log('PDF parsing result:', result);
 
-            const response = await fetch('/api/parse-pdf', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Failed to parse PDF');
-
-            const data = await response.json();
-
-            if (!data.orderNumber || !data.serialNumber) {
-                setError('PDFから注文番号またはシリアル番号を読み取れませんでした。');
+            if (!result.success) {
+                setError(`PDFの解析に失敗しました: ${result.error}`);
                 return;
             }
 
+            // Show results even if only one field is found
             setPdfData({
-                orderNumber: data.orderNumber,
-                serialNumber: data.serialNumber,
+                orderNumber: result.orderNumber,
+                serialNumber: result.serialNumber,
             });
+            
+            if (!result.orderNumber && !result.serialNumber) {
+                const rawTextPreview = result.rawText?.substring(0, 300) || '(テキストなし)';
+                setError(`PDFから注文番号・シリアル番号を読み取れませんでした。\n抽出テキスト: ${rawTextPreview}...`);
+                return;
+            }
 
-            // Search for existing inventory
-            try {
-                const searchResponse = await fetch(`/api/inventory/search?order_number=${data.orderNumber}`);
-                if (searchResponse.ok) {
-                    const inventory = await searchResponse.json();
-                    if (inventory) {
-                        setPdfInventory(inventory);
-                    } else {
-                        setError(`注文番号 ${data.orderNumber} に該当する在庫が見つかりません。`);
+            // Search for existing inventory if order number is found
+            if (result.orderNumber) {
+                try {
+                    const searchResponse = await fetch(`/api/inventory/search?order_number=${result.orderNumber}`);
+                    if (searchResponse.ok) {
+                        const inventory = await searchResponse.json();
+                        if (inventory) {
+                            setPdfInventory(inventory);
+                        } else {
+                            setError(`注文番号 ${result.orderNumber} に該当する在庫が見つかりません。先に注文メールから在庫を登録してください。`);
+                        }
                     }
+                } catch (err) {
+                    console.error('Search error:', err);
+                    setError('在庫の検索中にエラーが発生しました。');
                 }
-            } catch (err) {
-                console.error('Search error:', err);
-                setError('在庫の検索中にエラーが発生しました。');
+            } else {
+                setError('注文番号が見つかりませんでした。シリアル番号のみ取得できました。');
             }
         } catch (err) {
             console.error('PDF upload error:', err);
