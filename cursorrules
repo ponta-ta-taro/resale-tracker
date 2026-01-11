@@ -1,0 +1,58 @@
+# ResaleTracker - Cursor開発ルール
+
+## プロジェクト概要
+
+iPhone転売ビジネス向け価格管理・分析アプリ。Appleからの注文メールを貼り付けると自動で在庫登録できる。
+
+## 技術スタック
+
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Supabase (データベース・認証)
+- Recharts (グラフ)
+- Vercel (デプロイ)
+
+## ディレクトリ構成
+
+- `app/` - Next.js App Router ページ・API
+- `components/` - Reactコンポーネント
+- `lib/` - ユーティリティ・Supabaseクライアント
+- `types/` - TypeScript型定義
+- `scraper/` - 価格スクレイピングスクリプト
+
+## コーディング規約
+
+- TypeScriptを使用
+- 'use client' はクライアントコンポーネントのみ
+- Tailwind CSSでスタイリング
+- 日本語でコメント・ラベルを記述
+
+## ステータス一覧
+
+- `ordered` - 発注済み
+- `shipped` - 出荷済み
+- `arrived` - 納品済み
+- `selling` - 販売中
+- `sold` - 売却済み
+- `paid` - 入金済み
+
+## API設計
+
+- GET/POST: `/api/inventory` - 在庫一覧・登録
+- GET/PUT/DELETE: `/api/inventory/[id]` - 在庫詳細・更新・削除
+- GET: `/api/inventory/search?order_number=xxx` - 注文番号で検索
+- GET: `/api/dashboard` - ダッシュボードデータ
+- POST: `/api/parse-pdf` - PDF解析（要修正）
+
+## 重要な注意事項
+
+- 本番データがあるため、DB変更は慎重に
+- Supabaseの環境変数は `.env.local` に設定
+- `git push origin main` でVercelに自動デプロイ
+
+## 現在の課題
+
+1. PDF読み取りがVercelで動作しない（pdf2jsonの問題）
+2. 配達完了メールの対応が未実装
+3. 認証機能が未実装（将来的にSaaS化予定）

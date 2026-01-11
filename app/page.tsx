@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriceChart from '@/components/PriceChart';
+import PaymentSchedule from '@/components/PaymentSchedule';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
 
@@ -194,6 +195,11 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 mt-1">注文時の買取価格で売却した場合</p>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Payment Schedule */}
+                    <div className="mb-8">
+                        <PaymentSchedule />
                     </div>
 
                     {/* Alerts */}

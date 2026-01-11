@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, PAYMENT_CARDS, SOLD_TO_OPTIONS } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -15,6 +15,7 @@ const STORAGES = ['128GB', '256GB', '512GB', '1TB'];
 export default function InventoryForm({ initialData, mode }: InventoryFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [formData, setFormData] = useState<InventoryInput>({
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
@@ -39,6 +40,23 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         carrier: initialData?.carrier || '',
         serial_number: initialData?.serial_number || '',
     });
+
+    // Fetch payment methods on mount
+    useEffect(() => {
+        const fetchPaymentMethods = async () => {
+            try {
+                const response = await fetch('/api/payment-methods');
+                const result = await response.json();
+                if (result.data) {
+                    // Filter to only active payment methods
+                    setPaymentMethods(result.data.filter((pm: PaymentMethod) => pm.is_active));
+                }
+            } catch (error) {
+                console.error('Error fetching payment methods:', error);
+            }
+        };
+        fetchPaymentMethods();
+    }, []);
 
     // Auto-fill expected price from price_history when model and storage are selected
     useEffect(() => {
@@ -240,10 +258,10 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                     />
                 </div>
 
-                {/* Payment Card */}
+                {/* Payment Method */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        支払いカード
+                        支払い方法
                     </label>
                     <select
                         name="payment_card"
@@ -252,10 +270,15 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="">選択してください</option>
-                        {PAYMENT_CARDS.map(card => (
-                            <option key={card} value={card}>{card}</option>
+                        {paymentMethods.map(pm => (
+                            <option key={pm.id} value={pm.name}>{pm.name}</option>
                         ))}
                     </select>
+                    {paymentMethods.length === 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            <a href="/payment-methods" className="text-blue-600 hover:underline">支払い方法を登録</a>してください
+                        </p>
+                    )}
                 </div>
 
                 {/* Sold To */}

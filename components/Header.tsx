@@ -10,6 +10,7 @@ export default function Header() {
         { href: '/', label: 'ダッシュボード' },
         { href: '/prices', label: '価格一覧' },
         { href: '/inventory', label: '在庫管理' },
+        { href: '/payment-methods', label: '支払い方法' },
     ];
 
     return (
@@ -25,7 +26,8 @@ export default function Header() {
                     <nav className="flex gap-6">
                         {navLinks.map((link) => {
                             const isActive = pathname === link.href ||
-                                (link.href === '/inventory' && pathname?.startsWith('/inventory'));
+                                (link.href === '/inventory' && pathname?.startsWith('/inventory')) ||
+                                (link.href === '/payment-methods' && pathname?.startsWith('/payment-methods'));
 
                             return (
                                 <Link

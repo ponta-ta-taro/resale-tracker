@@ -93,7 +93,7 @@ export const STATUS_COLORS: Record<InventoryStatus, string> = {
     paid: 'bg-gray-100 text-gray-800',
 };
 
-// Payment card options
+// Payment card options (legacy - will be replaced by payment_methods)
 export const PAYMENT_CARDS = [
     'Mastercard',
     'Visa',
@@ -101,6 +101,58 @@ export const PAYMENT_CARDS = [
     'American Express',
     'その他',
 ] as const;
+
+// Payment method types
+export type PaymentMethodType = 'credit' | 'debit' | 'cash';
+
+export const PAYMENT_METHOD_TYPES: Record<PaymentMethodType, string> = {
+    credit: 'クレジットカード',
+    debit: 'デビットカード',
+    cash: '現金',
+};
+
+export interface PaymentMethod {
+    id: string;
+    name: string;
+    type: PaymentMethodType;
+    closing_day: number | null;
+    payment_day: number | null;
+    payment_month_offset: number | null;
+    credit_limit: number | null;
+    is_active: boolean;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaymentMethodInput {
+    name: string;
+    type: PaymentMethodType;
+    closing_day?: number | null;
+    payment_day?: number | null;
+    payment_month_offset?: number | null;
+    credit_limit?: number | null;
+    is_active?: boolean;
+    notes?: string | null;
+}
+
+export interface EarlyRepayment {
+    id: string;
+    payment_method_id: string;
+    amount: number;
+    repayment_date: string;
+    target_month: string | null;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface EarlyRepaymentInput {
+    payment_method_id: string;
+    amount: number;
+    repayment_date: string;
+    target_month?: string | null;
+    notes?: string | null;
+}
 
 // Sales destination options
 export const SOLD_TO_OPTIONS = [
