@@ -31,12 +31,31 @@ export default function AppleMailImporter() {
         setProcessing(prev => [...prev, index]);
 
         try {
+            // Fetch expected price from price_history
+            let expectedPrice: number | undefined = undefined;
+            try {
+                const priceResponse = await fetch(`/api/prices/latest`);
+                if (priceResponse.ok) {
+                    const priceData = await priceResponse.json();
+                    const normalizedModel = normalizeModelName(order.modelName);
+                    const matchingPrice = priceData.data?.find(
+                        (p: any) => p.model_name === normalizedModel && p.storage === order.storage
+                    );
+                    if (matchingPrice) {
+                        expectedPrice = matchingPrice.price;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching expected price:', error);
+            }
+
             const inventoryData = {
                 model_name: normalizeModelName(order.modelName),
                 storage: order.storage,
                 color: order.color,
                 status: 'ordered' as const,
                 purchase_price: order.price,
+                expected_price: expectedPrice,
                 order_number: order.orderNumber,
                 order_date: formatDateForInput(order.orderDate),
                 expected_delivery_start: formatDateForInput(order.deliveryStart),

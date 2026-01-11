@@ -9,6 +9,7 @@ import { Inventory, STATUS_LABELS, STATUS_COLORS, calculateProfit, calculateProf
 export default function InventoryDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const [inventory, setInventory] = useState<Inventory | null>(null);
+    const [currentMarketPrice, setCurrentMarketPrice] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
 
@@ -22,6 +23,22 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             if (!response.ok) throw new Error('Failed to fetch inventory');
             const data = await response.json();
             setInventory(data);
+
+            // Fetch current market price
+            try {
+                const priceResponse = await fetch('/api/prices/latest');
+                if (priceResponse.ok) {
+                    const priceData = await priceResponse.json();
+                    const matchingPrice = priceData.data?.find(
+                        (p: any) => p.model_name === data.model_name && p.storage === data.storage
+                    );
+                    if (matchingPrice) {
+                        setCurrentMarketPrice(matchingPrice.price);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching market price:', error);
+            }
         } catch (error) {
             console.error('Error fetching inventory:', error);
         } finally {
@@ -58,6 +75,21 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
     const formatDate = (dateString: string | null) => {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('ja-JP');
+    };
+
+    const getPriceChange = () => {
+        if (!inventory?.expected_price || !currentMarketPrice) return null;
+        return currentMarketPrice - inventory.expected_price;
+    };
+
+    const getExpectedProfitAtOrder = () => {
+        if (!inventory?.expected_price || !inventory?.purchase_price) return null;
+        return inventory.expected_price - inventory.purchase_price;
+    };
+
+    const getExpectedProfitCurrent = () => {
+        if (!currentMarketPrice || !inventory?.purchase_price) return null;
+        return currentMarketPrice - inventory.purchase_price;
     };
 
     if (loading) {
@@ -123,6 +155,81 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                                 {formatCurrency(profit)}
                                 {profitRate !== null && ` (${profitRate.toFixed(1)}%)`}
                             </p>
+                        </div>
+                    </div>
+
+                    {/* Price Analysis Section */}
+                    <div className="mt-8 border-t pt-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">価格分析</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">仕入価格</h4>
+                                <p className="text-xl font-semibold text-gray-900">{formatCurrency(inventory.purchase_price)}</p>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">注文時の予想売価</h4>
+                                <p className="text-xl font-semibold text-gray-900">{formatCurrency(inventory.expected_price)}</p>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">現在の相場</h4>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-xl font-semibold text-gray-900">{formatCurrency(currentMarketPrice)}</p>
+                                    {(() => {
+                                        const priceChange = getPriceChange();
+                                        if (priceChange === null) return null;
+                                        const isPositive = priceChange >= 0;
+                                        return (
+                                            <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                                {isPositive ? '↑' : '↓'} {formatCurrency(Math.abs(priceChange))}
+                                            </span>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">実売価格</h4>
+                                <p className="text-xl font-semibold text-gray-900">{formatCurrency(inventory.actual_price)}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                                <h4 className="text-sm font-medium text-blue-900 mb-1">想定利益（注文時）</h4>
+                                {(() => {
+                                    const profit = getExpectedProfitAtOrder();
+                                    if (profit === null) return <p className="text-lg font-semibold text-blue-900">-</p>;
+                                    const isPositive = profit >= 0;
+                                    return (
+                                        <p className={`text-lg font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                            {isPositive ? '+' : ''}{formatCurrency(profit)}
+                                        </p>
+                                    );
+                                })()}
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-lg">
+                                <h4 className="text-sm font-medium text-green-900 mb-1">想定利益（現在）</h4>
+                                {(() => {
+                                    const profit = getExpectedProfitCurrent();
+                                    if (profit === null) return <p className="text-lg font-semibold text-green-900">-</p>;
+                                    const isPositive = profit >= 0;
+                                    return (
+                                        <p className={`text-lg font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                            {isPositive ? '+' : ''}{formatCurrency(profit)}
+                                        </p>
+                                    );
+                                })()}
+                            </div>
+                            <div className="bg-purple-50 p-4 rounded-lg">
+                                <h4 className="text-sm font-medium text-purple-900 mb-1">実際の利益</h4>
+                                {profit !== null ? (
+                                    <p className={`text-lg font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                                        {profitRate !== null && ` (${profitRate.toFixed(1)}%)`}
+                                    </p>
+                                ) : (
+                                    <p className="text-lg font-semibold text-purple-900">-</p>
+                                )}
+                            </div>
                         </div>
                     </div>
 

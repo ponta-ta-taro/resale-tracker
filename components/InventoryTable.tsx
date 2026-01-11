@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Inventory, STATUS_LABELS, STATUS_COLORS, calculateProfit, calculateProfitRate } from '@/types';
 
@@ -7,7 +8,41 @@ interface InventoryTableProps {
     items: Inventory[];
 }
 
+interface MarketPrice {
+    model_name: string;
+    storage: string;
+    price: number;
+}
+
 export default function InventoryTable({ items }: InventoryTableProps) {
+    const [marketPrices, setMarketPrices] = useState<Map<string, number>>(new Map());
+
+    useEffect(() => {
+        fetchMarketPrices();
+    }, []);
+
+    const fetchMarketPrices = async () => {
+        try {
+            const response = await fetch('/api/prices/latest');
+            if (response.ok) {
+                const data = await response.json();
+                const priceMap = new Map<string, number>();
+                data.data?.forEach((item: MarketPrice) => {
+                    const key = `${item.model_name}_${item.storage}`;
+                    priceMap.set(key, item.price);
+                });
+                setMarketPrices(priceMap);
+            }
+        } catch (error) {
+            console.error('Error fetching market prices:', error);
+        }
+    };
+
+    const getCurrentMarketPrice = (item: Inventory): number | null => {
+        const key = `${item.model_name}_${item.storage}`;
+        return marketPrices.get(key) ?? null;
+    };
+
     const formatCurrency = (amount: number | null) => {
         if (amount === null) return '-';
         return `¥${amount.toLocaleString()}`;
@@ -25,6 +60,15 @@ export default function InventoryTable({ items }: InventoryTableProps) {
         const rateStr = rate !== null ? ` (${rate.toFixed(1)}%)` : '';
         const color = profit >= 0 ? 'text-green-600' : 'text-red-600';
         return <span className={color}>{formatCurrency(profit)}{rateStr}</span>;
+    };
+
+    const formatExpectedProfit = (item: Inventory) => {
+        const currentPrice = getCurrentMarketPrice(item);
+        if (currentPrice === null || item.purchase_price === null) return '-';
+        const profit = currentPrice - item.purchase_price;
+        const rate = (profit / item.purchase_price) * 100;
+        const color = profit >= 0 ? 'text-green-600' : 'text-red-600';
+        return <span className={color}>{formatCurrency(profit)} ({rate.toFixed(1)}%)</span>;
     };
 
     return (
@@ -45,6 +89,15 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                             仕入価格
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            注文時予想売価
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            現在の相場
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            想定利益(現在)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             実売価格
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -61,7 +114,7 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                 <tbody className="bg-white divide-y divide-gray-200">
                     {items.length === 0 ? (
                         <tr>
-                            <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                            <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
                                 在庫データがありません
                             </td>
                         </tr>
@@ -81,6 +134,15 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {formatCurrency(item.purchase_price)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {formatCurrency(item.expected_price)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {formatCurrency(getCurrentMarketPrice(item))}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {formatExpectedProfit(item)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {formatCurrency(item.actual_price)}
