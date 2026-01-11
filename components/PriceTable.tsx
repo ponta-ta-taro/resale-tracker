@@ -156,8 +156,19 @@ export default function PriceTable({ data: initialData }: PriceTableProps) {
                 </table>
             </div>
 
-            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                全{data.length}件
+            <div className="mt-4 flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                <span>全{data.length}件</span>
+                <a 
+                    href="https://mobile-mix.jp/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline flex items-center gap-1"
+                >
+                    <span>モバイルミックスで確認</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
             </div>
         </div>
     )
