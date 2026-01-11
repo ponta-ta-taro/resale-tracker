@@ -1,5 +1,63 @@
 import { ParsedAppleOrder } from '@/types';
 
+export interface ParsedShippingInfo {
+    orderNumber: string;
+    carrier: string;
+    trackingNumber: string;
+}
+
+export type EmailType = 'order' | 'shipping' | 'unknown';
+
+/**
+ * Detect the type of Apple email
+ */
+export function detectEmailType(emailText: string): EmailType {
+    if (emailText.includes('お客様の商品は出荷されました') || emailText.includes('shipped')) {
+        return 'shipping';
+    }
+    if (emailText.includes('ご注文内容をご確認ください') || emailText.includes('ご注文ありがとうございます')) {
+        return 'order';
+    }
+    return 'unknown';
+}
+
+/**
+ * Parse Apple shipping notification email
+ */
+export function parseAppleShippingEmail(emailText: string): ParsedShippingInfo | null {
+    // Extract order number
+    const orderNumberMatch = emailText.match(/ご注文番号[:\s：]+([A-Z0-9]+)/i) ||
+        emailText.match(/Order Number[:\s]+([A-Z0-9]+)/i);
+    const orderNumber = orderNumberMatch ? orderNumberMatch[1] : '';
+
+    if (!orderNumber) return null;
+
+    // Extract tracking number
+    const trackingMatch = emailText.match(/配送伝票番号[:\s：]+(\d+)/i) ||
+        emailText.match(/Tracking Number[:\s]+(\d+)/i) ||
+        emailText.match(/(\d{12,})/); // Fallback: 12+ digit number
+    const trackingNumber = trackingMatch ? trackingMatch[1] : '';
+
+    // Extract carrier and normalize
+    let carrier = '';
+    if (emailText.includes('YAMATO TRANSPORT') || emailText.includes('ヤマト運輸')) {
+        carrier = 'ヤマト運輸';
+    } else if (emailText.includes('SAGAWA') || emailText.includes('佐川急便')) {
+        carrier = '佐川急便';
+    } else if (emailText.includes('JAPAN POST') || emailText.includes('日本郵便')) {
+        carrier = '日本郵便';
+    } else {
+        const carrierMatch = emailText.match(/配送業者[:\s：]+([^\n\r]+)/i);
+        carrier = carrierMatch ? carrierMatch[1].trim() : 'その他';
+    }
+
+    return {
+        orderNumber,
+        carrier,
+        trackingNumber,
+    };
+}
+
 /**
  * Parse Apple order confirmation email to extract order details
  * @param emailText - Raw email text from Apple order confirmation
@@ -41,7 +99,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
 
     // Extract products - look for iPhone models with storage and color
     // Pattern: iPhone 17 Pro 256GB コズミックオレンジ
-    const productPattern = /(iPhone\s+(?:17\s+)?(?:Pro\s+Max|Pro|Air|17)?)\s+(\d+GB)\s+([^\n\r¥]+?)(?:\s+|¥|$)/gi;
+    const productPattern = /(iPhone\\s+(?:17\\s+)?(?:Pro\\s+Max|Pro|Air|17)?)\\s+(\\d+GB)\\s+([^\\n\\r¥]+?)(?:\\s+|¥|$)/gi;
     let productMatch;
 
     while ((productMatch = productPattern.exec(emailText)) !== null) {
@@ -53,7 +111,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
         // Look for price pattern after the product name
         const productIndex = productMatch.index;
         const textAfterProduct = emailText.substring(productIndex, productIndex + 200);
-        const priceMatch = textAfterProduct.match(/¥?([\d,]+)円/);
+        const priceMatch = textAfterProduct.match(/¥?([\\d,]+)円/);
         const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, '')) : 0;
 
         orders.push({
@@ -87,19 +145,27 @@ export function normalizeModelName(modelName: string): string {
     // Ensure consistent spacing and format
     let normalized = modelName.trim();
 
-    // Handle "iPhone 17 Pro Max" format
-    if (/iPhone\s+17\s+Pro\s+Max/i.test(normalized)) {
+    // Handle \"iPhone 17 Pro Max\" format
+    if (/iPhone\\s+17\\s+Pro\\s+Max/i.test(normalized)) {
         return 'iPhone 17 Pro Max';
     }
-    if (/iPhone\s+17\s+Pro/i.test(normalized)) {
+    if (/iPhone\\s+17\\s+Pro/i.test(normalized)) {
         return 'iPhone 17 Pro';
     }
-    if (/iPhone\s+Air/i.test(normalized)) {
+    if (/iPhone\\s+Air/i.test(normalized)) {
         return 'iPhone Air';
     }
-    if (/iPhone\s+17/i.test(normalized)) {
+    if (/iPhone\\s+17/i.test(normalized)) {
         return 'iPhone 17';
     }
 
     return normalized;
 }
+
+// Carrier options
+export const CARRIER_OPTIONS = [
+    'ヤマト運輸',
+    '佐川急便',
+    '日本郵便',
+    'その他',
+] as const;

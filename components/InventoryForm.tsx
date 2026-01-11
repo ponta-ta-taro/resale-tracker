@@ -35,6 +35,9 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         expected_delivery_end: initialData?.expected_delivery_end || '',
         payment_card: initialData?.payment_card || '',
         sold_to: initialData?.sold_to || '',
+        tracking_number: initialData?.tracking_number || '',
+        carrier: initialData?.carrier || '',
+        serial_number: initialData?.serial_number || '',
     });
 
     // Auto-fill expected price from price_history when model and storage are selected
@@ -271,6 +274,53 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             <option key={option} value={option}>{option}</option>
                         ))}
                     </select>
+                </div>
+
+                {/* Carrier */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        配送業者
+                    </label>
+                    <select
+                        name="carrier"
+                        value={formData.carrier || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">選択してください</option>
+                        <option value="ヤマト運輸">ヤマト運輸</option>
+                        <option value="佐川急便">佐川急便</option>
+                        <option value="日本郵便">日本郵便</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+
+                {/* Tracking Number */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        配送伝票番号
+                    </label>
+                    <input
+                        type="text"
+                        name="tracking_number"
+                        value={formData.tracking_number || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Serial Number */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        シリアル番号
+                    </label>
+                    <input
+                        type="text"
+                        name="serial_number"
+                        value={formData.serial_number || ''}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
 
                 {/* Purchase Price */}

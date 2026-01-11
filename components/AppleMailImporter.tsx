@@ -1,25 +1,69 @@
 'use client';
 
 import { useState } from 'react';
-import { parseAppleOrderEmail, formatDateForInput, normalizeModelName } from '@/lib/appleMailParser';
-import { ParsedAppleOrder } from '@/types';
+import {
+    parseAppleOrderEmail,
+    parseAppleShippingEmail,
+    detectEmailType,
+    formatDateForInput,
+    normalizeModelName,
+    ParsedShippingInfo
+} from '@/lib/appleMailParser';
+import { ParsedAppleOrder, Inventory } from '@/types';
 import { useRouter } from 'next/navigation';
 
 export default function AppleMailImporter() {
     const router = useRouter();
     const [emailText, setEmailText] = useState('');
+    const [emailType, setEmailType] = useState<'order' | 'shipping' | 'unknown' | null>(null);
     const [parsedOrders, setParsedOrders] = useState<ParsedAppleOrder[]>([]);
+    const [shippingInfo, setShippingInfo] = useState<ParsedShippingInfo | null>(null);
+    const [foundInventory, setFoundInventory] = useState<Inventory | null>(null);
     const [processing, setProcessing] = useState<number[]>([]);
     const [error, setError] = useState('');
 
-    const handleParse = () => {
+    const handleParse = async () => {
         setError('');
+        setParsedOrders([]);
+        setShippingInfo(null);
+        setFoundInventory(null);
+        setEmailType(null);
+
         try {
-            const orders = parseAppleOrderEmail(emailText);
-            if (orders.length === 0) {
-                setError('注文情報を読み取れませんでした。メール本文を確認してください。');
+            const type = detectEmailType(emailText);
+            setEmailType(type);
+
+            if (type === 'order') {
+                const orders = parseAppleOrderEmail(emailText);
+                if (orders.length === 0) {
+                    setError('注文情報を読み取れませんでした。メール本文を確認してください。');
+                } else {
+                    setParsedOrders(orders);
+                }
+            } else if (type === 'shipping') {
+                const shipping = parseAppleShippingEmail(emailText);
+                if (!shipping) {
+                    setError('出荷情報を読み取れませんでした。メール本文を確認してください。');
+                } else {
+                    setShippingInfo(shipping);
+                    // Search for existing inventory
+                    try {
+                        const response = await fetch(`/api/inventory/search?order_number=${shipping.orderNumber}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data) {
+                                setFoundInventory(data);
+                            } else {
+                                setError(`注文番号 ${shipping.orderNumber} に該当する在庫が見つかりません。`);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Search error:', err);
+                        setError('在庫の検索中にエラーが発生しました。');
+                    }
+                }
             } else {
-                setParsedOrders(orders);
+                setError('認識できないメール形式です。Appleの注文確認メールまたは出荷通知メールを貼り付けてください。');
             }
         } catch (err) {
             setError('メールの解析中にエラーが発生しました。');
@@ -27,7 +71,7 @@ export default function AppleMailImporter() {
         }
     };
 
-    const handleRegister = async (order: ParsedAppleOrder, index: number) => {
+    const handleRegisterOrder = async (order: ParsedAppleOrder, index: number) => {
         setProcessing(prev => [...prev, index]);
 
         try {
@@ -87,107 +131,130 @@ export default function AppleMailImporter() {
         }
     };
 
-    const handleSkip = (index: number) => {
-        setParsedOrders(prev => prev.filter((_, i) => i !== index));
+    const handleUpdateShipping = async () => {
+        if (!foundInventory || !shippingInfo) return;
+
+        setProcessing([0]);
+
+        try {
+            const updateData = {
+                status: 'shipped' as const,
+                tracking_number: shippingInfo.trackingNumber,
+                carrier: shippingInfo.carrier,
+            };
+
+            const response = await fetch(`/api/inventory/${foundInventory.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData),
+            });
+
+            if (!response.ok) throw new Error('Failed to update inventory');
+
+            alert('ステータスを出荷済みに更新しました');
+            router.push('/inventory');
+            router.refresh();
+        } catch (err) {
+            console.error('Update error:', err);
+            alert('更新に失敗しました');
+        } finally {
+            setProcessing([]);
+        }
     };
 
     return (
-        <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">📧 Appleメールから自動入力</h3>
+        <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Appleメールから登録</h2>
 
-            {parsedOrders.length === 0 ? (
-                <div>
-                    <p className="text-sm text-gray-600 mb-3">
-                        Appleの注文確認メール本文を貼り付けてください。複数製品がある場合は自動で検出します。
-                    </p>
-                    <textarea
-                        value={emailText}
-                        onChange={(e) => setEmailText(e.target.value)}
-                        placeholder="メール本文をここに貼り付け..."
-                        rows={6}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-                    />
-                    {error && (
-                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
-                            {error}
-                        </div>
-                    )}
-                    <button
-                        onClick={handleParse}
-                        disabled={!emailText.trim()}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                        読み取る
-                    </button>
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    メール本文を貼り付け
+                </label>
+                <textarea
+                    value={emailText}
+                    onChange={(e) => setEmailText(e.target.value)}
+                    className="w-full h-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Appleからの注文確認メールまたは出荷通知メールの本文を貼り付けてください"
+                />
+            </div>
+
+            <button
+                onClick={handleParse}
+                className="w-full px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mb-4"
+            >
+                解析
+            </button>
+
+            {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-red-800">{error}</p>
                 </div>
-            ) : (
+            )}
+
+            {/* Order Email Results */}
+            {emailType === 'order' && parsedOrders.length > 0 && (
                 <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                        {parsedOrders.length}件の製品が見つかりました。各製品を登録またはスキップしてください。
-                    </p>
+                    <h3 className="text-lg font-semibold text-gray-900">解析結果（注文メール）</h3>
                     {parsedOrders.map((order, index) => (
-                        <div key={index} className="bg-white p-4 rounded-lg border border-gray-200">
-                            <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                                <div>
-                                    <span className="text-gray-500">注文番号:</span>
-                                    <span className="ml-2 font-medium">{order.orderNumber}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">注文日:</span>
-                                    <span className="ml-2 font-medium">{order.orderDate}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">機種:</span>
-                                    <span className="ml-2 font-medium">{normalizeModelName(order.modelName)}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">容量:</span>
-                                    <span className="ml-2 font-medium">{order.storage}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">カラー:</span>
-                                    <span className="ml-2 font-medium">{order.color}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">金額:</span>
-                                    <span className="ml-2 font-medium">¥{order.price.toLocaleString()}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">お届け予定:</span>
-                                    <span className="ml-2 font-medium">{order.deliveryStart} – {order.deliveryEnd}</span>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500">支払い:</span>
-                                    <span className="ml-2 font-medium">{order.paymentCard}</span>
-                                </div>
+                        <div key={index} className="border border-gray-200 rounded-md p-4">
+                            <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                                <div><span className="font-medium">注文番号:</span> {order.orderNumber}</div>
+                                <div><span className="font-medium">注文日:</span> {order.orderDate}</div>
+                                <div><span className="font-medium">機種:</span> {order.modelName}</div>
+                                <div><span className="font-medium">容量:</span> {order.storage}</div>
+                                <div><span className="font-medium">カラー:</span> {order.color}</div>
+                                <div><span className="font-medium">価格:</span> ¥{order.price.toLocaleString()}</div>
+                                <div><span className="font-medium">お届け予定:</span> {order.deliveryStart} – {order.deliveryEnd}</div>
+                                <div><span className="font-medium">支払い:</span> {order.paymentCard}</div>
                             </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleRegister(order, index)}
-                                    disabled={processing.includes(index)}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                >
-                                    {processing.includes(index) ? '登録中...' : '登録する'}
-                                </button>
-                                <button
-                                    onClick={() => handleSkip(index)}
-                                    disabled={processing.includes(index)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                >
-                                    スキップ
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => handleRegisterOrder(order, index)}
+                                disabled={processing.includes(index)}
+                                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+                            >
+                                {processing.includes(index) ? '登録中...' : '在庫に登録'}
+                            </button>
                         </div>
                     ))}
-                    <button
-                        onClick={() => {
-                            setParsedOrders([]);
-                            setEmailText('');
-                        }}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                    >
-                        ← 戻る
-                    </button>
+                </div>
+            )}
+
+            {/* Shipping Email Results */}
+            {emailType === 'shipping' && shippingInfo && (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">解析結果（出荷メール）</h3>
+                    <div className="border border-gray-200 rounded-md p-4">
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                            <div><span className="font-medium">注文番号:</span> {shippingInfo.orderNumber}</div>
+                            <div><span className="font-medium">配送業者:</span> {shippingInfo.carrier}</div>
+                            <div className="col-span-2"><span className="font-medium">配送伝票番号:</span> {shippingInfo.trackingNumber}</div>
+                        </div>
+
+                        {foundInventory ? (
+                            <>
+                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                    <p className="text-sm text-blue-900 font-medium mb-2">該当する在庫が見つかりました:</p>
+                                    <p className="text-sm text-blue-800">
+                                        {foundInventory.model_name} {foundInventory.storage} {foundInventory.color}
+                                    </p>
+                                    <p className="text-sm text-blue-800">
+                                        現在のステータス: {foundInventory.status}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={handleUpdateShipping}
+                                    disabled={processing.length > 0}
+                                    className="w-full px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:bg-gray-400"
+                                >
+                                    {processing.length > 0 ? '更新中...' : 'ステータスを出荷済みに更新'}
+                                </button>
+                            </>
+                        ) : (
+                            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                <p className="text-sm text-yellow-800">該当する在庫が見つかりません</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
