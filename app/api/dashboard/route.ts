@@ -56,6 +56,7 @@ export async function GET() {
         // Calculate inventory status
         const statusBreakdown = {
             ordered: { count: 0, amount: 0 },
+            shipped: { count: 0, amount: 0 },
             arrived: { count: 0, amount: 0 },
             selling: { count: 0, amount: 0 },
             sold: { count: 0, amount: 0 },

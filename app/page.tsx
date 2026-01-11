@@ -15,6 +15,7 @@ interface DashboardMetrics {
     };
     inventory: {
         ordered: { count: number; amount: number };
+        shipped: { count: number; amount: number };
         arrived: { count: number; amount: number };
         selling: { count: number; amount: number };
         sold: { count: number; amount: number };
@@ -140,11 +141,16 @@ export default function Dashboard() {
                                 在庫管理へ
                             </Link>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">発注中</h3>
                                 <p className="text-2xl font-bold text-blue-600">{metrics.inventory.ordered.count}台</p>
                                 <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.ordered.amount)}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">出荷済み</h3>
+                                <p className="text-2xl font-bold text-cyan-600">{metrics.inventory.shipped.count}台</p>
+                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.shipped.amount)}</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">納品済み</h3>
