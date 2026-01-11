@@ -10,7 +10,7 @@ export default function Header() {
         { href: '/', label: 'ダッシュボード' },
         { href: '/prices', label: '価格一覧' },
         { href: '/inventory', label: '在庫管理' },
-        { href: '/payment-methods', label: '支払い方法' },
+        { href: '/settings', label: '設定' },
     ];
 
     return (
@@ -27,7 +27,7 @@ export default function Header() {
                         {navLinks.map((link) => {
                             const isActive = pathname === link.href ||
                                 (link.href === '/inventory' && pathname?.startsWith('/inventory')) ||
-                                (link.href === '/payment-methods' && pathname?.startsWith('/payment-methods'));
+                                (link.href === '/settings' && pathname?.startsWith('/settings'));
 
                             return (
                                 <Link

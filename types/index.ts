@@ -41,6 +41,11 @@ export interface Inventory {
     tracking_number: string | null;
     carrier: string | null;
     serial_number: string | null;
+    // 外部キー
+    payment_method_id: string | null;
+    apple_account_id: string | null;
+    shipping_address_id: string | null;
+    mobile_line_id: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -71,6 +76,11 @@ export interface InventoryInput {
     tracking_number?: string;
     carrier?: string;
     serial_number?: string;
+    // 外部キー
+    payment_method_id?: string;
+    apple_account_id?: string;
+    shipping_address_id?: string;
+    mobile_line_id?: string;
 }
 
 // Status labels and colors
@@ -120,6 +130,7 @@ export interface PaymentMethod {
     payment_month_offset: number | null;
     credit_limit: number | null;
     is_active: boolean;
+    last_used_at: string | null;
     notes: string | null;
     created_at: string;
     updated_at: string;
@@ -153,6 +164,88 @@ export interface EarlyRepaymentInput {
     target_month?: string | null;
     notes?: string | null;
 }
+
+// Apple Account types
+export interface AppleAccount {
+    id: string;
+    email: string;
+    name: string | null;
+    phone_number: string | null;
+    is_active: boolean;
+    last_used_at: string | null;
+    order_count: number;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface AppleAccountInput {
+    email: string;
+    name?: string | null;
+    phone_number?: string | null;
+    is_active?: boolean;
+    notes?: string | null;
+}
+
+// Shipping Address types
+export interface ShippingAddress {
+    id: string;
+    name: string;
+    postal_code: string | null;
+    address: string;
+    address_variant: string | null;
+    phone_number: string | null;
+    is_active: boolean;
+    last_used_at: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ShippingAddressInput {
+    name: string;
+    postal_code?: string | null;
+    address: string;
+    address_variant?: string | null;
+    phone_number?: string | null;
+    is_active?: boolean;
+    notes?: string | null;
+}
+
+// Mobile Line types
+export interface MobileLine {
+    id: string;
+    name: string;
+    carrier: string | null;
+    phone_number: string | null;
+    is_active: boolean;
+    last_used_at: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface MobileLineInput {
+    name: string;
+    carrier?: string | null;
+    phone_number?: string | null;
+    is_active?: boolean;
+    notes?: string | null;
+}
+
+// Carrier options
+export const CARRIER_OPTIONS = [
+    'docomo',
+    'au',
+    'softbank',
+    'rakuten',
+    'ahamo',
+    'povo',
+    'LINEMO',
+    'UQ mobile',
+    'Y!mobile',
+    'その他',
+] as const;
 
 // Sales destination options
 export const SOLD_TO_OPTIONS = [
