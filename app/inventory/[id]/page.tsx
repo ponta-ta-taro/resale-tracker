@@ -136,18 +136,18 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                 <div className="bg-white p-6 rounded-lg shadow mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">ステータス</h3>
+                            <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${STATUS_COLORS[inventory.status]}`}>
+                                {STATUS_LABELS[inventory.status]}
+                            </span>
+                        </div>
+                        <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">機種</h3>
                             <p className="text-lg font-semibold text-gray-900">{inventory.model_name}</p>
                         </div>
                         <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">容量</h3>
                             <p className="text-lg font-semibold text-gray-900">{inventory.storage}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">ステータス</h3>
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[inventory.status]}`}>
-                                {STATUS_LABELS[inventory.status]}
-                            </span>
                         </div>
                         <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">利益</h3>
