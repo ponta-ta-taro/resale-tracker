@@ -85,10 +85,24 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
         if (models.length > 0 && selectedModels.length === 0) {
             setSelectedModels(models.slice(0, 3))
         }
-    }, [models])
+    }, [models.length]) // models.lengthのみを監視
+
+    // データを前処理: 同じ日付・同じ機種の場合、最新のデータのみを残す
+    const latestDataPerDateModel = data.reduce((acc, item) => {
+        const date = new Date(item.captured_at).toLocaleDateString('ja-JP')
+        const modelKey = `${item.model_name} ${item.storage}`
+        const key = `${date}_${modelKey}`
+        const timestamp = new Date(item.captured_at).getTime()
+
+        if (!acc[key] || timestamp > acc[key].timestamp) {
+            acc[key] = { ...item, timestamp }
+        }
+
+        return acc
+    }, {} as Record<string, PriceHistory & { timestamp: number }>)
 
     // グラフ用データを整形
-    const chartData = data
+    const chartData = Object.values(latestDataPerDateModel)
         .filter(item => selectedModels.includes(`${item.model_name} ${item.storage}`))
         .reduce((acc, item) => {
             const date = new Date(item.captured_at).toLocaleDateString('ja-JP')
@@ -96,19 +110,11 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
 
             const existing = acc.find(d => d.date === date)
             if (existing) {
-                // 同じ日付のデータが既にある場合、より新しいデータで上書き
-                const existingTimestamp = existing[`${modelKey}_timestamp`]
-                const currentTimestamp = new Date(item.captured_at).getTime()
-
-                if (!existingTimestamp || currentTimestamp > existingTimestamp) {
-                    existing[modelKey] = item.price
-                    existing[`${modelKey}_timestamp`] = currentTimestamp
-                }
+                existing[modelKey] = item.price
             } else {
                 acc.push({
                     date,
-                    [modelKey]: item.price,
-                    [`${modelKey}_timestamp`]: new Date(item.captured_at).getTime()
+                    [modelKey]: item.price
                 })
             }
 
