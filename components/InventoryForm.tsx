@@ -128,16 +128,18 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     ) => {
         const { name, value } = e.target;
 
+        // 数値フィールドは空文字をnullに変換（undefinedだとJSONに含まれないため）
         const numericFields = ['purchase_price', 'expected_price', 'actual_price'];
         if (numericFields.includes(name)) {
             setFormData(prev => ({
                 ...prev,
-                [name]: value === '' ? undefined : Number(value),
+                [name]: value === '' ? null : Number(value),
             }));
         } else {
+            // 空文字はそのまま送信（APIでnullに変換される）
             setFormData(prev => ({
                 ...prev,
-                [name]: value === '' ? undefined : value,
+                [name]: value,
             }));
         }
     };
@@ -243,7 +245,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
 
                     {/* Row 3 */}
                     <div>
-                        <label className={labelClass}>💳 支払い方法</label>
+                        <label className={labelClass}>支払い方法</label>
                         <select
                             name="payment_method_id"
                             value={formData.payment_method_id || ''}
@@ -262,7 +264,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         )}
                     </div>
                     <div>
-                        <label className={labelClass}>🍎 購入Apple ID</label>
+                        <label className={labelClass}>購入Apple ID</label>
                         <select
                             name="apple_id_used"
                             value={formData.apple_id_used || ''}

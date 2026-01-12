@@ -57,9 +57,9 @@ export interface InventoryInput {
     storage: string;
     color?: string;
     status: InventoryStatus;
-    purchase_price?: number;
-    expected_price?: number;
-    actual_price?: number;
+    purchase_price?: number | null;
+    expected_price?: number | null;
+    actual_price?: number | null;
     purchase_source?: string;
     arrived_at?: string;
     sold_at?: string;
