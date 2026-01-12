@@ -330,7 +330,6 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             // 追加フィールド
                             tracking_number: inventory.tracking_number || undefined,
                             carrier: inventory.carrier || undefined,
-                            serial_number: inventory.serial_number || undefined,
                             payment_method_id: inventory.payment_method_id || undefined,
                             apple_id_used: inventory.apple_id_used || undefined,
                         }}

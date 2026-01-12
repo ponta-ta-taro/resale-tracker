@@ -39,7 +39,6 @@ export interface Inventory {
     sold_to: string | null;
     tracking_number: string | null;
     carrier: string | null;
-    serial_number: string | null;
     // 外部キー（支払い方法のみ）
     payment_method_id: string | null;
     // JOINで取得する支払い方法名
@@ -74,7 +73,6 @@ export interface InventoryInput {
     sold_to?: string;
     tracking_number?: string;
     carrier?: string;
-    serial_number?: string;
     // 外部キー（支払い方法のみ）
     payment_method_id?: string;
     // シンプルなテキストフィールド
