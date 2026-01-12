@@ -106,13 +106,18 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) throw new Error('Failed to save inventory');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error:', errorData);
+                throw new Error(errorData.details || errorData.error || 'Failed to save inventory');
+            }
 
             router.push('/inventory');
             router.refresh();
         } catch (error) {
             console.error('Error saving inventory:', error);
-            alert('保存に失敗しました');
+            const message = error instanceof Error ? error.message : '不明なエラー';
+            alert(`保存に失敗しました: ${message}`);
         } finally {
             setLoading(false);
         }

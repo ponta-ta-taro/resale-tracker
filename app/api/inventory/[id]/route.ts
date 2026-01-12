@@ -57,7 +57,18 @@ export async function PUT(
         console.log('PUT /api/inventory/[id] - Received body:', JSON.stringify(body, null, 2));
 
         // Sanitize the data - remove fields that shouldn't be updated
-        const { id, created_at, updated_at, ...updateData } = body;
+        // Also remove JOIN results, computed fields, and deprecated fields
+        const { 
+            id, 
+            created_at, 
+            updated_at, 
+            payment_methods,  // JOINで取得したオブジェクト
+            payment_method_name,  // 計算フィールド
+            user_id,  // user_idは変更不可
+            imei,  // 削除済みカラム
+            serial_number,  // 削除済みカラム
+            ...updateData 
+        } = body;
 
         // Convert empty strings to null for optional fields
         const sanitizedData: any = {};
