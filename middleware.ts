@@ -54,16 +54,22 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
 
     // ログインページとコールバックは認証不要
-    if (request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/auth/callback')) {
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth/callback')
+
+    if (isAuthRoute) {
+        // 既にログイン済みの場合はダッシュボードへ
+        if (session) {
+            return NextResponse.redirect(new URL('/', request.url))
+        }
         return response
     }
 
     // 未認証の場合はログインページへ
-    if (!user) {
+    if (!session) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
@@ -71,5 +77,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
 }
