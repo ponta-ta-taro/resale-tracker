@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET() {
     try {
+        const supabase = await createServerSupabaseClient()
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         // 各機種の最新価格を取得
         const { data, error } = await supabase
             .from('price_history')
