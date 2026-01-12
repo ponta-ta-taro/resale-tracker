@@ -13,6 +13,10 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
     const [data, setData] = useState<PriceHistory[]>(initialData || [])
     const [loading, setLoading] = useState(!initialData)
     const [selectedModels, setSelectedModels] = useState<string[]>([])
+    const [initialized, setInitialized] = useState(false)
+    const [yAxisMode, setYAxisMode] = useState<'full' | 'auto' | 'custom'>('auto')
+    const [customMin, setCustomMin] = useState<string>('0')
+    const [customMax, setCustomMax] = useState<string>('350000')
 
     useEffect(() => {
         if (!initialData) {
@@ -80,12 +84,13 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
     // 機種+容量の一覧を取得してソート
     const models = sortModels(Array.from(new Set(data.map(item => `${item.model_name} ${item.storage}`))))
 
-    // 初期選択（最初の3機種）
+    // 初期選択（最初の3機種）- initializedフラグで一度だけ実行
     useEffect(() => {
-        if (models.length > 0 && selectedModels.length === 0) {
+        if (models.length > 0 && !initialized) {
             setSelectedModels(models.slice(0, 3))
+            setInitialized(true)
         }
-    }, [models.length]) // models.lengthのみを監視
+    }, [models.length, initialized])
 
     // データを前処理: 同じ日付・同じ機種の場合、最新のデータのみを残す
     const latestDataPerDateModel = data.reduce((acc, item) => {
@@ -121,6 +126,43 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
             return acc
         }, [] as any[])
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    // Y軸の範囲を計算
+    const calculateYAxisDomain = (): [number, number] => {
+        if (yAxisMode === 'full') {
+            return [0, 350000]
+        }
+
+        if (yAxisMode === 'custom') {
+            return [parseInt(customMin) || 0, parseInt(customMax) || 350000]
+        }
+
+        // auto: データから最小値・最大値を計算
+        if (chartData.length === 0) {
+            return [0, 350000]
+        }
+
+        let min = Infinity
+        let max = -Infinity
+
+        chartData.forEach(dataPoint => {
+            selectedModels.forEach(model => {
+                const value = dataPoint[model]
+                if (value !== undefined && value !== null) {
+                    min = Math.min(min, value)
+                    max = Math.max(max, value)
+                }
+            })
+        })
+
+        if (min === Infinity || max === -Infinity) {
+            return [0, 350000]
+        }
+
+        return [Math.max(0, min - 5000), max + 5000]
+    }
+
+    const yAxisDomain = calculateYAxisDomain()
 
     const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#a855f7', '#14b8a6', '#f43f5e']
 
@@ -187,6 +229,62 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
                 </div>
             </div>
 
+            {/* Y軸レンジ選択 */}
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Y軸レンジ
+                </label>
+                <div className="flex flex-wrap gap-2 items-center">
+                    <button
+                        onClick={() => setYAxisMode('auto')}
+                        className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'auto'
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            }`}
+                    >
+                        自動調整
+                    </button>
+                    <button
+                        onClick={() => setYAxisMode('full')}
+                        className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'full'
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            }`}
+                    >
+                        全体表示
+                    </button>
+                    <button
+                        onClick={() => setYAxisMode('custom')}
+                        className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'custom'
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            }`}
+                    >
+                        カスタム
+                    </button>
+
+                    {yAxisMode === 'custom' && (
+                        <div className="flex items-center gap-2 ml-2">
+                            <input
+                                type="number"
+                                value={customMin}
+                                onChange={(e) => setCustomMin(e.target.value)}
+                                placeholder="最小値"
+                                className="w-24 px-2 py-1 text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                            />
+                            <span className="text-sm text-gray-500">〜</span>
+                            <input
+                                type="number"
+                                value={customMax}
+                                onChange={(e) => setCustomMax(e.target.value)}
+                                placeholder="最大値"
+                                className="w-24 px-2 py-1 text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* データ状態の警告メッセージ */}
             {chartData.length === 1 && (
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -213,6 +311,7 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
                         tick={{ fontSize: 12 }}
                     />
                     <YAxis
+                        domain={yAxisDomain}
                         tick={{ fontSize: 12 }}
                         tickFormatter={(value) => `¥${(value / 1000).toFixed(0)}k`}
                     />
