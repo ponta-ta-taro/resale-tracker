@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import type { InventoryInput } from '@/types';
 
@@ -8,7 +8,14 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const { data, error } = await supabase
             .from('inventory')
             .select(`
@@ -51,23 +58,30 @@ export async function PUT(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const body: any = await request.json();
 
         console.log('PUT /api/inventory/[id] - Received body:', JSON.stringify(body, null, 2));
 
         // Sanitize the data - remove fields that shouldn't be updated
         // Also remove JOIN results, computed fields, and deprecated fields
-        const { 
-            id, 
-            created_at, 
-            updated_at, 
+        const {
+            id,
+            created_at,
+            updated_at,
             payment_methods,  // JOINで取得したオブジェクト
             payment_method_name,  // 計算フィールド
             user_id,  // user_idは変更不可
             imei,  // 削除済みカラム
             serial_number,  // 削除済みカラム
-            ...updateData 
+            ...updateData
         } = body;
 
         // Convert empty strings to null for optional fields
@@ -128,7 +142,14 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const { error } = await supabase
             .from('inventory')
             .delete()

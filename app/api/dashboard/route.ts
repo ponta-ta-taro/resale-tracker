@@ -1,11 +1,18 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
 
-        // Fetch all inventory
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Fetch all inventory (RLS will filter to user's data)
         const { data: inventory, error: invError } = await supabase
             .from('inventory')
             .select('*');

@@ -1,17 +1,26 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import type { InventoryInput } from '@/types';
 
 // GET: Fetch all inventory items
 export async function GET(request: Request) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
 
         // Optional filters
         const status = searchParams.get('status');
         const model = searchParams.get('model');
 
+        // RLS will automatically filter to user's data
         let query = supabase
             .from('inventory')
             .select('*')
@@ -45,15 +54,25 @@ export async function GET(request: Request) {
     }
 }
 
+
 // POST: Create new inventory item
 export async function POST(request: Request) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body: InventoryInput = await request.json();
 
+        // Automatically add user_id
         const { data, error } = await supabase
             .from('inventory')
-            .insert([body])
+            .insert([{ ...body, user_id: user.id }])
             .select()
             .single();
 

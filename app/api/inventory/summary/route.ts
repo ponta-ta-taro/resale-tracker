@@ -1,12 +1,19 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import { calculateProfit, Inventory } from '@/types';
 
 export async function GET() {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerSupabaseClient();
 
-        // Fetch all inventory items
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Fetch all inventory items (RLS will filter to user's data)
         const { data: inventory, error } = await supabase
             .from('inventory')
             .select('*');

@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from './AuthProvider';
 
 export default function Header() {
     const pathname = usePathname();
+    const { user, signOut } = useAuth();
 
     const navLinks = [
         { href: '/', label: 'ダッシュボード' },
@@ -36,8 +38,8 @@ export default function Header() {
                                     key={link.href}
                                     href={link.href}
                                     className={`px-4 py-2 rounded-md font-medium transition-colors ${isActive
-                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                 >
                                     {link.label}
@@ -45,6 +47,23 @@ export default function Header() {
                             );
                         })}
                     </nav>
+
+                    {/* User Info & Logout */}
+                    <div className="flex items-center gap-4">
+                        {user && (
+                            <>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    {user.email}
+                                </span>
+                                <button
+                                    onClick={signOut}
+                                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    ログアウト
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </header>
