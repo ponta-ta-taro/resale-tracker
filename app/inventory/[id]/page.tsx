@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import InventoryForm from '@/components/InventoryForm';
-import { Inventory, STATUS_LABELS, STATUS_COLORS, calculateProfit, calculateProfitRate } from '@/types';
+import { Inventory, STATUS_LABELS, STATUS_COLORS_DETAIL, calculateProfit, calculateProfitRate } from '@/types';
 
 export default function InventoryDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -132,27 +132,15 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                     </button>
                 </div>
 
-                {/* Status Card - Large and Prominent */}
-                {(() => {
-                    const statusStyles: Record<string, string> = {
-                        ordered: 'bg-blue-50 border-blue-400 text-blue-800',
-                        shipped: 'bg-orange-50 border-orange-400 text-orange-800',
-                        arrived: 'bg-green-50 border-green-400 text-green-800',
-                        selling: 'bg-yellow-50 border-yellow-400 text-yellow-800',
-                        sold: 'bg-purple-50 border-purple-400 text-purple-800',
-                        paid: 'bg-gray-100 border-gray-400 text-gray-700',
-                    };
-                    const style = statusStyles[inventory.status] || statusStyles.ordered;
-                    return (
-                        <div className={`${style} border-2 rounded-lg p-4 mb-6 text-center`}>
-                            <p className="text-2xl font-bold">{STATUS_LABELS[inventory.status]}</p>
-                        </div>
-                    );
-                })()}
-
                 {/* Summary Card */}
                 <div className="bg-white p-6 rounded-lg shadow mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">ステータス</h3>
+                            <span className={`px-4 py-2 inline-flex items-center text-base font-semibold rounded-lg border-2 ${STATUS_COLORS_DETAIL[inventory.status]}`}>
+                                {STATUS_LABELS[inventory.status]}
+                            </span>
+                        </div>
                         <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">機種</h3>
                             <p className="text-lg font-semibold text-gray-900">{inventory.model_name}</p>

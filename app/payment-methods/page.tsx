@@ -153,7 +153,7 @@ export default function PaymentMethodsPage() {
                 <div className="max-w-4xl mx-auto">
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">支払い方法管理</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">支払い設定</h1>
                             <p className="text-gray-600">クレジットカード・デビットカード・現金の管理</p>
                         </div>
                         <button

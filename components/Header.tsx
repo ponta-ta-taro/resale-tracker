@@ -11,7 +11,7 @@ export default function Header() {
         { href: '/prices', label: '価格一覧' },
         { href: '/inventory', label: '在庫管理' },
         { href: '/apple-accounts', label: 'Apple ID' },
-        { href: '/settings', label: '設定' },
+        { href: '/settings', label: '支払い設定' },
     ];
 
     return (

@@ -91,12 +91,22 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
 
 
 export const STATUS_COLORS: Record<InventoryStatus, string> = {
-    ordered: 'bg-blue-100 text-blue-800',
-    shipped: 'bg-cyan-100 text-cyan-800',
-    arrived: 'bg-purple-100 text-purple-800',
-    selling: 'bg-yellow-100 text-yellow-800',
-    sold: 'bg-green-100 text-green-800',
-    paid: 'bg-gray-100 text-gray-800',
+    ordered: 'bg-blue-100 text-blue-700',
+    shipped: 'bg-orange-100 text-orange-700',
+    arrived: 'bg-green-100 text-green-700',
+    selling: 'bg-yellow-100 text-yellow-700',
+    sold: 'bg-purple-100 text-purple-700',
+    paid: 'bg-gray-100 text-gray-700',
+};
+
+// 詳細ページ用のステータス色（枠線付き）
+export const STATUS_COLORS_DETAIL: Record<InventoryStatus, string> = {
+    ordered: 'bg-blue-100 border-blue-500 text-blue-700',
+    shipped: 'bg-orange-100 border-orange-500 text-orange-700',
+    arrived: 'bg-green-100 border-green-500 text-green-700',
+    selling: 'bg-yellow-100 border-yellow-500 text-yellow-700',
+    sold: 'bg-purple-100 border-purple-500 text-purple-700',
+    paid: 'bg-gray-100 border-gray-500 text-gray-700',
 };
 
 // Payment card options (legacy - will be replaced by payment_methods)

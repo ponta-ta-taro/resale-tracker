@@ -128,7 +128,7 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                                     {item.storage}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[item.status]}`}>
+                                    <span className={`px-3 py-1 inline-flex items-center justify-center text-sm font-medium rounded-full ${STATUS_COLORS[item.status]}`}>
                                         {STATUS_LABELS[item.status]}
                                     </span>
                                 </td>
