@@ -239,10 +239,6 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             <span className="ml-2 text-gray-900">{inventory.color || '-'}</span>
                         </div>
                         <div>
-                            <span className="text-gray-500">IMEI:</span>
-                            <span className="ml-2 text-gray-900">{inventory.imei || '-'}</span>
-                        </div>
-                        <div>
                             <span className="text-gray-500">注文番号:</span>
                             <span className="ml-2 text-gray-900">{inventory.order_number || '-'}</span>
                         </div>
@@ -315,23 +311,28 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             model_name: inventory.model_name,
                             storage: inventory.storage,
                             color: inventory.color || undefined,
-                            imei: inventory.imei || undefined,
                             status: inventory.status,
                             purchase_price: inventory.purchase_price || undefined,
                             expected_price: inventory.expected_price || undefined,
                             actual_price: inventory.actual_price || undefined,
                             purchase_source: inventory.purchase_source || undefined,
-
-                            arrived_at: inventory.arrived_at || undefined,
-                            sold_at: inventory.sold_at || undefined,
-                            paid_at: inventory.paid_at || undefined,
+                            // 日付はYYYY-MM-DD形式に変換
+                            arrived_at: inventory.arrived_at ? inventory.arrived_at.split('T')[0] : undefined,
+                            sold_at: inventory.sold_at ? inventory.sold_at.split('T')[0] : undefined,
+                            paid_at: inventory.paid_at ? inventory.paid_at.split('T')[0] : undefined,
                             notes: inventory.notes || undefined,
                             order_number: inventory.order_number || undefined,
-                            order_date: inventory.order_date || undefined,
-                            expected_delivery_start: inventory.expected_delivery_start || undefined,
-                            expected_delivery_end: inventory.expected_delivery_end || undefined,
+                            order_date: inventory.order_date ? inventory.order_date.split('T')[0] : undefined,
+                            expected_delivery_start: inventory.expected_delivery_start ? inventory.expected_delivery_start.split('T')[0] : undefined,
+                            expected_delivery_end: inventory.expected_delivery_end ? inventory.expected_delivery_end.split('T')[0] : undefined,
                             payment_card: inventory.payment_card || undefined,
                             sold_to: inventory.sold_to || undefined,
+                            // 追加フィールド
+                            tracking_number: inventory.tracking_number || undefined,
+                            carrier: inventory.carrier || undefined,
+                            serial_number: inventory.serial_number || undefined,
+                            payment_method_id: inventory.payment_method_id || undefined,
+                            apple_id_used: inventory.apple_id_used || undefined,
                         }}
                     />
                 </div>

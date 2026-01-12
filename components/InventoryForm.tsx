@@ -21,7 +21,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
         color: initialData?.color || '',
-        imei: initialData?.imei || '',
         status: initialData?.status || 'ordered',
         purchase_price: initialData?.purchase_price || undefined,
         expected_price: initialData?.expected_price || undefined,
@@ -192,20 +191,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         type="text"
                         name="color"
                         value={formData.color || ''}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                {/* IMEI */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        IMEI
-                    </label>
-                    <input
-                        type="text"
-                        name="imei"
-                        value={formData.imei || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />

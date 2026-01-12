@@ -22,7 +22,6 @@ export interface Inventory {
     model_name: string;
     storage: string;
     color: string | null;
-    imei: string | null;
     status: 'ordered' | 'shipped' | 'arrived' | 'selling' | 'sold' | 'paid';
     purchase_price: number | null;
     expected_price: number | null;
@@ -56,7 +55,6 @@ export interface InventoryInput {
     model_name: string;
     storage: string;
     color?: string;
-    imei?: string;
     status: InventoryStatus;
     purchase_price?: number;
     expected_price?: number;
