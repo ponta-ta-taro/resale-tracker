@@ -108,8 +108,8 @@ export async function GET() {
         const schedule: PaymentScheduleItem[] = [];
 
         for (const pm of paymentMethods || []) {
-            // この支払い方法で購入した在庫を抽出
-            const pmInventory = inventory?.filter(inv => inv.payment_card === pm.name) || [];
+            // この支払い方法で購入した在庫を抽出（payment_method_idで外部キーマッチング）
+            const pmInventory = inventory?.filter(inv => inv.payment_method_id === pm.id) || [];
 
             let currentMonthAmount = 0;
             let currentMonthCount = 0;
