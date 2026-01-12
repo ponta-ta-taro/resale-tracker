@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import type { InventoryInput } from '@/types';
 
-// GET: Fetch single inventory item
+// GET: Fetch single inventory item with payment method name
 export async function GET(
     request: Request,
     { params }: { params: { id: string } }
@@ -11,7 +11,13 @@ export async function GET(
         const supabase = await createClient();
         const { data, error } = await supabase
             .from('inventory')
-            .select('*')
+            .select(`
+                *,
+                payment_methods (
+                    id,
+                    name
+                )
+            `)
             .eq('id', params.id)
             .single();
 
@@ -23,7 +29,13 @@ export async function GET(
             );
         }
 
-        return NextResponse.json(data);
+        // Flatten payment_methods to payment_method_name for convenience
+        const result = {
+            ...data,
+            payment_method_name: data.payment_methods?.name || null,
+        };
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Unexpected error:', error);
         return NextResponse.json(

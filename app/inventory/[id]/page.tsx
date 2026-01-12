@@ -255,8 +255,8 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             </span>
                         </div>
                         <div>
-                            <span className="text-gray-500">支払いカード:</span>
-                            <span className="ml-2 text-gray-900">{inventory.payment_card || '-'}</span>
+                            <span className="text-gray-500">支払い方法:</span>
+                            <span className="ml-2 text-gray-900">{inventory.payment_method_name || '-'}</span>
                         </div>
                         <div>
                             <span className="text-gray-500">仕入先:</span>

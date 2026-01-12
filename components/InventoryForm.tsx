@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PaymentMethod, AppleAccount } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PURCHASE_SOURCE_OPTIONS, PaymentMethod, AppleAccount } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -219,13 +219,17 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         仕入先
                     </label>
-                    <input
-                        type="text"
+                    <select
                         name="purchase_source"
                         value={formData.purchase_source || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    >
+                        <option value="">選択してください</option>
+                        {PURCHASE_SOURCE_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Order Number */}

@@ -42,6 +42,8 @@ export interface Inventory {
     serial_number: string | null;
     // 外部キー（支払い方法のみ）
     payment_method_id: string | null;
+    // JOINで取得する支払い方法名
+    payment_method_name?: string | null;
     // シンプルなテキストフィールド
     apple_id_used: string | null;
     created_at: string;
@@ -176,6 +178,12 @@ export interface AppleAccountInput {
     email: string;
     notes?: string | null;
 }
+
+// Purchase source options (仕入先)
+export const PURCHASE_SOURCE_OPTIONS = [
+    'Apple Store',
+    'Amazon',
+] as const;
 
 // Sales destination options
 export const SOLD_TO_OPTIONS = [
