@@ -163,8 +163,8 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
                                 }
                             }}
                             className={`px-3 py-1 rounded-md text-sm transition-colors ${selectedModels.includes(model)
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                 }`}
                         >
                             {model}
@@ -172,6 +172,23 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
                     ))}
                 </div>
             </div>
+
+            {/* データ状態の警告メッセージ */}
+            {chartData.length === 1 && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                        ℹ️ データが1日分のみです。複数日のデータが蓄積されると価格推移が表示されます。
+                    </p>
+                </div>
+            )}
+
+            {chartData.length === 0 && (
+                <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                    <p className="text-sm text-gray-600">
+                        選択された機種のデータがありません。別の機種を選択してください。
+                    </p>
+                </div>
+            )}
 
             {/* グラフ */}
             <ResponsiveContainer width="100%" height={400}>
@@ -197,8 +214,9 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
                             dataKey={model}
                             stroke={colors[index % colors.length]}
                             strokeWidth={2}
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6 }}
+                            dot={{ r: 6 }}
+                            activeDot={{ r: 8 }}
+                            connectNulls
                         />
                     ))}
                 </LineChart>
