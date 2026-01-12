@@ -96,11 +96,19 @@ export default function PriceChart({ data: initialData, modelName }: PriceChartP
 
             const existing = acc.find(d => d.date === date)
             if (existing) {
-                existing[modelKey] = item.price
+                // 同じ日付のデータが既にある場合、より新しいデータで上書き
+                const existingTimestamp = existing[`${modelKey}_timestamp`]
+                const currentTimestamp = new Date(item.captured_at).getTime()
+
+                if (!existingTimestamp || currentTimestamp > existingTimestamp) {
+                    existing[modelKey] = item.price
+                    existing[`${modelKey}_timestamp`] = currentTimestamp
+                }
             } else {
                 acc.push({
                     date,
-                    [modelKey]: item.price
+                    [modelKey]: item.price,
+                    [`${modelKey}_timestamp`]: new Date(item.captured_at).getTime()
                 })
             }
 
