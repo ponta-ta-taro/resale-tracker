@@ -45,6 +45,15 @@ export interface Inventory {
     payment_method_name?: string | null;
     // シンプルなテキストフィールド
     apple_id_used: string | null;
+    // 連絡先情報の外部キー
+    contact_email_id: string | null;
+    contact_phone_id: string | null;
+    credit_card_id: string | null;
+    apple_account: string | null;
+    // JOINで取得する連絡先情報
+    contact_email?: string | null;
+    contact_phone?: string | null;
+    credit_card?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -77,6 +86,11 @@ export interface InventoryInput {
     payment_method_id?: string;
     // シンプルなテキストフィールド
     apple_id_used?: string;
+    // 連絡先情報の外部キー
+    contact_email_id?: string;
+    contact_phone_id?: string;
+    credit_card_id?: string;
+    apple_account?: string;
 }
 
 // Status labels and colors
@@ -184,6 +198,48 @@ export interface AppleAccount {
 export interface AppleAccountInput {
     name: string;
     email: string;
+    notes?: string | null;
+}
+
+// Contact Email types
+export interface ContactEmail {
+    id: string;
+    user_id: string;
+    email: string;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface ContactEmailInput {
+    email: string;
+    notes?: string | null;
+}
+
+// Contact Phone types
+export interface ContactPhone {
+    id: string;
+    user_id: string;
+    phone: string;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface ContactPhoneInput {
+    phone: string;
+    notes?: string | null;
+}
+
+// Credit Card types
+export interface CreditCard {
+    id: string;
+    user_id: string;
+    card_name: string;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface CreditCardInput {
+    card_name: string;
     notes?: string | null;
 }
 

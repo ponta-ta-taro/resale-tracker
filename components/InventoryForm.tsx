@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PURCHASE_SOURCE_OPTIONS, PaymentMethod, AppleAccount } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PURCHASE_SOURCE_OPTIONS, PaymentMethod, AppleAccount, ContactEmail, ContactPhone, CreditCard } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -18,6 +18,9 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     const [loading, setLoading] = useState(false);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [appleAccounts, setAppleAccounts] = useState<AppleAccount[]>([]);
+    const [contactEmails, setContactEmails] = useState<ContactEmail[]>([]);
+    const [contactPhones, setContactPhones] = useState<ContactPhone[]>([]);
+    const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
     const [formData, setFormData] = useState<InventoryInput>({
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
@@ -41,25 +44,44 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         carrier: initialData?.carrier || '',
         payment_method_id: initialData?.payment_method_id || '',
         apple_id_used: initialData?.apple_id_used || '',
+        contact_email_id: initialData?.contact_email_id || '',
+        contact_phone_id: initialData?.contact_phone_id || '',
+        credit_card_id: initialData?.credit_card_id || '',
+        apple_account: initialData?.apple_account || '',
     });
 
-    // Fetch payment methods and apple accounts on mount
+    // Fetch payment methods, apple accounts, and contact info on mount
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
-                const [pmRes, aaRes] = await Promise.all([
+                const [pmRes, aaRes, emailRes, phoneRes, cardRes] = await Promise.all([
                     fetch('/api/payment-methods'),
                     fetch('/api/apple-accounts'),
+                    fetch('/api/contact-emails'),
+                    fetch('/api/contact-phones'),
+                    fetch('/api/credit-cards'),
                 ]);
-                
+
                 const pmData = await pmRes.json();
                 const aaData = await aaRes.json();
-                
+                const emailData = await emailRes.json();
+                const phoneData = await phoneRes.json();
+                const cardData = await cardRes.json();
+
                 if (pmData.data) {
                     setPaymentMethods(pmData.data.filter((pm: PaymentMethod) => pm.is_active));
                 }
                 if (aaData.data) {
                     setAppleAccounts(aaData.data);
+                }
+                if (emailData.data) {
+                    setContactEmails(emailData.data);
+                }
+                if (phoneData.data) {
+                    setContactPhones(phoneData.data);
+                }
+                if (cardData.data) {
+                    setCreditCards(cardData.data);
                 }
             } catch (error) {
                 console.error('Error fetching master data:', error);
@@ -288,6 +310,80 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             </p>
                         )}
                     </div>
+                    <div></div>
+
+                    {/* Row 4 - Contact Information */}
+                    <div>
+                        <label className={labelClass}>Apple Account</label>
+                        <input
+                            type="text"
+                            name="apple_account"
+                            value={formData.apple_account || ''}
+                            onChange={handleChange}
+                            placeholder="例: ゲスト、個人用など"
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label className={labelClass}>連絡先メール</label>
+                        <select
+                            name="contact_email_id"
+                            value={formData.contact_email_id || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                        >
+                            <option value="">選択してください</option>
+                            {contactEmails.map(email => (
+                                <option key={email.id} value={email.id}>{email.email}</option>
+                            ))}
+                        </select>
+                        {contactEmails.length === 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
+                            </p>
+                        )}
+                    </div>
+                    <div>
+                        <label className={labelClass}>連絡先電話番号</label>
+                        <select
+                            name="contact_phone_id"
+                            value={formData.contact_phone_id || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                        >
+                            <option value="">選択してください</option>
+                            {contactPhones.map(phone => (
+                                <option key={phone.id} value={phone.id}>{phone.phone}</option>
+                            ))}
+                        </select>
+                        {contactPhones.length === 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Row 5 */}
+                    <div>
+                        <label className={labelClass}>クレジットカード</label>
+                        <select
+                            name="credit_card_id"
+                            value={formData.credit_card_id || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                        >
+                            <option value="">選択してください</option>
+                            {creditCards.map(card => (
+                                <option key={card.id} value={card.id}>{card.card_name}</option>
+                            ))}
+                        </select>
+                        {creditCards.length === 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
+                            </p>
+                        )}
+                    </div>
+                    <div></div>
                     <div></div>
                 </div>
             </div>

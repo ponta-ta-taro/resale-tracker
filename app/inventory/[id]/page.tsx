@@ -291,6 +291,24 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             <span className="text-gray-500">入金日:</span>
                             <span className="ml-2 text-gray-900">{formatDate(inventory.paid_at)}</span>
                         </div>
+
+                        {/* Contact Information */}
+                        <div>
+                            <span className="text-gray-500">Apple Account:</span>
+                            <span className="ml-2 text-gray-900">{inventory.apple_account || '-'}</span>
+                        </div>
+                        <div>
+                            <span className="text-gray-500">連絡先メール:</span>
+                            <span className="ml-2 text-gray-900">{inventory.contact_email || '-'}</span>
+                        </div>
+                        <div>
+                            <span className="text-gray-500">連絡先電話:</span>
+                            <span className="ml-2 text-gray-900">{inventory.contact_phone || '-'}</span>
+                        </div>
+                        <div>
+                            <span className="text-gray-500">クレジットカード:</span>
+                            <span className="ml-2 text-gray-900">{inventory.credit_card || '-'}</span>
+                        </div>
                     </div>
 
                     {inventory.notes && (
@@ -332,6 +350,11 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             carrier: inventory.carrier || undefined,
                             payment_method_id: inventory.payment_method_id || undefined,
                             apple_id_used: inventory.apple_id_used || undefined,
+                            // 連絡先情報
+                            contact_email_id: inventory.contact_email_id || undefined,
+                            contact_phone_id: inventory.contact_phone_id || undefined,
+                            credit_card_id: inventory.credit_card_id || undefined,
+                            apple_account: inventory.apple_account || undefined,
                         }}
                     />
                 </div>

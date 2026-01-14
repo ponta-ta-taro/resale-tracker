@@ -23,6 +23,15 @@ export async function GET(
                 payment_methods (
                     id,
                     name
+                ),
+                contact_emails (
+                    email
+                ),
+                contact_phones (
+                    phone
+                ),
+                credit_cards (
+                    card_name
                 )
             `)
             .eq('id', params.id)
@@ -36,10 +45,13 @@ export async function GET(
             );
         }
 
-        // Flatten payment_methods to payment_method_name for convenience
+        // Flatten joined data for convenience
         const result = {
             ...data,
             payment_method_name: data.payment_methods?.name || null,
+            contact_email: data.contact_emails?.email || null,
+            contact_phone: data.contact_phones?.phone || null,
+            credit_card: data.credit_cards?.card_name || null,
         };
 
         return NextResponse.json(result);
@@ -78,6 +90,12 @@ export async function PUT(
             updated_at,
             payment_methods,  // JOINで取得したオブジェクト
             payment_method_name,  // 計算フィールド
+            contact_emails,  // JOINで取得したオブジェクト
+            contact_phones,  // JOINで取得したオブジェクト
+            credit_cards,  // JOINで取得したオブジェクト
+            contact_email,  // 計算フィールド
+            contact_phone,  // 計算フィールド
+            credit_card,  // 計算フィールド
             user_id,  // user_idは変更不可
             imei,  // 削除済みカラム
             serial_number,  // 削除済みカラム
