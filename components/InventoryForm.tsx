@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PURCHASE_SOURCE_OPTIONS, PaymentMethod, AppleAccount, ContactEmail, ContactPhone, CreditCard } from '@/types';
+import { InventoryInput, InventoryStatus, STATUS_LABELS, SOLD_TO_OPTIONS, PURCHASE_SOURCE_OPTIONS, PaymentMethod, AppleAccount, ContactEmail, ContactPhone } from '@/types';
 
 interface InventoryFormProps {
     initialData?: InventoryInput & { id?: string };
@@ -20,7 +20,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     const [appleAccounts, setAppleAccounts] = useState<AppleAccount[]>([]);
     const [contactEmails, setContactEmails] = useState<ContactEmail[]>([]);
     const [contactPhones, setContactPhones] = useState<ContactPhone[]>([]);
-    const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
     const [formData, setFormData] = useState<InventoryInput>({
         model_name: initialData?.model_name || '',
         storage: initialData?.storage || '',
@@ -54,19 +53,17 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
-                const [pmRes, aaRes, emailRes, phoneRes, cardRes] = await Promise.all([
+                const [pmRes, aaRes, emailRes, phoneRes] = await Promise.all([
                     fetch('/api/payment-methods'),
                     fetch('/api/apple-accounts'),
                     fetch('/api/contact-emails'),
                     fetch('/api/contact-phones'),
-                    fetch('/api/credit-cards'),
                 ]);
 
                 const pmData = await pmRes.json();
                 const aaData = await aaRes.json();
                 const emailData = await emailRes.json();
                 const phoneData = await phoneRes.json();
-                const cardData = await cardRes.json();
 
                 if (pmData.data) {
                     setPaymentMethods(pmData.data.filter((pm: PaymentMethod) => pm.is_active));
@@ -79,9 +76,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                 }
                 if (phoneData.data) {
                     setContactPhones(phoneData.data);
-                }
-                if (cardData.data) {
-                    setCreditCards(cardData.data);
                 }
             } catch (error) {
                 console.error('Error fetching master data:', error);
@@ -362,29 +356,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             </p>
                         )}
                     </div>
-
-                    {/* Row 5 */}
-                    <div>
-                        <label className={labelClass}>クレジットカード</label>
-                        <select
-                            name="credit_card_id"
-                            value={formData.credit_card_id || ''}
-                            onChange={handleChange}
-                            className={inputClass}
-                        >
-                            <option value="">選択してください</option>
-                            {creditCards.map(card => (
-                                <option key={card.id} value={card.id}>{card.card_name}</option>
-                            ))}
-                        </select>
-                        {creditCards.length === 0 && (
-                            <p className="text-xs text-gray-500 mt-1">
-                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
-                            </p>
-                        )}
-                    </div>
-                    <div></div>
-                    <div></div>
                 </div>
             </div>
 

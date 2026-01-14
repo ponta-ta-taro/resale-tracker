@@ -229,20 +229,6 @@ export interface ContactPhoneInput {
     notes?: string | null;
 }
 
-// Credit Card types
-export interface CreditCard {
-    id: string;
-    user_id: string;
-    card_name: string;
-    notes: string | null;
-    created_at: string;
-}
-
-export interface CreditCardInput {
-    card_name: string;
-    notes?: string | null;
-}
-
 // Purchase source options (仕入先)
 export const PURCHASE_SOURCE_OPTIONS = [
     'Apple Store',
