@@ -173,6 +173,34 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
         console.log('\nLines containing "iPhone":');
         iphoneLines.forEach((line, i) => {
             console.log(`  [${i}]: "${line}"`);
+
+            // Show character codes for debugging
+            if (line.includes('iPhone') && line.includes('GB')) {
+                console.log(`  Character codes for line ${i}:`);
+                const chars = line.split('');
+                let output = '    ';
+                chars.forEach((char, idx) => {
+                    const code = char.charCodeAt(0);
+                    if (char === ' ') {
+                        output += `[SPACE:${code}] `;
+                    } else if (code < 32 || code === 127) {
+                        output += `[CTRL:${code}] `;
+                    } else if (code > 127) {
+                        output += `${char}(${code}) `;
+                    } else {
+                        output += `${char} `;
+                    }
+
+                    // Break into multiple lines for readability
+                    if (idx > 0 && idx % 20 === 0) {
+                        console.log(output);
+                        output = '    ';
+                    }
+                });
+                if (output.trim().length > 0) {
+                    console.log(output);
+                }
+            }
         });
     }
 
