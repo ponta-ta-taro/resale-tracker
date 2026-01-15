@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { detectEmailType, parseAppleOrderEmail, parseAppleShippingEmail, formatDateForInput } from '@/lib/appleMailParser';
 
 interface WebhookPayload {
@@ -345,11 +346,20 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
         console.log(`  ✅ Found ${orders.length} order(s)`);
 
         // Create service role client to bypass RLS
-        const supabase = await createClient();
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        );
 
         // Look up user from contact_emails table using sender email
         console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
-        const { data: contactEmail, error: lookupError } = await supabase
+        const { data: contactEmail, error: lookupError } = await supabaseAdmin
             .from('contact_emails')
             .select('user_id')
             .eq('email', fromEmail)
@@ -369,7 +379,7 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
             console.log(`  📝 Order: ${order.orderNumber} - ${order.modelName} ${order.storage}`);
 
             // Check if order already exists
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseAdmin
                 .from('inventory')
                 .select('id')
                 .eq('order_number', order.orderNumber)
@@ -383,7 +393,7 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
             }
 
             // Insert new inventory item
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from('inventory')
                 .insert({
                     user_id: userId,
@@ -432,11 +442,20 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
         console.log(`     Tracking: ${shippingInfo.trackingNumber}`);
 
         // Create service role client to bypass RLS
-        const supabase = await createClient();
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        );
 
         // Look up user from contact_emails table using sender email
         console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
-        const { data: contactEmail, error: lookupError } = await supabase
+        const { data: contactEmail, error: lookupError } = await supabaseAdmin
             .from('contact_emails')
             .select('user_id')
             .eq('email', fromEmail)
@@ -453,7 +472,7 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
         console.log('  ✅ Found user_id:', userId);
 
         // Find inventory item by order number
-        const { data: inventory, error: fetchError } = await supabase
+        const { data: inventory, error: fetchError } = await supabaseAdmin
             .from('inventory')
             .select('id, status')
             .eq('order_number', shippingInfo.orderNumber)
@@ -465,7 +484,7 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
         }
 
         // Update with shipping information
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
             .from('inventory')
             .update({
                 status: 'shipped',
