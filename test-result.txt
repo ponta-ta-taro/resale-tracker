@@ -1,0 +1,40 @@
+﻿Testing parseAppleOrderEmail...
+
+Input text:
+縺疲ｳｨ譁・・螳ｹ繧偵＃遒ｺ隱阪￥縺縺輔＞縲・
+縺疲ｳｨ譁・・迥ｶ豕√↓蠢懊§縺ｦ縺疲｡亥・縺ｮ繝｡繝ｼ繝ｫ繧偵♀騾√ｊ縺励∪縺吶・
+縺疲ｳｨ譁・分蜿ｷ: W1528936835
+
+縺疲ｳｨ譁・律 : 2026/01/14
+
+縺薙・蠎ｦ縺ｯApple Store繧偵＃蛻ｩ逕ｨ縺・◆縺縺阪√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺励◆縲・荳玖ｨ倥・蜀・ｮｹ縺ｧ縺疲ｳｨ譁・ｒ蜿嶺ｻ倥＠縺ｾ縺励◆縲・
+驟埼∝ｯｾ雎｡縺ｮ陬ｽ蜩・iPhone 17 Pro 256GB 繧ｳ繧ｺ繝溘ャ繧ｯ繧ｪ繝ｬ繝ｳ繧ｸ
+蜃ｺ闕ｷ譌･・・1縲・蝟ｶ讌ｭ譌･
+縺雁ｱ翫￠莠亥ｮ壽律・・2026/01/16 窶・2026/01/17 : 騾壼ｸｸ驟埼・179,800蜀・
+---
+
+Parsed result:
+[
+  {
+    "orderNumber": "W1528936835",
+    "orderDate": "2026/01/14",
+    "modelName": "iPhone 17 Pro",
+    "storage": "256GB",
+    "color": "繧ｳ繧ｺ繝溘ャ繧ｯ繧ｪ繝ｬ繝ｳ繧ｸ",
+    "price": 179800,
+    "deliveryStart": "2026/01/16",
+    "deliveryEnd": "2026/01/17",
+    "paymentCard": ""
+  }
+]
+
+笨・SUCCESS: Parsed 1 order(s)
+
+Order 1:
+  Order Number: W1528936835
+  Order Date: 2026/01/14
+  Model: iPhone 17 Pro
+  Storage: 256GB
+  Color: 繧ｳ繧ｺ繝溘ャ繧ｯ繧ｪ繝ｬ繝ｳ繧ｸ
+  Price: 179800
+  Delivery: 2026/01/16 窶・2026/01/17

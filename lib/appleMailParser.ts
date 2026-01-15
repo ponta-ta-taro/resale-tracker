@@ -99,7 +99,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
 
     // Extract products - look for iPhone models with storage and color
     // Pattern: iPhone 17 Pro 256GB コズミックオレンジ
-    const productPattern = /(iPhone\\s+(?:17\\s+)?(?:Pro\\s+Max|Pro|Air|17)?)\\s+(\\d+GB)\\s+([^\\n\\r¥]+?)(?:\\s+|¥|$)/gi;
+    const productPattern = /(iPhone\s+(?:17\s+)?(?:Pro\s+Max|Pro|Air|17)?)\s+(\d+GB)\s+([^\n\r]+?)(?=\n|$)/gi;
     let productMatch;
 
     while ((productMatch = productPattern.exec(emailText)) !== null) {
@@ -110,8 +110,8 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
         // Try to find price near this product
         // Look for price pattern after the product name
         const productIndex = productMatch.index;
-        const textAfterProduct = emailText.substring(productIndex, productIndex + 200);
-        const priceMatch = textAfterProduct.match(/¥?([\\d,]+)円/);
+        const textAfterProduct = emailText.substring(productIndex, productIndex + 300);
+        const priceMatch = textAfterProduct.match(/¥?([\d,]+)円/);
         const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, '')) : 0;
 
         orders.push({
