@@ -303,9 +303,9 @@ export async function POST(request: NextRequest) {
 
         // Process based on email type
         if (emailType === 'order') {
-            await processOrderEmail(rawEmail);
+            await processOrderEmail(to, rawEmail);
         } else if (emailType === 'shipping') {
-            await processShippingEmail(rawEmail);
+            await processShippingEmail(to, rawEmail);
         } else {
             console.log('  Skipping processing for this email type');
         }
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function processOrderEmail(rawEmail: string) {
+async function processOrderEmail(toEmail: string, rawEmail: string) {
     try {
         console.log('  📦 Processing order email...');
 
@@ -344,17 +344,26 @@ async function processOrderEmail(rawEmail: string) {
 
         console.log(`  ✅ Found ${orders.length} order(s)`);
 
+        // Create service role client to bypass RLS
         const supabase = await createClient();
 
-        // Get the first user (since this is a webhook, we need to determine which user)
-        // For now, we'll use a service role or get the first user
-        // TODO: In production, you might want to map email addresses to users
-        const { data: { user } } = await supabase.auth.getUser();
+        // Look up user from contact_emails table
+        console.log('  🔍 Looking up user from contact_emails for:', toEmail);
+        const { data: contactEmail, error: lookupError } = await supabase
+            .from('contact_emails')
+            .select('user_id')
+            .eq('email', toEmail)
+            .limit(1)
+            .single();
 
-        if (!user) {
-            console.log('  ⚠️  No authenticated user found, skipping database insert');
+        if (lookupError || !contactEmail) {
+            console.log('  ⚠️  No user found for email:', toEmail);
+            console.log('  ⚠️  Skipping database insert');
             return;
         }
+
+        const userId = contactEmail.user_id;
+        console.log('  ✅ Found user_id:', userId);
 
         for (const order of orders) {
             console.log(`  📝 Order: ${order.orderNumber} - ${order.modelName} ${order.storage}`);
@@ -377,7 +386,7 @@ async function processOrderEmail(rawEmail: string) {
             const { error } = await supabase
                 .from('inventory')
                 .insert({
-                    user_id: user.id,
+                    user_id: userId,
                     model_name: order.modelName,
                     storage: order.storage,
                     color: order.color,
@@ -403,7 +412,7 @@ async function processOrderEmail(rawEmail: string) {
     }
 }
 
-async function processShippingEmail(rawEmail: string) {
+async function processShippingEmail(toEmail: string, rawEmail: string) {
     try {
         console.log('  📦 Processing shipping email...');
 
@@ -422,7 +431,26 @@ async function processShippingEmail(rawEmail: string) {
         console.log(`     Carrier: ${shippingInfo.carrier}`);
         console.log(`     Tracking: ${shippingInfo.trackingNumber}`);
 
+        // Create service role client to bypass RLS
         const supabase = await createClient();
+
+        // Look up user from contact_emails table
+        console.log('  🔍 Looking up user from contact_emails for:', toEmail);
+        const { data: contactEmail, error: lookupError } = await supabase
+            .from('contact_emails')
+            .select('user_id')
+            .eq('email', toEmail)
+            .limit(1)
+            .single();
+
+        if (lookupError || !contactEmail) {
+            console.log('  ⚠️  No user found for email:', toEmail);
+            console.log('  ⚠️  Skipping database update');
+            return;
+        }
+
+        const userId = contactEmail.user_id;
+        console.log('  ✅ Found user_id:', userId);
 
         // Find inventory item by order number
         const { data: inventory, error: fetchError } = await supabase
