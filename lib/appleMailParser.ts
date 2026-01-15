@@ -113,7 +113,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     console.log('\n🔍 Searching for products...');
 
     // Fixed pattern: iPhone 17 is required, then optional Pro Max/Pro/Air
-    const productPattern = /(iPhone\s+17(?:\s+Pro(?:\s+Max)?|\s+Air)?)\s+(\d+(?:GB|TB))\s+([^\n\r]+?)(?=\n|$)/gi;
+    const productPattern = /(iPhone\s+17(?:\s+Pro(?:\s+Max)?|\s+Air)?)\s+(\d+(?:GB|TB))\s+([^\n\r]+?)(?=\r?\n|$)/gi;
     let productMatch;
     let matchCount = 0;
 
@@ -157,7 +157,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     console.log(`\n✅ Total products found: ${orders.length}`);
     if (orders.length === 0) {
         console.log('\n⚠️  No products matched. Debugging info:');
-        console.log('Looking for pattern: /(iPhone\\s+17(?:\\s+Pro(?:\\s+Max)?|\\s+Air)?)\\s+(\\d+(?:GB|TB))\\s+([^\\n\\r]+?)(?=\\n|$)/gi');
+        console.log('Looking for pattern: /(iPhone\\s+17(?:\\s+Pro(?:\\s+Max)?|\\s+Air)?)\\s+(\\d+(?:GB|TB))\\s+([^\\n\\r]+?)(?=\\r?\\n|$)/gi');
 
         // Test if iPhone appears in text
         const iphoneTest = emailText.match(/iPhone/gi);
