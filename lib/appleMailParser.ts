@@ -157,7 +157,7 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     console.log(`\n✅ Total products found: ${orders.length}`);
     if (orders.length === 0) {
         console.log('\n⚠️  No products matched. Debugging info:');
-        console.log('Looking for pattern: /(iPhone\\s+(?:17\\s+)?(?:Pro\\s+Max|Pro|Air|17)?)\\s+(\\d+GB)\\s+([^\\n\\r]+?)(?=\\n|$)/gi');
+        console.log('Looking for pattern: /(iPhone\\s+17(?:\\s+Pro(?:\\s+Max)?|\\s+Air)?)\\s+(\\d+(?:GB|TB))\\s+([^\\n\\r]+?)(?=\\n|$)/gi');
 
         // Test if iPhone appears in text
         const iphoneTest = emailText.match(/iPhone/gi);
