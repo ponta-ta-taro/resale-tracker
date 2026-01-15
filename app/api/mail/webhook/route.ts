@@ -76,56 +76,91 @@ function extractMultipartBody(rawEmail: string, boundary: string): string {
     let plainTextPart = '';
     let htmlPart = '';
 
-    for (const part of parts) {
+    for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+        const part = parts[partIndex];
+        console.log(`  \n  🔍 Processing part ${partIndex}/${parts.length - 1}`);
+
+        // Skip empty parts or parts that are just the closing boundary
+        if (part.trim() === '' || part.trim() === '--') {
+            console.log('    ⏭️  Skipping empty/closing part');
+            continue;
+        }
+
         const lines = part.split(/\r?\n/);
         let partContentType = '';
         let partEncoding = '';
         let bodyStartIndex = 0;
+        let inHeaders = true;
 
         // Parse part headers
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
 
-            if (line.trim() === '') {
+            // Empty line marks end of headers
+            if (line.trim() === '' && inHeaders) {
                 bodyStartIndex = i + 1;
+                inHeaders = false;
+                console.log('    Part headers ended at line:', i);
                 break;
             }
 
-            if (line.toLowerCase().startsWith('content-type:')) {
-                partContentType = line.substring(13).trim().toLowerCase();
-            }
+            if (inHeaders) {
+                const lowerLine = line.toLowerCase();
 
-            if (line.toLowerCase().startsWith('content-transfer-encoding:')) {
-                partEncoding = line.substring(26).trim().toLowerCase();
+                if (lowerLine.startsWith('content-type:')) {
+                    partContentType = line.substring(13).trim();
+                    console.log('    📋 Part Content-Type:', partContentType);
+                }
+
+                if (lowerLine.startsWith('content-transfer-encoding:')) {
+                    partEncoding = line.substring(26).trim().toLowerCase();
+                    console.log('    🔐 Part Encoding:', partEncoding);
+                }
             }
+        }
+
+        // Skip if no body found
+        if (bodyStartIndex === 0) {
+            console.log('    ⚠️  No body found in this part');
+            continue;
         }
 
         // Extract body
         const bodyLines = lines.slice(bodyStartIndex);
         let body = bodyLines.join('\n').trim();
-        console.log('    Body length before decoding:', body.length);
+        console.log('    📏 Body length before decoding:', body.length);
+
+        // Skip empty bodies
+        if (body.length === 0) {
+            console.log('    ⏭️  Skipping empty body');
+            continue;
+        }
 
         // Decode if needed
         if (partEncoding === 'base64') {
             try {
                 const decoded = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
-                console.log('    Decoded base64, length:', decoded.length);
+                console.log('    ✅ Decoded base64, length:', decoded.length);
                 body = decoded;
             } catch (e) {
-                console.error('Error decoding base64:', e);
+                console.error('    ❌ Error decoding base64:', e);
             }
         } else if (partEncoding === 'quoted-printable') {
             body = decodeQuotedPrintable(body);
-            console.log('    Decoded quoted-printable, length:', body.length);
+            console.log('    ✅ Decoded quoted-printable, length:', body.length);
         }
 
-        // Store based on content type
-        if (partContentType.includes('text/plain')) {
+        // Store based on content type (case-insensitive matching)
+        const contentTypeLower = partContentType.toLowerCase();
+
+        if (contentTypeLower.includes('text/plain')) {
             console.log('    ✅ Found text/plain part, length:', body.length);
             plainTextPart = body;
-        } else if (partContentType.includes('text/html')) {
+        } else if (contentTypeLower.includes('text/html')) {
             console.log('    ✅ Found text/html part, length:', body.length);
             htmlPart = body;
+        } else if (partContentType) {
+            console.log('    ℹ️  Other content type:', partContentType);
         }
     }
 
