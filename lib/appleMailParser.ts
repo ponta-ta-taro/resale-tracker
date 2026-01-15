@@ -66,13 +66,19 @@ export function parseAppleShippingEmail(emailText: string): ParsedShippingInfo |
 export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     const orders: ParsedAppleOrder[] = [];
 
+    console.log('📧 parseAppleOrderEmail called');
+    console.log('📏 Email text length:', emailText.length);
+    console.log('📝 First 500 chars:', emailText.substring(0, 500));
+
     // Extract order number: ご注文番号: W1515122271
     const orderNumberMatch = emailText.match(/ご注文番号[:\s：]+([A-Z0-9]+)/i);
     const orderNumber = orderNumberMatch ? orderNumberMatch[1] : '';
+    console.log('🔢 Order number:', orderNumber || '❌ NOT FOUND');
 
     // Extract order date: ご注文日 : 2026/01/10
     const orderDateMatch = emailText.match(/ご注文日[:\s：]+(\d{4}\/\d{1,2}\/\d{1,2})/);
     const orderDate = orderDateMatch ? orderDateMatch[1] : '';
+    console.log('📅 Order date:', orderDate || '❌ NOT FOUND');
 
     // Extract delivery date range: 2026/01/12 – 2026/01/14
     // Also handle single date format: 日 2026/01/11
@@ -84,35 +90,56 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     if (deliveryRangeMatch) {
         deliveryStart = deliveryRangeMatch[1];
         deliveryEnd = deliveryRangeMatch[2];
+        console.log('🚚 Delivery range:', deliveryStart, '–', deliveryEnd);
     } else {
         // Try single date format with "日" prefix
         const singleDateMatch = emailText.match(/日\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
         if (singleDateMatch) {
             deliveryStart = singleDateMatch[1];
             deliveryEnd = singleDateMatch[1]; // Use same date for both start and end
+            console.log('🚚 Delivery date:', deliveryStart);
+        } else {
+            console.log('🚚 Delivery date: ❌ NOT FOUND');
         }
     }
 
     // Extract payment method: Mastercard, Visa, etc.
     const paymentMatch = emailText.match(/(Mastercard|Visa|JCB|American Express)/i);
     const paymentCard = paymentMatch ? paymentMatch[1] : '';
+    console.log('💳 Payment card:', paymentCard || '(none)');
 
     // Extract products - look for iPhone models with storage and color
     // Pattern: iPhone 17 Pro 256GB コズミックオレンジ
+    console.log('\n🔍 Searching for products...');
+
+    // More flexible pattern that handles newlines and spacing
     const productPattern = /(iPhone\s+(?:17\s+)?(?:Pro\s+Max|Pro|Air|17)?)\s+(\d+GB)\s+([^\n\r]+?)(?=\n|$)/gi;
     let productMatch;
+    let matchCount = 0;
 
     while ((productMatch = productPattern.exec(emailText)) !== null) {
+        matchCount++;
+        console.log(`\n  📦 Product match #${matchCount}:`);
+        console.log('    Match index:', productMatch.index);
+        console.log('    Full match:', productMatch[0]);
+
         const modelName = productMatch[1].trim();
         const storage = productMatch[2];
         const color = productMatch[3].trim();
 
+        console.log('    Model:', modelName);
+        console.log('    Storage:', storage);
+        console.log('    Color:', color);
+
         // Try to find price near this product
-        // Look for price pattern after the product name
+        // Look for price pattern after the product name (increased range)
         const productIndex = productMatch.index;
-        const textAfterProduct = emailText.substring(productIndex, productIndex + 300);
+        const textAfterProduct = emailText.substring(productIndex, productIndex + 500);
+        console.log('    Searching for price in next 500 chars...');
+
         const priceMatch = textAfterProduct.match(/¥?([\d,]+)円/);
         const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, '')) : 0;
+        console.log('    Price:', price || '❌ NOT FOUND');
 
         orders.push({
             orderNumber,
@@ -124,6 +151,28 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
             deliveryStart,
             deliveryEnd,
             paymentCard,
+        });
+    }
+
+    console.log(`\n✅ Total products found: ${orders.length}`);
+    if (orders.length === 0) {
+        console.log('\n⚠️  No products matched. Debugging info:');
+        console.log('Looking for pattern: /(iPhone\\s+(?:17\\s+)?(?:Pro\\s+Max|Pro|Air|17)?)\\s+(\\d+GB)\\s+([^\\n\\r]+?)(?=\\n|$)/gi');
+
+        // Test if iPhone appears in text
+        const iphoneTest = emailText.match(/iPhone/gi);
+        console.log('iPhone mentions found:', iphoneTest ? iphoneTest.length : 0);
+
+        // Test if storage appears
+        const storageTest = emailText.match(/\d+GB/gi);
+        console.log('Storage mentions found:', storageTest ? storageTest : 'none');
+
+        // Show lines containing iPhone
+        const lines = emailText.split(/\n/);
+        const iphoneLines = lines.filter(line => line.includes('iPhone'));
+        console.log('\nLines containing "iPhone":');
+        iphoneLines.forEach((line, i) => {
+            console.log(`  [${i}]: "${line}"`);
         });
     }
 
