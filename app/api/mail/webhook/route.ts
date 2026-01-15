@@ -87,24 +87,43 @@ function extractMultipartBody(rawEmail: string, boundary: string): string {
         }
 
         const lines = part.split(/\r?\n/);
+        console.log('    📊 Total lines in part:', lines.length);
+        console.log('    📝 First 10 lines of part:');
+        for (let i = 0; i < Math.min(10, lines.length); i++) {
+            const preview = lines[i].length > 80 ? lines[i].substring(0, 80) + '...' : lines[i];
+            console.log(`      [${i}]: "${preview}"`);
+        }
+
         let partContentType = '';
         let partEncoding = '';
         let bodyStartIndex = 0;
         let inHeaders = true;
+        let headerStarted = false;
 
         // Parse part headers
+        // Skip leading empty lines first
+        let startLine = 0;
         for (let i = 0; i < lines.length; i++) {
+            if (lines[i].trim() !== '') {
+                startLine = i;
+                console.log('    🎯 Headers start at line:', startLine);
+                break;
+            }
+        }
+
+        for (let i = startLine; i < lines.length; i++) {
             const line = lines[i];
 
-            // Empty line marks end of headers
-            if (line.trim() === '' && inHeaders) {
+            // Empty line marks end of headers (only after headers have started)
+            if (line.trim() === '' && headerStarted) {
                 bodyStartIndex = i + 1;
                 inHeaders = false;
-                console.log('    Part headers ended at line:', i);
+                console.log('    ✋ Part headers ended at line:', i);
                 break;
             }
 
-            if (inHeaders) {
+            if (inHeaders && line.trim() !== '') {
+                headerStarted = true;
                 const lowerLine = line.toLowerCase();
 
                 if (lowerLine.startsWith('content-type:')) {
