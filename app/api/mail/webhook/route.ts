@@ -15,8 +15,11 @@ interface WebhookPayload {
  */
 function extractEmailBody(rawEmail: string): string {
     try {
+        console.log('🔍 Starting email body extraction...');
+
         // Split email into lines
         const lines = rawEmail.split(/\r?\n/);
+        console.log('  Total lines:', lines.length);
 
         // Find Content-Type header
         let contentType = '';
@@ -29,17 +32,20 @@ function extractEmailBody(rawEmail: string): string {
             // Empty line marks end of headers
             if (line.trim() === '' && inHeaders) {
                 inHeaders = false;
+                console.log('  Headers ended at line:', i);
                 continue;
             }
 
             if (inHeaders) {
                 if (line.toLowerCase().startsWith('content-type:')) {
                     contentType = line.substring(13).trim();
+                    console.log('  Content-Type found:', contentType);
 
                     // Extract boundary if multipart
                     const boundaryMatch = contentType.match(/boundary=["']?([^"';]+)["']?/i);
                     if (boundaryMatch) {
                         boundary = boundaryMatch[1];
+                        console.log('  Boundary found:', boundary);
                     }
                 }
             }
@@ -64,6 +70,7 @@ function extractEmailBody(rawEmail: string): string {
  */
 function extractMultipartBody(rawEmail: string, boundary: string): string {
     const parts = rawEmail.split(`--${boundary}`);
+    console.log('  📦 Multipart: Found', parts.length, 'parts');
 
     // Try to find text/plain part first, then text/html
     let plainTextPart = '';
@@ -96,33 +103,42 @@ function extractMultipartBody(rawEmail: string, boundary: string): string {
         // Extract body
         const bodyLines = lines.slice(bodyStartIndex);
         let body = bodyLines.join('\n').trim();
+        console.log('    Body length before decoding:', body.length);
 
         // Decode if needed
         if (partEncoding === 'base64') {
             try {
-                body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+                const decoded = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+                console.log('    Decoded base64, length:', decoded.length);
+                body = decoded;
             } catch (e) {
                 console.error('Error decoding base64:', e);
             }
         } else if (partEncoding === 'quoted-printable') {
             body = decodeQuotedPrintable(body);
+            console.log('    Decoded quoted-printable, length:', body.length);
         }
 
         // Store based on content type
         if (partContentType.includes('text/plain')) {
+            console.log('    ✅ Found text/plain part, length:', body.length);
             plainTextPart = body;
         } else if (partContentType.includes('text/html')) {
+            console.log('    ✅ Found text/html part, length:', body.length);
             htmlPart = body;
         }
     }
 
     // Prefer plain text, fallback to HTML (stripped)
     if (plainTextPart) {
+        console.log('  ✅ Returning plain text part');
         return plainTextPart;
     } else if (htmlPart) {
+        console.log('  ✅ Returning stripped HTML part');
         return stripHtmlTags(htmlPart);
     }
 
+    console.log('  ⚠️ No text/plain or text/html part found');
     return '';
 }
 
@@ -130,6 +146,7 @@ function extractMultipartBody(rawEmail: string, boundary: string): string {
  * Extract body from single-part MIME message
  */
 function extractSinglePartBody(rawEmail: string): string {
+    console.log('  📄 Extracting single-part body...');
     const lines = rawEmail.split(/\r?\n/);
     let encoding = '';
     let bodyStartIndex = 0;
@@ -140,28 +157,36 @@ function extractSinglePartBody(rawEmail: string): string {
 
         if (line.trim() === '') {
             bodyStartIndex = i + 1;
+            console.log('    Body starts at line:', i + 1);
             break;
         }
 
         if (line.toLowerCase().startsWith('content-transfer-encoding:')) {
             encoding = line.substring(26).trim().toLowerCase();
+            console.log('    Encoding:', encoding);
         }
     }
 
     // Extract body
     const bodyLines = lines.slice(bodyStartIndex);
     let body = bodyLines.join('\n').trim();
+    console.log('    Body length before decoding:', body.length);
 
     // Decode if needed
     if (encoding === 'base64') {
         try {
-            body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+            const decoded = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+            console.log('    Decoded base64, length:', decoded.length);
+            body = decoded;
         } catch (e) {
             console.error('Error decoding base64:', e);
         }
     } else if (encoding === 'quoted-printable') {
         body = decodeQuotedPrintable(body);
+        console.log('    Decoded quoted-printable, length:', body.length);
     }
+
+    console.log('  ✅ Extracted body length:', body.length);
 
     return body;
 }
@@ -200,6 +225,8 @@ export async function POST(request: NextRequest) {
         console.log('  From:', from);
         console.log('  To:', to);
         console.log('  Subject:', subject);
+        console.log('📨 Raw email length:', rawEmail?.length || 0);
+        console.log('📨 Raw email (first 1000 chars):', rawEmail?.substring(0, 1000));
 
         // Determine email type from subject
         let emailType: 'order' | 'shipping' | 'billing' | 'survey' | 'unknown' = 'unknown';
