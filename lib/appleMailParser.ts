@@ -112,8 +112,8 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     // Pattern: iPhone 17 Pro 256GB コズミックオレンジ
     console.log('\n🔍 Searching for products...');
 
-    // More flexible pattern that handles newlines and spacing
-    const productPattern = /(iPhone\s+(?:17\s+)?(?:Pro\s+Max|Pro|Air|17)?)\s+(\d+GB)\s+([^\n\r]+?)(?=\n|$)/gi;
+    // Fixed pattern: iPhone 17 is required, then optional Pro Max/Pro/Air
+    const productPattern = /(iPhone\s+17(?:\s+Pro(?:\s+Max)?|\s+Air)?)\s+(\d+(?:GB|TB))\s+([^\n\r]+?)(?=\n|$)/gi;
     let productMatch;
     let matchCount = 0;
 
