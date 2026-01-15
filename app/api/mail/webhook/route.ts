@@ -9,6 +9,188 @@ interface WebhookPayload {
     rawEmail: string;
 }
 
+/**
+ * Extract email body from MIME format raw email
+ * Handles multipart messages, Base64 and quoted-printable encoding
+ */
+function extractEmailBody(rawEmail: string): string {
+    try {
+        // Split email into lines
+        const lines = rawEmail.split(/\r?\n/);
+
+        // Find Content-Type header
+        let contentType = '';
+        let boundary = '';
+        let inHeaders = true;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Empty line marks end of headers
+            if (line.trim() === '' && inHeaders) {
+                inHeaders = false;
+                continue;
+            }
+
+            if (inHeaders) {
+                if (line.toLowerCase().startsWith('content-type:')) {
+                    contentType = line.substring(13).trim();
+
+                    // Extract boundary if multipart
+                    const boundaryMatch = contentType.match(/boundary=["']?([^"';]+)["']?/i);
+                    if (boundaryMatch) {
+                        boundary = boundaryMatch[1];
+                    }
+                }
+            }
+        }
+
+        // If multipart, extract parts
+        if (boundary) {
+            return extractMultipartBody(rawEmail, boundary);
+        }
+
+        // If not multipart, extract single part body
+        return extractSinglePartBody(rawEmail);
+
+    } catch (error) {
+        console.error('Error extracting email body:', error);
+        return rawEmail; // Fallback to raw email
+    }
+}
+
+/**
+ * Extract body from multipart MIME message
+ */
+function extractMultipartBody(rawEmail: string, boundary: string): string {
+    const parts = rawEmail.split(`--${boundary}`);
+
+    // Try to find text/plain part first, then text/html
+    let plainTextPart = '';
+    let htmlPart = '';
+
+    for (const part of parts) {
+        const lines = part.split(/\r?\n/);
+        let partContentType = '';
+        let partEncoding = '';
+        let bodyStartIndex = 0;
+
+        // Parse part headers
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            if (line.trim() === '') {
+                bodyStartIndex = i + 1;
+                break;
+            }
+
+            if (line.toLowerCase().startsWith('content-type:')) {
+                partContentType = line.substring(13).trim().toLowerCase();
+            }
+
+            if (line.toLowerCase().startsWith('content-transfer-encoding:')) {
+                partEncoding = line.substring(26).trim().toLowerCase();
+            }
+        }
+
+        // Extract body
+        const bodyLines = lines.slice(bodyStartIndex);
+        let body = bodyLines.join('\n').trim();
+
+        // Decode if needed
+        if (partEncoding === 'base64') {
+            try {
+                body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+            } catch (e) {
+                console.error('Error decoding base64:', e);
+            }
+        } else if (partEncoding === 'quoted-printable') {
+            body = decodeQuotedPrintable(body);
+        }
+
+        // Store based on content type
+        if (partContentType.includes('text/plain')) {
+            plainTextPart = body;
+        } else if (partContentType.includes('text/html')) {
+            htmlPart = body;
+        }
+    }
+
+    // Prefer plain text, fallback to HTML (stripped)
+    if (plainTextPart) {
+        return plainTextPart;
+    } else if (htmlPart) {
+        return stripHtmlTags(htmlPart);
+    }
+
+    return '';
+}
+
+/**
+ * Extract body from single-part MIME message
+ */
+function extractSinglePartBody(rawEmail: string): string {
+    const lines = rawEmail.split(/\r?\n/);
+    let encoding = '';
+    let bodyStartIndex = 0;
+
+    // Find headers
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.trim() === '') {
+            bodyStartIndex = i + 1;
+            break;
+        }
+
+        if (line.toLowerCase().startsWith('content-transfer-encoding:')) {
+            encoding = line.substring(26).trim().toLowerCase();
+        }
+    }
+
+    // Extract body
+    const bodyLines = lines.slice(bodyStartIndex);
+    let body = bodyLines.join('\n').trim();
+
+    // Decode if needed
+    if (encoding === 'base64') {
+        try {
+            body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+        } catch (e) {
+            console.error('Error decoding base64:', e);
+        }
+    } else if (encoding === 'quoted-printable') {
+        body = decodeQuotedPrintable(body);
+    }
+
+    return body;
+}
+
+/**
+ * Decode quoted-printable encoding
+ */
+function decodeQuotedPrintable(text: string): string {
+    return text
+        .replace(/=\r?\n/g, '') // Remove soft line breaks
+        .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+/**
+ * Strip HTML tags from text
+ */
+function stripHtmlTags(html: string): string {
+    return html
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body: WebhookPayload = await request.json();
@@ -64,9 +246,13 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function processOrderEmail(emailText: string) {
+async function processOrderEmail(rawEmail: string) {
     try {
         console.log('  📦 Processing order email...');
+
+        // Extract email body from MIME format
+        const emailText = extractEmailBody(rawEmail);
+        console.log('  📄 Extracted body (first 500 chars):', emailText.substring(0, 500));
 
         const orders = parseAppleOrderEmail(emailText);
 
@@ -136,9 +322,13 @@ async function processOrderEmail(emailText: string) {
     }
 }
 
-async function processShippingEmail(emailText: string) {
+async function processShippingEmail(rawEmail: string) {
     try {
         console.log('  📦 Processing shipping email...');
+
+        // Extract email body from MIME format
+        const emailText = extractEmailBody(rawEmail);
+        console.log('  📄 Extracted body (first 500 chars):', emailText.substring(0, 500));
 
         const shippingInfo = parseAppleShippingEmail(emailText);
 
