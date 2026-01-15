@@ -303,9 +303,9 @@ export async function POST(request: NextRequest) {
 
         // Process based on email type
         if (emailType === 'order') {
-            await processOrderEmail(to, rawEmail);
+            await processOrderEmail(from, rawEmail);
         } else if (emailType === 'shipping') {
-            await processShippingEmail(to, rawEmail);
+            await processShippingEmail(from, rawEmail);
         } else {
             console.log('  Skipping processing for this email type');
         }
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function processOrderEmail(toEmail: string, rawEmail: string) {
+async function processOrderEmail(fromEmail: string, rawEmail: string) {
     try {
         console.log('  📦 Processing order email...');
 
@@ -347,17 +347,17 @@ async function processOrderEmail(toEmail: string, rawEmail: string) {
         // Create service role client to bypass RLS
         const supabase = await createClient();
 
-        // Look up user from contact_emails table
-        console.log('  🔍 Looking up user from contact_emails for:', toEmail);
+        // Look up user from contact_emails table using sender email
+        console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
         const { data: contactEmail, error: lookupError } = await supabase
             .from('contact_emails')
             .select('user_id')
-            .eq('email', toEmail)
+            .eq('email', fromEmail)
             .limit(1)
             .single();
 
         if (lookupError || !contactEmail) {
-            console.log('  ⚠️  No user found for email:', toEmail);
+            console.log('  ⚠️  No user found for email:', fromEmail);
             console.log('  ⚠️  Skipping database insert');
             return;
         }
@@ -412,7 +412,7 @@ async function processOrderEmail(toEmail: string, rawEmail: string) {
     }
 }
 
-async function processShippingEmail(toEmail: string, rawEmail: string) {
+async function processShippingEmail(fromEmail: string, rawEmail: string) {
     try {
         console.log('  📦 Processing shipping email...');
 
@@ -434,17 +434,17 @@ async function processShippingEmail(toEmail: string, rawEmail: string) {
         // Create service role client to bypass RLS
         const supabase = await createClient();
 
-        // Look up user from contact_emails table
-        console.log('  🔍 Looking up user from contact_emails for:', toEmail);
+        // Look up user from contact_emails table using sender email
+        console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
         const { data: contactEmail, error: lookupError } = await supabase
             .from('contact_emails')
             .select('user_id')
-            .eq('email', toEmail)
+            .eq('email', fromEmail)
             .limit(1)
             .single();
 
         if (lookupError || !contactEmail) {
-            console.log('  ⚠️  No user found for email:', toEmail);
+            console.log('  ⚠️  No user found for email:', fromEmail);
             console.log('  ⚠️  Skipping database update');
             return;
         }
