@@ -60,6 +60,19 @@ export async function GET() {
         const monthlyProfitRate = monthlyPurchaseTotal > 0 ? (monthlyProfit / monthlyPurchaseTotal) * 100 : 0;
         const monthlySalesCount = thisMonthPaid.length;
 
+        // Get current month's shipments for shipping cost
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+        const { data: shipments } = await supabase
+            .from('shipments')
+            .select('shipping_cost')
+            .gte('shipped_at', firstDayOfMonth.toISOString().split('T')[0])
+            .lte('shipped_at', lastDayOfMonth.toISOString().split('T')[0]);
+
+        const monthlyShippingCost = (shipments || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
+        const monthlyNetProfit = monthlyProfit - monthlyShippingCost;
+
         // Calculate inventory status
         const statusBreakdown = {
             ordered: { count: 0, amount: 0 },
@@ -174,6 +187,8 @@ export async function GET() {
                 profit: monthlyProfit,
                 profitRate: monthlyProfitRate,
                 salesCount: monthlySalesCount,
+                shippingCost: monthlyShippingCost,
+                netProfit: monthlyNetProfit,
             },
             inventory: statusBreakdown,
             financial: {

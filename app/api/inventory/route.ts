@@ -19,6 +19,7 @@ export async function GET(request: Request) {
         // Optional filters
         const status = searchParams.get('status');
         const model = searchParams.get('model');
+        const shipmentId = searchParams.get('shipment_id');
 
         // RLS will automatically filter to user's data
         let query = supabase
@@ -32,6 +33,14 @@ export async function GET(request: Request) {
 
         if (model) {
             query = query.eq('model_name', model);
+        }
+
+        if (shipmentId !== null) {
+            if (shipmentId === 'null') {
+                query = query.is('shipment_id', null);
+            } else {
+                query = query.eq('shipment_id', shipmentId);
+            }
         }
 
         const { data, error } = await query;

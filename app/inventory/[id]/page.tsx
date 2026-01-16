@@ -309,6 +309,19 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             <span className="text-gray-500">クレジットカード:</span>
                             <span className="ml-2 text-gray-900">{inventory.credit_card || '-'}</span>
                         </div>
+
+                        {/* Shipment Information */}
+                        {inventory.shipment_id && (
+                            <>
+                                <div className="col-span-full mt-4 pt-4 border-t">
+                                    <h4 className="text-sm font-semibold text-gray-700 mb-2">発送情報</h4>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500">発送ID:</span>
+                                    <span className="ml-2 text-gray-900">{inventory.shipment_id}</span>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {inventory.notes && (

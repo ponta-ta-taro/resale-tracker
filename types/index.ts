@@ -39,6 +39,7 @@ export interface Inventory {
     sold_to: string | null;
     tracking_number: string | null;
     carrier: string | null;
+    shipment_id: string | null;
     // 外部キー（支払い方法のみ）
     payment_method_id: string | null;
     // JOINで取得する支払い方法名
@@ -82,6 +83,7 @@ export interface InventoryInput {
     sold_to?: string;
     tracking_number?: string;
     carrier?: string;
+    shipment_id?: string | null;
     // 外部キー（支払い方法のみ）
     payment_method_id?: string;
     // シンプルなテキストフィールド
@@ -240,6 +242,44 @@ export const SOLD_TO_OPTIONS = [
     'モバイルミックス',
     'その他',
 ] as const;
+
+// Shipment destination options
+export const SHIPPED_TO_OPTIONS = [
+    'モバイルミックス',
+    'イオシス',
+    'じゃんぱら',
+    'ゲオ',
+] as const;
+
+// Carrier options
+export const CARRIER_OPTIONS = [
+    'ヤマト運輸',
+    '佐川急便',
+    '日本郵便',
+] as const;
+
+// Shipment types
+export interface Shipment {
+    id: string;
+    user_id: string;
+    shipping_cost: number;
+    shipped_to: string;
+    carrier: string;
+    tracking_number: string | null;
+    shipped_at: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ShipmentInput {
+    shipping_cost: number;
+    shipped_to: string;
+    carrier: string;
+    tracking_number?: string | null;
+    shipped_at: string;
+    notes?: string | null;
+}
 
 // Parsed Apple order data
 export interface ParsedAppleOrder {

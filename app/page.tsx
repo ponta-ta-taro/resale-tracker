@@ -13,6 +13,8 @@ interface DashboardMetrics {
         profit: number;
         profitRate: number;
         salesCount: number;
+        shippingCost: number;
+        netProfit: number;
     };
     inventory: {
         ordered: { count: number; amount: number };
@@ -114,18 +116,30 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 mt-1">入金済み売上の合計</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">今月の利益</h3>
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">粗利益</h3>
                                 <p className="text-3xl font-bold text-green-600">{formatCurrency(metrics.monthly.profit)}</p>
                                 <p className="text-sm text-gray-600 mt-1">売上 - 仕入価格</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">今月の送料</h3>
+                                <p className="text-3xl font-bold text-orange-600">{formatCurrency(metrics.monthly.shippingCost || 0)}</p>
+                                <p className="text-sm text-gray-600 mt-1">発送にかかった費用</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">純利益</h3>
+                                <p className="text-3xl font-bold text-blue-600">{formatCurrency(metrics.monthly.netProfit || metrics.monthly.profit)}</p>
+                                <p className="text-sm text-gray-600 mt-1">粗利益 - 送料</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">今月の利益率</h3>
-                                <p className="text-3xl font-bold text-blue-600">{metrics.monthly.profitRate.toFixed(1)}%</p>
+                                <p className="text-3xl font-bold text-purple-600">{metrics.monthly.profitRate.toFixed(1)}%</p>
                                 <p className="text-sm text-gray-600 mt-1">利益 ÷ 仕入額</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">今月の販売台数</h3>
-                                <p className="text-3xl font-bold text-purple-600">{metrics.monthly.salesCount}台</p>
+                                <p className="text-3xl font-bold text-indigo-600">{metrics.monthly.salesCount}台</p>
                                 <p className="text-sm text-gray-600 mt-1">入金済み件数</p>
                             </div>
                         </div>
