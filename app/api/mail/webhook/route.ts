@@ -308,6 +308,7 @@ export async function POST(request: NextRequest) {
         } else if (emailType === 'shipping') {
             await processShippingEmail(from, rawEmail);
         } else {
+            console.log('📄 Full email body for debugging:', rawEmail.substring(0, 3000));
             console.log('  Skipping processing for this email type');
         }
 
