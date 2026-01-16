@@ -309,6 +309,20 @@ export async function POST(request: NextRequest) {
             await processShippingEmail(from, rawEmail);
         } else {
             console.log('📄 Full email body for debugging:', rawEmail.substring(0, 3000));
+
+            // Extract and decode email body to search for Gmail confirmation links
+            const emailText = extractEmailBody(rawEmail);
+            console.log('📄 Decoded email body (first 1000 chars):', emailText.substring(0, 1000));
+
+            // Search for Gmail forwarding confirmation link
+            const confirmLinkMatch = emailText.match(/https:\/\/mail\.google\.com\/mail\/vf-[^\s<>"]+/);
+            if (confirmLinkMatch) {
+                console.log('🔗 Gmail forwarding confirmation link found:');
+                console.log('   ', confirmLinkMatch[0]);
+            } else {
+                console.log('  No Gmail confirmation link found');
+            }
+
             console.log('  Skipping processing for this email type');
         }
 
