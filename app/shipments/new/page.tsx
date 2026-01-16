@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
 import { SHIPPED_TO_OPTIONS, CARRIER_OPTIONS, Inventory } from '@/types';
 
 export default function NewShipmentPage() {
@@ -76,9 +77,10 @@ export default function NewShipmentPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">新規発送</h1>
+        <>
+            <Header />
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-6">新規発送</h1>
 
                 <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
                     <div>
@@ -201,20 +203,20 @@ export default function NewShipmentPage() {
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                         >
                             キャンセル
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
                             {loading ? '作成中...' : '作成'}
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </>
     );
 }

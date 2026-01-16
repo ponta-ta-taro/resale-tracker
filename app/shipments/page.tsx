@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface ShipmentWithCount {
     id: string;
@@ -56,22 +57,24 @@ export default function ShipmentsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 p-8">
-                <div className="max-w-6xl mx-auto">
-                    <p>読み込み中...</p>
+            <>
+                <Header />
+                <div className="flex justify-center items-center min-h-screen">
+                    <div className="text-gray-600">読み込み中...</div>
                 </div>
-            </div>
+            </>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-6xl mx-auto">
+        <>
+            <Header />
+            <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">発送管理</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">発送管理</h1>
                     <Link
                         href="/shipments/new"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                         新規発送
                     </Link>
@@ -151,6 +154,6 @@ export default function ShipmentsPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 }

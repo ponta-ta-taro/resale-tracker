@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Header from '@/components/Header';
 import { SHIPPED_TO_OPTIONS, CARRIER_OPTIONS, Inventory, Shipment } from '@/types';
 
 export default function EditShipmentPage() {
@@ -105,11 +106,12 @@ export default function EditShipmentPage() {
 
     if (fetching) {
         return (
-            <div className="min-h-screen bg-gray-50 p-8">
-                <div className="max-w-4xl mx-auto">
-                    <p>読み込み中...</p>
+            <>
+                <Header />
+                <div className="flex justify-center items-center min-h-screen">
+                    <div className="text-gray-600">読み込み中...</div>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -117,9 +119,10 @@ export default function EditShipmentPage() {
     const allInventory = [...linkedInventory, ...availableInventory];
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">発送編集</h1>
+        <>
+            <Header />
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-6">発送編集</h1>
 
                 <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
                     <div>
@@ -242,20 +245,20 @@ export default function EditShipmentPage() {
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                         >
                             キャンセル
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
                             {loading ? '更新中...' : '更新'}
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </>
     );
 }
