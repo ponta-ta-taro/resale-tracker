@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Inventory, STATUS_LABELS, STATUS_COLORS, calculateProfit, calculateProfitRate } from '@/types';
 
+type SortColumn = 'status' | 'purchase_price' | 'order_date' | 'expected_profit';
+type SortDirection = 'asc' | 'desc';
+
 interface InventoryTableProps {
     items: Inventory[];
+    sortColumn?: SortColumn;
+    sortDirection?: SortDirection;
+    onSort?: (column: SortColumn) => void;
 }
 
 interface MarketPrice {
@@ -14,7 +20,7 @@ interface MarketPrice {
     price: number;
 }
 
-export default function InventoryTable({ items }: InventoryTableProps) {
+export default function InventoryTable({ items, sortColumn, sortDirection, onSort }: InventoryTableProps) {
     const [marketPrices, setMarketPrices] = useState<Map<string, number>>(new Map());
 
     useEffect(() => {
@@ -71,6 +77,31 @@ export default function InventoryTable({ items }: InventoryTableProps) {
         return <span className={color}>{formatCurrency(profit)} ({rate.toFixed(1)}%)</span>;
     };
 
+    const SortIcon = ({ column }: { column: SortColumn }) => {
+        if (!onSort || sortColumn !== column) {
+            return <span className="text-gray-400 ml-1">▼</span>;
+        }
+        return (
+            <span className="text-blue-600 ml-1">
+                {sortDirection === 'asc' ? '▲' : '▼'}
+            </span>
+        );
+    };
+
+    const SortableHeader = ({ column, children }: { column: SortColumn; children: React.ReactNode }) => {
+        return (
+            <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.(column)}
+            >
+                <div className="flex items-center">
+                    {children}
+                    <SortIcon column={column} />
+                </div>
+            </th>
+        );
+    };
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -82,30 +113,30 @@ export default function InventoryTable({ items }: InventoryTableProps) {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             容量
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <SortableHeader column="status">
                             ステータス
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        </SortableHeader>
+                        <SortableHeader column="purchase_price">
                             仕入価格
-                        </th>
+                        </SortableHeader>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             注文時予想売価
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             現在の相場
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <SortableHeader column="expected_profit">
                             想定利益(現在)
-                        </th>
+                        </SortableHeader>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             実売価格
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             利益
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <SortableHeader column="order_date">
                             注文日
-                        </th>
+                        </SortableHeader>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             操作
                         </th>
