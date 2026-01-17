@@ -151,26 +151,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Rewards Summary */}
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">ポイント・特典（今月）</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">ギフトカード還元</h3>
-                                <p className="text-3xl font-bold text-green-600">{formatCurrency(metrics.rewards.giftCardTotal)}</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">クレカポイント</h3>
-                                <p className="text-3xl font-bold text-purple-600">{formatCurrency(metrics.rewards.creditPointsValue)}</p>
-                                <p className="text-sm text-gray-600 mt-1">{metrics.rewards.creditPointsTotal.toLocaleString()}pt</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">合計</h3>
-                                <p className="text-3xl font-bold text-blue-600">{formatCurrency(metrics.rewards.total)}</p>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Inventory Status */}
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-4">
@@ -233,6 +213,26 @@ export default function Dashboard() {
                                     {formatCurrency(metrics.financial.expectedProfitAtOrder)}
                                 </p>
                                 <p className="text-sm text-gray-600 mt-1">注文時の買取価格で売却した場合</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Rewards Summary */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">ポイント・特典（今月）</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">ギフトカード還元</h3>
+                                <p className="text-3xl font-bold text-green-600">{formatCurrency(metrics.rewards.giftCardTotal)}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">クレカポイント</h3>
+                                <p className="text-3xl font-bold text-purple-600">{formatCurrency(metrics.rewards.creditPointsValue)}</p>
+                                <p className="text-sm text-gray-600 mt-1">{metrics.rewards.creditPointsTotal.toLocaleString()}pt</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">合計</h3>
+                                <p className="text-3xl font-bold text-blue-600">{formatCurrency(metrics.rewards.total)}</p>
                             </div>
                         </div>
                     </div>
