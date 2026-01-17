@@ -78,14 +78,22 @@ export async function POST(request: Request) {
 
         const body: InventoryInput = await request.json();
 
-        // Sanitize apple_id_used: convert "なし" and empty string to null
-        const sanitizedData = {
-            ...body,
-            apple_id_used: body.apple_id_used === 'なし' || body.apple_id_used === '' ? null : body.apple_id_used,
-            user_id: user.id
-        };
+        // Convert all empty strings to null (prevents UUID errors)
+        const sanitizedData = Object.fromEntries(
+            Object.entries(body).map(([key, value]) => [
+                key,
+                value === '' ? null : value
+            ])
+        );
 
-        // Automatically add user_id
+        // Also convert "なし" to null for apple_id_used
+        if (sanitizedData.apple_id_used === 'なし') {
+            sanitizedData.apple_id_used = null;
+        }
+
+        // Add user_id
+        sanitizedData.user_id = user.id;
+
         const { data, error } = await supabase
             .from('inventory')
             .insert([sanitizedData])
