@@ -285,15 +285,16 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             name="apple_id_used"
                             value={formData.apple_id_used || ''}
                             onChange={(e) => {
-                                const selectedAccount = appleAccounts.find(aa => aa.name === e.target.value);
+                                const value = e.target.value;
+                                // "ゲストID" is stored as empty string, which will be saved as NULL
                                 setFormData(prev => ({
                                     ...prev,
-                                    apple_id_used: selectedAccount ? selectedAccount.name : e.target.value,
+                                    apple_id_used: value,
                                 }));
                             }}
                             className={inputClass}
                         >
-                            <option value="">選択してください</option>
+                            <option value="">ゲストID</option>
                             {appleAccounts.map(aa => (
                                 <option key={aa.id} value={aa.name}>
                                     {aa.name}{aa.email ? ` (${aa.email})` : ''}
