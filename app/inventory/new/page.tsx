@@ -20,7 +20,7 @@ export default function NewInventoryPage() {
         color: '',
         purchase_source: '',
         payment_method_id: '',
-        apple_id_used: '',
+        apple_account_id: '',
         contact_email_id: '',
         status: 'ordered',
         order_date: '',
@@ -243,13 +243,11 @@ export default function NewInventoryPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Apple ID
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Apple ID</label>
                                 <input
                                     type="text"
-                                    value={formData.apple_id_used}
-                                    onChange={(e) => handleChange('apple_id_used', e.target.value)}
+                                    value={formData.apple_account_id}
+                                    onChange={(e) => handleChange('apple_account_id', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>

@@ -44,8 +44,6 @@ export interface Inventory {
     payment_method_id: string | null;
     // JOINで取得する支払い方法名
     payment_method_name?: string | null;
-    // シンプルなテキストフィールド
-    apple_id_used: string | null;
     // 連絡先情報の外部キー
     contact_email_id: string | null;
     contact_phone_id: string | null;
@@ -58,9 +56,6 @@ export interface Inventory {
     credit_card?: string | null;
     created_at: string;
     updated_at: string;
-    // Apple配送情報
-    apple_tracking_number: string | null;
-    apple_carrier: string | null;
     order_tracking_url: string | null;
 }
 
@@ -91,16 +86,11 @@ export interface InventoryInput {
     shipment_id?: string | null;
     // 外部キー（支払い方法のみ）
     payment_method_id?: string;
-    // シンプルなテキストフィールド
-    apple_id_used?: string;
     // 連絡先情報の外部キー
     contact_email_id?: string;
     contact_phone_id?: string;
     credit_card_id?: string;
     apple_account?: string;
-    // Apple配送情報
-    apple_tracking_number?: string;
-    apple_carrier?: string;
     order_tracking_url?: string;
 }
 
@@ -125,7 +115,7 @@ export interface InventoryV2 {
     color: string | null;
     purchase_source: string | null;
     payment_method_id: string | null;
-    apple_id_used: string | null;
+    apple_account_id: string | null;
     contact_email_id: string | null;
     status: InventoryV2Status;
     order_date: string | null;
@@ -157,7 +147,7 @@ export interface InventoryV2Input {
     color?: string;
     purchase_source?: string;
     payment_method_id?: string;
-    apple_id_used?: string;
+    apple_account_id?: string;
     contact_email_id?: string;
     status: InventoryV2Status;
     order_date?: string;
