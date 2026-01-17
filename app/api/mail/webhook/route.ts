@@ -363,24 +363,46 @@ export async function POST(request: NextRequest) {
             logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${contactEmailAddress}`;
         }
 
+
+        // Map email type to database schema values
+        let dbEmailType: 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown' = 'unknown';
+        if (emailType === 'order_confirmation' || emailType === 'order_thanks') {
+            dbEmailType = 'order';
+        } else if (emailType === 'shipping_notification') {
+            dbEmailType = 'shipping';
+        } else if (emailType === 'invoice') {
+            dbEmailType = 'invoice';
+        } else if (emailType === 'survey') {
+            dbEmailType = 'unknown';
+        }
+
         // Log email to database if user was found
         if (userId) {
             try {
-                await supabaseAdmin
+                const logData = {
+                    user_id: userId,
+                    inventory_id: inventoryId,
+                    from_email: from,
+                    to_email: contactEmailAddress, // Use the contact email, not forwarding destination
+                    subject: subject,
+                    email_type: dbEmailType,
+                    process_result: processResult,
+                    notes: logNotes || `Order: ${orderNumber || 'N/A'}`,
+                };
+
+                console.log('  📝 Logging email to database:', logData);
+
+                const { error: logError } = await supabaseAdmin
                     .from('email_logs')
-                    .insert({
-                        user_id: userId,
-                        inventory_id: inventoryId,
-                        from_email: from,
-                        to_email: toEmail,
-                        subject: subject,
-                        email_type: emailType,
-                        process_result: processResult,
-                        notes: logNotes,
-                    });
-                console.log('  ✅ Email logged to database');
+                    .insert(logData);
+
+                if (logError) {
+                    console.error('  ❌ Error logging email:', logError);
+                } else {
+                    console.log('  ✅ Email logged to database');
+                }
             } catch (logError) {
-                console.error('  ❌ Error logging email:', logError);
+                console.error('  ❌ Exception logging email:', logError);
             }
         }
 
