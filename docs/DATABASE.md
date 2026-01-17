@@ -113,8 +113,7 @@
 | id | uuid | NO | PK |
 | user_id | uuid | NO | RLS用 |
 | email | text | NO | メールアドレス |
-| label | text | YES | ラベル（例: 仕事用、転売用1） |
-| is_active | boolean | NO | 有効フラグ（デフォルト: true） |
+| notes | text | YES | 備考 |
 | created_at | timestamptz | NO | 作成日時 |
 
 ---
