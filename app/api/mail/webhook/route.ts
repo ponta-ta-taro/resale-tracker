@@ -281,23 +281,25 @@ export async function POST(request: NextRequest) {
         console.log('  To:', to);
         console.log('  Subject:', subject);
         console.log('📨 Raw email length:', rawEmail?.length || 0);
-        console.log('📨 Raw email (first 1000 chars):', rawEmail?.substring(0, 1000));
 
-        // Determine email type from subject (map to database schema)
-        let emailType: 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown' = 'unknown';
+        // Determine email type from subject
+        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'invoice' | 'survey' | 'unknown' = 'unknown';
 
-        if (subject.includes('ご注文の確認') || subject.includes('ご注文ありがとうございます')) {
-            emailType = 'order';
+        if (subject.includes('ご注文の確認')) {
+            emailType = 'order_confirmation';
             console.log('  Type: Order confirmation');
-        } else if (subject.includes('お届け予定日') || subject.includes('発送のお知らせ') || subject.includes('配送中')) {
-            emailType = 'shipping';
+        } else if (subject.includes('ご注文ありがとうございます')) {
+            emailType = 'order_thanks';
+            console.log('  Type: Order thanks');
+        } else if (subject.includes('配送中') || subject.includes('お客様の商品は配送中です')) {
+            emailType = 'shipping_notification';
             console.log('  Type: Shipping notification');
-        } else if (subject.includes('請求金額')) {
+        } else if (subject.includes('請求金額のお知らせ')) {
             emailType = 'invoice';
             console.log('  Type: Invoice');
-        } else if (subject.includes('配達完了') || subject.includes('お届け済み')) {
-            emailType = 'delivery';
-            console.log('  Type: Delivery');
+        } else if (subject.includes('ご購入時の体験はいかがでしたか')) {
+            emailType = 'survey';
+            console.log('  Type: Survey');
         } else {
             console.log('  Type: Unknown');
         }
@@ -307,8 +309,9 @@ export async function POST(request: NextRequest) {
         let inventoryId: string | null = null;
         let logNotes: string | null = null;
         let userId: string | null = null;
+        let orderNumber: string | null = null;
 
-        // Create service role client for logging (bypass RLS)
+        // Create service role client (bypass RLS)
         const supabaseAdmin = createSupabaseClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -320,12 +323,14 @@ export async function POST(request: NextRequest) {
             }
         );
 
-        // Look up user from contact_emails table using sender email
-        console.log('  🔍 Looking up user from contact_emails for:', from);
+        // Extract To email from header (連絡先メール)
+        const toEmail = to;
+        console.log('  🔍 Looking up user from contact_emails for To:', toEmail);
+
         const { data: contactEmail } = await supabaseAdmin
             .from('contact_emails')
-            .select('user_id')
-            .eq('email', from)
+            .select('user_id, id')
+            .eq('email', toEmail)
             .limit(1)
             .single();
 
@@ -333,39 +338,26 @@ export async function POST(request: NextRequest) {
             userId = contactEmail.user_id;
             console.log('  ✅ Found user_id:', userId);
         } else {
-            console.log('  ⚠️  No user found for email:', from);
-            logNotes = `User not found for email: ${from}`;
+            console.log('  ⚠️  No user found for email:', toEmail);
+            logNotes = `User not found for email: ${toEmail}`;
         }
 
         // Process based on email type
-        if (emailType === 'order' && userId) {
-            const result = await processOrderEmail(from, rawEmail, userId);
+        if (emailType === 'order_confirmation' && userId && contactEmail) {
+            const result = await processOrderConfirmationEmail(toEmail, contactEmail.id, rawEmail, userId, supabaseAdmin);
             processResult = result.success ? 'success' : 'error';
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
-        } else if (emailType === 'shipping' && userId) {
-            const result = await processShippingEmail(from, rawEmail, userId);
+            orderNumber = result.orderNumber || null;
+        } else if (emailType === 'shipping_notification' && userId) {
+            const result = await processShippingNotificationEmail(rawEmail, userId, supabaseAdmin);
             processResult = result.success ? 'success' : 'error';
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
+            orderNumber = result.orderNumber || null;
         } else {
-            console.log('📄 Full email body for debugging:', rawEmail.substring(0, 3000));
-
-            // Extract and decode email body to search for Gmail confirmation links
-            const emailText = extractEmailBody(rawEmail);
-            console.log('📄 Decoded email body (first 1000 chars):', emailText.substring(0, 1000));
-
-            // Search for Gmail forwarding confirmation link
-            const confirmLinkMatch = emailText.match(/https:\/\/mail\.google\.com\/mail\/vf-[^\s<>"]+/);
-            if (confirmLinkMatch) {
-                console.log('🔗 Gmail forwarding confirmation link found:');
-                console.log('   ', confirmLinkMatch[0]);
-            } else {
-                console.log('  No Gmail confirmation link found');
-            }
-
             console.log('  Skipping processing for this email type');
-            logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${from}`;
+            logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${toEmail}`;
         }
 
         // Log email to database if user was found
@@ -377,7 +369,7 @@ export async function POST(request: NextRequest) {
                         user_id: userId,
                         inventory_id: inventoryId,
                         from_email: from,
-                        to_email: to,
+                        to_email: toEmail,
                         subject: subject,
                         email_type: emailType,
                         process_result: processResult,
@@ -406,9 +398,15 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function processOrderEmail(fromEmail: string, rawEmail: string, userId: string): Promise<{ success: boolean; inventoryId?: string; notes?: string }> {
+async function processOrderConfirmationEmail(
+    contactEmail: string,
+    contactEmailId: string,
+    rawEmail: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string }> {
     try {
-        console.log('  📦 Processing order email...');
+        console.log('  📦 Processing order confirmation email...');
 
         // Extract email body from MIME format
         const emailText = extractEmailBody(rawEmail);
@@ -423,108 +421,100 @@ async function processOrderEmail(fromEmail: string, rawEmail: string, userId: st
 
         console.log(`  ✅ Found ${orders.length} order(s)`);
 
-        // Create service role client to bypass RLS
-        const supabaseAdmin = createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
-                }
-            }
-        );
-
+        const orderNumber = orders[0].orderNumber;
         let lastInventoryId: string | null = null;
 
-        // Lookup contact phone number from contact_emails or contact_phones table
-        let contactPhone: string | null = null;
+        // Process each product in the order
+        for (let i = 0; i < orders.length; i++) {
+            const order = orders[i];
+            const itemIndex = i + 1;
+            const inventoryCode = `${order.orderNumber}-${itemIndex}`;
 
-        // First, try to find phone number from contact_emails table (if it has a phone field)
-        const { data: contactEmailData } = await supabaseAdmin
-            .from('contact_emails')
-            .select('id')
-            .eq('email', fromEmail)
-            .limit(1)
-            .single();
+            console.log(`  📝 Processing item ${itemIndex}/${orders.length}: ${inventoryCode}`);
+            console.log(`     Model: ${order.modelName} ${order.storage} ${order.color}`);
+            console.log(`     Price: ¥${order.price.toLocaleString()}`);
 
-        if (contactEmailData) {
-            // Look up associated phone number from contact_phones table
-            const { data: phoneData } = await supabaseAdmin
-                .from('contact_phones')
-                .select('phone')
-                .eq('user_id', userId)
-                .limit(1)
-                .single();
-
-            if (phoneData) {
-                contactPhone = phoneData.phone;
-                console.log('  ✅ Found contact phone:', contactPhone);
-            } else {
-                console.log('  ℹ️  No contact phone found for user');
-            }
-        }
-
-        for (const order of orders) {
-            console.log(`  📝 Order: ${order.orderNumber} - ${order.modelName} ${order.storage}`);
-
-            // Check if order already exists
+            // Check if inventory already exists (by order_number + item_index)
             const { data: existing } = await supabaseAdmin
                 .from('inventory')
                 .select('id')
                 .eq('order_number', order.orderNumber)
-                .eq('model_name', order.modelName)
-                .eq('storage', order.storage)
+                .eq('item_index', itemIndex)
                 .single();
+
+            const inventoryData = {
+                user_id: userId,
+                inventory_code: inventoryCode,
+                order_number: order.orderNumber,
+                item_index: itemIndex,
+                model_name: order.modelName,
+                storage: order.storage,
+                color: order.color,
+                status: 'ordered',
+                purchase_price: order.price,
+                expected_price: order.price, // Will be updated by price history lookup
+                order_date: formatDateForInput(order.orderDate),
+                expected_delivery_start: formatDateForInput(order.deliveryStart),
+                expected_delivery_end: formatDateForInput(order.deliveryEnd),
+                original_delivery_start: formatDateForInput(order.deliveryStart),
+                original_delivery_end: formatDateForInput(order.deliveryEnd),
+                purchase_source: 'Apple Store',
+                contact_email_id: contactEmailId,
+            };
 
             if (existing) {
-                console.log(`  ℹ️  Order already exists, skipping`);
-                lastInventoryId = existing.id;
-                continue;
-            }
+                // Update existing record
+                console.log(`  ℹ️  Updating existing inventory: ${existing.id}`);
+                const { error } = await supabaseAdmin
+                    .from('inventory')
+                    .update(inventoryData)
+                    .eq('id', existing.id);
 
-            // Insert new inventory item
-            const { data: newInventory, error } = await supabaseAdmin
-                .from('inventory')
-                .insert({
-                    user_id: userId,
-                    model_name: order.modelName,
-                    storage: order.storage,
-                    color: order.color,
-                    status: 'ordered',
-                    purchase_price: order.price,
-                    expected_price: order.price, // Will be updated by price history lookup
-                    order_number: order.orderNumber,
-                    order_date: formatDateForInput(order.orderDate),
-                    expected_delivery_start: formatDateForInput(order.deliveryStart),
-                    expected_delivery_end: formatDateForInput(order.deliveryEnd),
-                    payment_card: order.paymentCard,
-                    purchase_source: 'Apple Store',
-                    // Auto-populate contact information
-                    contact_email: fromEmail,
-                    contact_phone: contactPhone,
-                })
-                .select('id')
-                .single();
-
-            if (error) {
-                console.error(`  ❌ Error inserting order:`, error);
-                return { success: false, notes: `Error inserting order: ${error.message}` };
+                if (error) {
+                    console.error(`  ❌ Error updating inventory:`, error);
+                    return { success: false, orderNumber, notes: `Error updating inventory: ${error.message}` };
+                } else {
+                    console.log(`  ✅ Inventory updated successfully`);
+                    lastInventoryId = existing.id;
+                }
             } else {
-                console.log(`  ✅ Order inserted successfully`);
-                lastInventoryId = newInventory.id;
+                // Insert new record
+                const { data: newInventory, error } = await supabaseAdmin
+                    .from('inventory')
+                    .insert(inventoryData)
+                    .select('id')
+                    .single();
+
+                if (error) {
+                    console.error(`  ❌ Error inserting inventory:`, error);
+                    return { success: false, orderNumber, notes: `Error inserting inventory: ${error.message}` };
+                } else {
+                    console.log(`  ✅ Inventory created successfully: ${newInventory.id}`);
+                    lastInventoryId = newInventory.id;
+                }
             }
         }
-        return { success: true, inventoryId: lastInventoryId || undefined, notes: `Processed ${orders.length} order(s)` };
+
+        return {
+            success: true,
+            inventoryId: lastInventoryId || undefined,
+            orderNumber,
+            notes: `Processed ${orders.length} item(s) for order ${orderNumber}`
+        };
     } catch (error) {
-        console.error('  ❌ Error processing order email:', error);
+        console.error('  ❌ Error processing order confirmation email:', error);
         return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
 
-async function processShippingEmail(fromEmail: string, rawEmail: string, userId: string): Promise<{ success: boolean; inventoryId?: string; notes?: string }> {
+
+async function processShippingNotificationEmail(
+    rawEmail: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string }> {
     try {
-        console.log('  📦 Processing shipping email...');
+        console.log('  📦 Processing shipping notification email...');
 
         // Extract email body from MIME format
         const emailText = extractEmailBody(rawEmail);
@@ -541,49 +531,51 @@ async function processShippingEmail(fromEmail: string, rawEmail: string, userId:
         console.log(`     Carrier: ${shippingInfo.carrier}`);
         console.log(`     Tracking: ${shippingInfo.trackingNumber}`);
 
-        // Create service role client to bypass RLS
-        const supabaseAdmin = createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
-                }
-            }
-        );
-
-        // Find inventory item by order number
-        const { data: inventory, error: fetchError } = await supabaseAdmin
+        // Find all inventory items with this order number (can be multiple)
+        const { data: inventoryItems, error: fetchError } = await supabaseAdmin
             .from('inventory')
-            .select('id, status')
+            .select('id, status, item_index')
             .eq('order_number', shippingInfo.orderNumber)
-            .single();
+            .eq('user_id', userId);
 
-        if (fetchError || !inventory) {
-            console.log(`  ⚠️  Order not found in inventory: ${shippingInfo.orderNumber}`);
-            return { success: false, notes: `Order not found: ${shippingInfo.orderNumber}` };
+        if (fetchError || !inventoryItems || inventoryItems.length === 0) {
+            console.log(`  ⚠️  No inventory found for order: ${shippingInfo.orderNumber}`);
+            return { success: false, orderNumber: shippingInfo.orderNumber, notes: `Order not found: ${shippingInfo.orderNumber}` };
         }
 
-        // Update with shipping information
+        console.log(`  📦 Found ${inventoryItems.length} inventory item(s) for this order`);
+
+        // Update all items with shipping information
+        const updateData = {
+            status: 'shipped',
+            carrier: shippingInfo.carrier,
+            tracking_number: shippingInfo.trackingNumber,
+        };
+
         const { error: updateError } = await supabaseAdmin
             .from('inventory')
-            .update({
-                status: 'shipped',
-                carrier: shippingInfo.carrier,
-                tracking_number: shippingInfo.trackingNumber,
-            })
-            .eq('id', inventory.id);
+            .update(updateData)
+            .eq('order_number', shippingInfo.orderNumber)
+            .eq('user_id', userId);
 
         if (updateError) {
             console.error(`  ❌ Error updating shipping info:`, updateError);
-            return { success: false, inventoryId: inventory.id, notes: `Error updating: ${updateError.message}` };
+            return {
+                success: false,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `Error updating: ${updateError.message}`
+            };
         } else {
-            console.log(`  ✅ Shipping info updated successfully`);
-            return { success: true, inventoryId: inventory.id, notes: `Updated order ${shippingInfo.orderNumber}` };
+            console.log(`  ✅ Updated ${inventoryItems.length} item(s) with shipping info`);
+            return {
+                success: true,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `Updated ${inventoryItems.length} item(s) for order ${shippingInfo.orderNumber}`
+            };
         }
     } catch (error) {
-        console.error('  ❌ Error processing shipping email:', error);
+        console.error('  ❌ Error processing shipping notification email:', error);
         return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
