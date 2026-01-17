@@ -315,6 +315,48 @@ export interface RewardInput {
     notes?: string | null;
 }
 
+// Email log types
+export type EmailType = 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown';
+export type ProcessResult = 'success' | 'skipped' | 'error';
+
+export const EMAIL_TYPES: Record<EmailType, string> = {
+    order: '注文確認',
+    shipping: '出荷通知',
+    delivery: '配達完了',
+    invoice: '請求書',
+    unknown: 'その他',
+};
+
+export const PROCESS_RESULTS: Record<ProcessResult, string> = {
+    success: '成功',
+    skipped: 'スキップ',
+    error: 'エラー',
+};
+
+export interface EmailLog {
+    id: string;
+    user_id: string;
+    inventory_id: string | null;
+    from_email: string;
+    to_email: string;
+    subject: string;
+    email_type: EmailType;
+    process_result: ProcessResult;
+    notes: string | null;
+    received_at: string;
+    created_at: string;
+}
+
+export interface EmailLogInput {
+    inventory_id?: string | null;
+    from_email: string;
+    to_email: string;
+    subject: string;
+    email_type: EmailType;
+    process_result: ProcessResult;
+    notes?: string | null;
+}
+
 // Parsed Apple order data
 export interface ParsedAppleOrder {
     orderNumber: string;

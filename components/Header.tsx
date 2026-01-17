@@ -14,6 +14,7 @@ export default function Header() {
         { href: '/inventory', label: '在庫管理' },
         { href: '/shipments', label: '発送管理' },
         { href: '/rewards', label: 'ポイント管理' },
+        { href: '/emails', label: 'メール履歴' },
         { href: '/apple-accounts', label: 'Apple ID' },
         { href: '/settings', label: '支払い設定' },
         { href: '/settings/contacts', label: '連絡先設定' },
@@ -35,6 +36,7 @@ export default function Header() {
                                 (link.href === '/inventory' && pathname?.startsWith('/inventory')) ||
                                 (link.href === '/shipments' && pathname?.startsWith('/shipments')) ||
                                 (link.href === '/rewards' && pathname?.startsWith('/rewards')) ||
+                                (link.href === '/emails' && pathname?.startsWith('/emails')) ||
                                 (link.href === '/apple-accounts' && pathname?.startsWith('/apple-accounts')) ||
                                 (link.href === '/settings' && pathname?.startsWith('/settings'));
 

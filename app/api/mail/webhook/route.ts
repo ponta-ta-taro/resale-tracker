@@ -283,8 +283,8 @@ export async function POST(request: NextRequest) {
         console.log('📨 Raw email length:', rawEmail?.length || 0);
         console.log('📨 Raw email (first 1000 chars):', rawEmail?.substring(0, 1000));
 
-        // Determine email type from subject
-        let emailType: 'order' | 'shipping' | 'billing' | 'survey' | 'unknown' = 'unknown';
+        // Determine email type from subject (map to database schema)
+        let emailType: 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown' = 'unknown';
 
         if (subject.includes('ご注文の確認') || subject.includes('ご注文ありがとうございます')) {
             emailType = 'order';
@@ -293,20 +293,61 @@ export async function POST(request: NextRequest) {
             emailType = 'shipping';
             console.log('  Type: Shipping notification');
         } else if (subject.includes('請求金額')) {
-            emailType = 'billing';
-            console.log('  Type: Billing');
-        } else if (subject.includes('体験はいかがでしたか')) {
-            emailType = 'survey';
-            console.log('  Type: Survey');
+            emailType = 'invoice';
+            console.log('  Type: Invoice');
+        } else if (subject.includes('配達完了') || subject.includes('お届け済み')) {
+            emailType = 'delivery';
+            console.log('  Type: Delivery');
         } else {
             console.log('  Type: Unknown');
         }
 
+        // Variables for logging
+        let processResult: 'success' | 'skipped' | 'error' = 'skipped';
+        let inventoryId: string | null = null;
+        let logNotes: string | null = null;
+        let userId: string | null = null;
+
+        // Create service role client for logging (bypass RLS)
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        );
+
+        // Look up user from contact_emails table using sender email
+        console.log('  🔍 Looking up user from contact_emails for:', from);
+        const { data: contactEmail } = await supabaseAdmin
+            .from('contact_emails')
+            .select('user_id')
+            .eq('email', from)
+            .limit(1)
+            .single();
+
+        if (contactEmail) {
+            userId = contactEmail.user_id;
+            console.log('  ✅ Found user_id:', userId);
+        } else {
+            console.log('  ⚠️  No user found for email:', from);
+            logNotes = `User not found for email: ${from}`;
+        }
+
         // Process based on email type
-        if (emailType === 'order') {
-            await processOrderEmail(from, rawEmail);
-        } else if (emailType === 'shipping') {
-            await processShippingEmail(from, rawEmail);
+        if (emailType === 'order' && userId) {
+            const result = await processOrderEmail(from, rawEmail, userId);
+            processResult = result.success ? 'success' : 'error';
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
+        } else if (emailType === 'shipping' && userId) {
+            const result = await processShippingEmail(from, rawEmail, userId);
+            processResult = result.success ? 'success' : 'error';
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
         } else {
             console.log('📄 Full email body for debugging:', rawEmail.substring(0, 3000));
 
@@ -324,6 +365,28 @@ export async function POST(request: NextRequest) {
             }
 
             console.log('  Skipping processing for this email type');
+            logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${from}`;
+        }
+
+        // Log email to database if user was found
+        if (userId) {
+            try {
+                await supabaseAdmin
+                    .from('email_logs')
+                    .insert({
+                        user_id: userId,
+                        inventory_id: inventoryId,
+                        from_email: from,
+                        to_email: to,
+                        subject: subject,
+                        email_type: emailType,
+                        process_result: processResult,
+                        notes: logNotes,
+                    });
+                console.log('  ✅ Email logged to database');
+            } catch (logError) {
+                console.error('  ❌ Error logging email:', logError);
+            }
         }
 
         // Always return 200 to prevent Cloudflare from retrying
@@ -343,7 +406,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function processOrderEmail(fromEmail: string, rawEmail: string) {
+async function processOrderEmail(fromEmail: string, rawEmail: string, userId: string): Promise<{ success: boolean; inventoryId?: string; notes?: string }> {
     try {
         console.log('  📦 Processing order email...');
 
@@ -355,7 +418,7 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
 
         if (orders.length === 0) {
             console.log('  ⚠️  No orders found in email');
-            return;
+            return { success: false, notes: 'No orders found in email' };
         }
 
         console.log(`  ✅ Found ${orders.length} order(s)`);
@@ -372,23 +435,7 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
             }
         );
 
-        // Look up user from contact_emails table using sender email
-        console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
-        const { data: contactEmail, error: lookupError } = await supabaseAdmin
-            .from('contact_emails')
-            .select('user_id')
-            .eq('email', fromEmail)
-            .limit(1)
-            .single();
-
-        if (lookupError || !contactEmail) {
-            console.log('  ⚠️  No user found for email:', fromEmail);
-            console.log('  ⚠️  Skipping database insert');
-            return;
-        }
-
-        const userId = contactEmail.user_id;
-        console.log('  ✅ Found user_id:', userId);
+        let lastInventoryId: string | null = null;
 
         for (const order of orders) {
             console.log(`  📝 Order: ${order.orderNumber} - ${order.modelName} ${order.storage}`);
@@ -404,11 +451,12 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
 
             if (existing) {
                 console.log(`  ℹ️  Order already exists, skipping`);
+                lastInventoryId = existing.id;
                 continue;
             }
 
             // Insert new inventory item
-            const { error } = await supabaseAdmin
+            const { data: newInventory, error } = await supabaseAdmin
                 .from('inventory')
                 .insert({
                     user_id: userId,
@@ -424,20 +472,26 @@ async function processOrderEmail(fromEmail: string, rawEmail: string) {
                     expected_delivery_end: formatDateForInput(order.deliveryEnd),
                     payment_card: order.paymentCard,
                     purchase_source: 'Apple Store',
-                });
+                })
+                .select('id')
+                .single();
 
             if (error) {
                 console.error(`  ❌ Error inserting order:`, error);
+                return { success: false, notes: `Error inserting order: ${error.message}` };
             } else {
                 console.log(`  ✅ Order inserted successfully`);
+                lastInventoryId = newInventory.id;
             }
         }
+        return { success: true, inventoryId: lastInventoryId || undefined, notes: `Processed ${orders.length} order(s)` };
     } catch (error) {
         console.error('  ❌ Error processing order email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
 
-async function processShippingEmail(fromEmail: string, rawEmail: string) {
+async function processShippingEmail(fromEmail: string, rawEmail: string, userId: string): Promise<{ success: boolean; inventoryId?: string; notes?: string }> {
     try {
         console.log('  📦 Processing shipping email...');
 
@@ -449,7 +503,7 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
 
         if (!shippingInfo) {
             console.log('  ⚠️  No shipping info found in email');
-            return;
+            return { success: false, notes: 'No shipping info found in email' };
         }
 
         console.log(`  ✅ Found shipping info for order: ${shippingInfo.orderNumber}`);
@@ -468,24 +522,6 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
             }
         );
 
-        // Look up user from contact_emails table using sender email
-        console.log('  🔍 Looking up user from contact_emails for:', fromEmail);
-        const { data: contactEmail, error: lookupError } = await supabaseAdmin
-            .from('contact_emails')
-            .select('user_id')
-            .eq('email', fromEmail)
-            .limit(1)
-            .single();
-
-        if (lookupError || !contactEmail) {
-            console.log('  ⚠️  No user found for email:', fromEmail);
-            console.log('  ⚠️  Skipping database update');
-            return;
-        }
-
-        const userId = contactEmail.user_id;
-        console.log('  ✅ Found user_id:', userId);
-
         // Find inventory item by order number
         const { data: inventory, error: fetchError } = await supabaseAdmin
             .from('inventory')
@@ -495,7 +531,7 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
 
         if (fetchError || !inventory) {
             console.log(`  ⚠️  Order not found in inventory: ${shippingInfo.orderNumber}`);
-            return;
+            return { success: false, notes: `Order not found: ${shippingInfo.orderNumber}` };
         }
 
         // Update with shipping information
@@ -510,10 +546,13 @@ async function processShippingEmail(fromEmail: string, rawEmail: string) {
 
         if (updateError) {
             console.error(`  ❌ Error updating shipping info:`, updateError);
+            return { success: false, inventoryId: inventory.id, notes: `Error updating: ${updateError.message}` };
         } else {
             console.log(`  ✅ Shipping info updated successfully`);
+            return { success: true, inventoryId: inventory.id, notes: `Updated order ${shippingInfo.orderNumber}` };
         }
     } catch (error) {
         console.error('  ❌ Error processing shipping email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }

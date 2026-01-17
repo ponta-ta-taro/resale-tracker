@@ -4,19 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import InventoryForm from '@/components/InventoryForm';
-import { Inventory, STATUS_LABELS, STATUS_COLORS_DETAIL, calculateProfit, calculateProfitRate, Reward, REWARD_TYPES } from '@/types';
+import { Inventory, STATUS_LABELS, STATUS_COLORS_DETAIL, calculateProfit, calculateProfitRate, Reward, REWARD_TYPES, EmailLog, EMAIL_TYPES } from '@/types';
 
 export default function InventoryDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const [inventory, setInventory] = useState<Inventory | null>(null);
     const [currentMarketPrice, setCurrentMarketPrice] = useState<number | null>(null);
     const [rewards, setRewards] = useState<Reward[]>([]);
+    const [emails, setEmails] = useState<EmailLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchInventory();
         fetchRewards();
+        fetchEmails();
     }, [params.id]);
 
     const fetchInventory = async () => {
@@ -58,6 +60,19 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             }
         } catch (error) {
             console.error('Error fetching rewards:', error);
+        }
+    };
+
+    const fetchEmails = async () => {
+        try {
+            const response = await fetch(`/api/emails`);
+            if (response.ok) {
+                const data = await response.json();
+                const linkedEmails = data.filter((e: EmailLog) => e.inventory_id === params.id);
+                setEmails(linkedEmails);
+            }
+        } catch (error) {
+            console.error('Error fetching emails:', error);
         }
     };
 
@@ -365,6 +380,28 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                                             )}
                                             <div className="text-xs text-gray-500 mt-1">
                                                 {new Date(reward.earned_at).toLocaleDateString('ja-JP')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Linked Email History */}
+                    {emails.length > 0 && (
+                        <div className="mt-6 pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">関連メール履歴</h3>
+                            <div className="space-y-2">
+                                {emails.map((email) => (
+                                    <div key={email.id} className="flex justify-between items-center bg-gray-50 p-3 rounded">
+                                        <div>
+                                            <span className="font-medium text-gray-900">{EMAIL_TYPES[email.email_type]}</span>
+                                            <span className="text-gray-600 ml-2">- {email.subject}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm text-gray-600">
+                                                {new Date(email.received_at).toLocaleString('ja-JP')}
                                             </div>
                                         </div>
                                     </div>
