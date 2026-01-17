@@ -286,7 +286,6 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             value={formData.apple_id_used || ''}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                // "ゲストID" is stored as empty string, which will be saved as NULL
                                 setFormData(prev => ({
                                     ...prev,
                                     apple_id_used: value,
@@ -294,6 +293,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             }}
                             className={inputClass}
                         >
+                            <option value="なし">なし</option>
                             <option value="">ゲストID</option>
                             {appleAccounts.map(aa => (
                                 <option key={aa.id} value={aa.name}>

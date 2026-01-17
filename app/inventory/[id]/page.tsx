@@ -324,7 +324,9 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
 
                         <div>
                             <span className="text-gray-500">購入Apple ID:</span>
-                            <span className="ml-2 text-gray-900">{inventory.apple_id_used || 'ゲストID'}</span>
+                            <span className="ml-2 text-gray-900">
+                                {inventory.apple_id_used === 'なし' ? 'なし' : (inventory.apple_id_used || 'ゲストID')}
+                            </span>
                         </div>
 
                         {/* Contact Information */}
