@@ -19,43 +19,52 @@ export interface Model {
 
 export interface Inventory {
     id: string;
+    user_id?: string;
+    inventory_code?: string;
+    order_number: string | null;
+    item_index?: number;
     model_name: string;
     storage: string;
     color: string | null;
+    serial_number: string | null;
+    imei: string | null;
     status: 'ordered' | 'shipped' | 'arrived' | 'selling' | 'sold' | 'paid';
     purchase_price: number | null;
     expected_price: number | null;
     actual_price: number | null;
-    purchase_source: string | null;
-    arrived_at: string | null;
-    sold_at: string | null;
-    paid_at: string | null;
-    notes: string | null;
-    order_number: string | null;
     order_date: string | null;
     expected_delivery_start: string | null;
     expected_delivery_end: string | null;
-    payment_card: string | null;
-    sold_to: string | null;
-    tracking_number: string | null;
+    original_delivery_start: string | null;
+    original_delivery_end: string | null;
+    delivered_at: string | null;
     carrier: string | null;
-    shipment_id: string | null;
-    // 外部キー（支払い方法のみ）
-    payment_method_id: string | null;
-    // JOINで取得する支払い方法名
-    payment_method_name?: string | null;
-    // 連絡先情報の外部キー
+    tracking_number: string | null;
+    purchase_source: string | null;
+    apple_account_id: string | null;
     contact_email_id: string | null;
     contact_phone_id: string | null;
-    credit_card_id: string | null;
-    apple_account: string | null;
-    // 直接保存される連絡先情報（テキストフィールド）
-    contact_email?: string | null;
-    contact_phone?: string | null;
-    // JOINで取得する連絡先情報（外部キー経由）
-    credit_card?: string | null;
+    payment_method_id: string | null;
+    sold_to: string | null;
+    buyer_carrier: string | null;
+    buyer_tracking_number: string | null;
+    shipped_to_buyer_at: string | null;
+    sold_at: string | null;
+    paid_at: string | null;
+    receipt_received_at: string | null;
+    shipment_id: string | null;
+    notes: string | null;
     created_at: string;
     updated_at: string;
+    // Legacy fields (for backward compatibility)
+    arrived_at: string | null;
+    payment_card: string | null;
+    apple_account: string | null;
+    credit_card_id: string | null;
+    contact_email?: string | null;
+    contact_phone?: string | null;
+    credit_card?: string | null;
+    payment_method_name?: string | null;
     order_tracking_url: string | null;
 }
 
