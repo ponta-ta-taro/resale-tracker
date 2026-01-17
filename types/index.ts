@@ -51,9 +51,10 @@ export interface Inventory {
     contact_phone_id: string | null;
     credit_card_id: string | null;
     apple_account: string | null;
-    // JOINで取得する連絡先情報
+    // 直接保存される連絡先情報（テキストフィールド）
     contact_email?: string | null;
     contact_phone?: string | null;
+    // JOINで取得する連絡先情報（外部キー経由）
     credit_card?: string | null;
     created_at: string;
     updated_at: string;
@@ -93,6 +94,9 @@ export interface InventoryInput {
     contact_phone_id?: string;
     credit_card_id?: string;
     apple_account?: string;
+    // 直接保存される連絡先情報（テキストフィールド）
+    contact_email?: string;
+    contact_phone?: string;
 }
 
 // Status labels and colors

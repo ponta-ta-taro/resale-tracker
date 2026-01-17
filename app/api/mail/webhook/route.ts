@@ -437,6 +437,34 @@ async function processOrderEmail(fromEmail: string, rawEmail: string, userId: st
 
         let lastInventoryId: string | null = null;
 
+        // Lookup contact phone number from contact_emails or contact_phones table
+        let contactPhone: string | null = null;
+
+        // First, try to find phone number from contact_emails table (if it has a phone field)
+        const { data: contactEmailData } = await supabaseAdmin
+            .from('contact_emails')
+            .select('id')
+            .eq('email', fromEmail)
+            .limit(1)
+            .single();
+
+        if (contactEmailData) {
+            // Look up associated phone number from contact_phones table
+            const { data: phoneData } = await supabaseAdmin
+                .from('contact_phones')
+                .select('phone')
+                .eq('user_id', userId)
+                .limit(1)
+                .single();
+
+            if (phoneData) {
+                contactPhone = phoneData.phone;
+                console.log('  ✅ Found contact phone:', contactPhone);
+            } else {
+                console.log('  ℹ️  No contact phone found for user');
+            }
+        }
+
         for (const order of orders) {
             console.log(`  📝 Order: ${order.orderNumber} - ${order.modelName} ${order.storage}`);
 
@@ -472,6 +500,9 @@ async function processOrderEmail(fromEmail: string, rawEmail: string, userId: st
                     expected_delivery_end: formatDateForInput(order.deliveryEnd),
                     payment_card: order.paymentCard,
                     purchase_source: 'Apple Store',
+                    // Auto-populate contact information
+                    contact_email: fromEmail,
+                    contact_phone: contactPhone,
                 })
                 .select('id')
                 .single();
