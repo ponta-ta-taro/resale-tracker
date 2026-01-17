@@ -1,587 +1,465 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Header from '@/components/Header';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import StatusProgressBar from '@/components/StatusProgressBar';
-import { InventoryV2, InventoryV2Status, InventoryV2Input, STATUS_V2_LABELS, PaymentMethod, ContactEmail } from '@/types';
+import type { InventoryV2, InventoryV2Input, InventoryV2Status } from '@/types';
+import { INVENTORY_STATUSES, STATUS_V2_LABELS } from '@/types';
 
-export default function InventoryDetailPage() {
+export default function InventoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
-    const params = useParams();
-    const id = params.id as string;
-
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [deleting, setDeleting] = useState(false);
-    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-    const [contactEmails, setContactEmails] = useState<ContactEmail[]>([]);
-
-    const [formData, setFormData] = useState<InventoryV2Input>({
-        order_number: '',
-        item_index: 1,
-        model_name: '',
-        storage: '',
-        color: '',
-        purchase_source: '',
-        payment_method_id: '',
-        apple_account_id: '',
-        contact_email_id: '',
-        status: 'ordered',
-        order_date: '',
-        expected_delivery_date: '',
-        original_expected_date: '',
-        delivered_at: '',
-        carrier: '',
-        tracking_number: '',
-        purchase_price: null,
-        expected_price: null,
-        actual_price: null,
-        sold_to: '',
-        buyer_carrier: '',
-        buyer_tracking_number: '',
-        sent_to_buyer_at: '',
-        sold_at: '',
-        paid_at: '',
-        receipt_received_at: '',
-        notes: '',
-    });
+    const [inventory, setInventory] = useState<InventoryV2 | null>(null);
+    const [formData, setFormData] = useState<Partial<InventoryV2Input>>({});
 
     useEffect(() => {
         fetchInventory();
-        fetchPaymentMethods();
-        fetchContactEmails();
     }, [id]);
 
-    const fetchInventory = async () => {
+    async function fetchInventory() {
         try {
-            const response = await fetch(`/api/inventory/${id}`);
-            if (!response.ok) throw new Error('Failed to fetch inventory');
-            const data: InventoryV2 = await response.json();
+            const res = await fetch(`/api/inventory/${id}`);
+            const json = await res.json();
 
-            setFormData({
-                order_number: data.order_number,
-                item_index: data.item_index,
-                model_name: data.model_name,
-                storage: data.storage,
-                color: data.color || '',
-                purchase_source: data.purchase_source || '',
-                payment_method_id: data.payment_method_id || '',
-                apple_account_id: data.apple_account_id || '',
-                contact_email_id: data.contact_email_id || '',
-                status: data.status,
-                order_date: data.order_date || '',
-                expected_delivery_date: data.expected_delivery_date || '',
-                original_expected_date: data.original_expected_date || '',
-                delivered_at: data.delivered_at || '',
-                carrier: data.carrier || '',
-                tracking_number: data.tracking_number || '',
-                purchase_price: data.purchase_price,
-                expected_price: data.expected_price,
-                actual_price: data.actual_price,
-                sold_to: data.sold_to || '',
-                buyer_carrier: data.buyer_carrier || '',
-                buyer_tracking_number: data.buyer_tracking_number || '',
-                sent_to_buyer_at: data.sent_to_buyer_at || '',
-                sold_at: data.sold_at || '',
-                paid_at: data.paid_at || '',
-                receipt_received_at: data.receipt_received_at || '',
-                notes: data.notes || '',
-            });
+            if (json.data) {
+                setInventory(json.data);
+                setFormData(json.data);
+            }
         } catch (error) {
             console.error('Error fetching inventory:', error);
-            alert('在庫データの取得に失敗しました');
         } finally {
             setLoading(false);
         }
-    };
-
-    const fetchPaymentMethods = async () => {
-        try {
-            const response = await fetch('/api/payment-methods');
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Payment methods response:', data, 'Is array:', Array.isArray(data));
-                setPaymentMethods(Array.isArray(data) ? data : []);
-            }
-        } catch (error) {
-            console.error('Error fetching payment methods:', error);
-        }
-    };
-
-    const fetchContactEmails = async () => {
-        try {
-            const response = await fetch('/api/contact-emails');
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Contact emails response:', data, 'Is array:', Array.isArray(data));
-                setContactEmails(Array.isArray(data) ? data : []);
-            }
-        } catch (error) {
-            console.error('Error fetching contact emails:', error);
-        }
-    };
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
 
         try {
-            const response = await fetch(`/api/inventory/${id}`, {
+            const res = await fetch(`/api/inventory/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to update inventory');
-            }
+            const json = await res.json();
 
-            router.push('/inventory');
+            if (res.ok) {
+                alert('更新しました');
+                fetchInventory();
+            } else {
+                alert(`エラー: ${json.error || '更新に失敗しました'}`);
+            }
         } catch (error) {
             console.error('Error updating inventory:', error);
-            alert(error instanceof Error ? error.message : '在庫の更新に失敗しました');
+            alert('更新に失敗しました');
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm('本当に削除しますか？この操作は取り消せません。')) {
-            return;
-        }
-
-        setDeleting(true);
+        if (!confirm('本当に削除しますか？')) return;
 
         try {
-            const response = await fetch(`/api/inventory/${id}`, {
+            const res = await fetch(`/api/inventory/${id}`, {
                 method: 'DELETE',
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to delete inventory');
+            if (res.ok) {
+                alert('削除しました');
+                router.push('/inventory');
+            } else {
+                const json = await res.json();
+                alert(`エラー: ${json.error || '削除に失敗しました'}`);
             }
-
-            router.push('/inventory');
         } catch (error) {
             console.error('Error deleting inventory:', error);
-            alert(error instanceof Error ? error.message : '在庫の削除に失敗しました');
-        } finally {
-            setDeleting(false);
+            alert('削除に失敗しました');
         }
     };
 
-    const handleChange = (field: keyof InventoryV2Input, value: any) => {
+    const updateField = (field: keyof InventoryV2Input, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     if (loading) {
         return (
-            <>
-                <Header />
-                <div className="flex justify-center items-center min-h-screen">
-                    <div className="text-gray-600">読み込み中...</div>
-                </div>
-            </>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="text-center text-gray-500">読み込み中...</div>
+            </div>
+        );
+    }
+
+    if (!inventory) {
+        return (
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="text-center text-gray-500">在庫が見つかりません</div>
+            </div>
         );
     }
 
     return (
-        <>
-            <Header />
-            <div className="container mx-auto px-4 py-8">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900">在庫詳細・編集</h1>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">在庫詳細・編集</h1>
+                <div className="text-sm text-gray-500">
+                    在庫コード: <span className="font-semibold">{inventory.inventory_code}</span>
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* ステータス */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 ステータス</h2>
+
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            現在のステータス
+                        </label>
+                        <select
+                            value={formData.status}
+                            onChange={(e) => updateField('status', e.target.value as InventoryV2Status)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            {INVENTORY_STATUSES.map((status) => (
+                                <option key={status} value={status}>
+                                    {STATUS_V2_LABELS[status]}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <StatusProgressBar currentStatus={formData.status || 'ordered'} />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Status Section */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">ステータス</h2>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                現在のステータス
-                            </label>
+                {/* 基本情報 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">📦 基本情報</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">注文番号</label>
+                            <input
+                                type="text"
+                                value={formData.order_number || ''}
+                                disabled
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">アイテム番号</label>
+                            <input
+                                type="number"
+                                value={formData.item_index || 1}
+                                disabled
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">機種名</label>
+                            <input
+                                type="text"
+                                value={formData.model_name || ''}
+                                onChange={(e) => updateField('model_name', e.target.value)}
+                                placeholder="iPhone 17 Pro Max"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">容量</label>
+                            <input
+                                type="text"
+                                value={formData.storage || ''}
+                                onChange={(e) => updateField('storage', e.target.value)}
+                                placeholder="256GB"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">カラー</label>
+                            <input
+                                type="text"
+                                value={formData.color || ''}
+                                onChange={(e) => updateField('color', e.target.value)}
+                                placeholder="コズミックオレンジ"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">仕入先</label>
                             <select
-                                value={formData.status}
-                                onChange={(e) => handleChange('status', e.target.value as InventoryV2Status)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={formData.purchase_source || ''}
+                                onChange={(e) => updateField('purchase_source', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                {STATUS_V2_LABELS && Object.entries(STATUS_V2_LABELS).map(([value, label]) => (
-                                    <option key={value} value={value}>
-                                        {label}
-                                    </option>
-                                ))}
+                                <option value="">選択してください</option>
+                                <option value="Apple Store">Apple Store</option>
+                                <option value="Amazon">Amazon</option>
                             </select>
                         </div>
-                        <StatusProgressBar currentStatus={formData.status} />
                     </div>
+                </div>
 
-                    {/* Basic Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">基本情報</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    注文番号 <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.order_number}
-                                    onChange={(e) => handleChange('order_number', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    アイテム番号 <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    required
-                                    min="1"
-                                    value={formData.item_index}
-                                    onChange={(e) => handleChange('item_index', parseInt(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    機種名 <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.model_name}
-                                    onChange={(e) => handleChange('model_name', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    容量 <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.storage}
-                                    onChange={(e) => handleChange('storage', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    カラー
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.color}
-                                    onChange={(e) => handleChange('color', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    仕入先
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.purchase_source}
-                                    onChange={(e) => handleChange('purchase_source', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    支払い方法
-                                </label>
-                                <select
-                                    value={formData.payment_method_id}
-                                    onChange={(e) => handleChange('payment_method_id', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">選択してください</option>
-                                    {(paymentMethods || []).map((method) => (
-                                        <option key={method.id} value={method.id}>
-                                            {method.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    連絡先メール
-                                </label>
-                                <select
-                                    value={formData.contact_email_id}
-                                    onChange={(e) => handleChange('contact_email_id', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">選択してください</option>
-                                    {(contactEmails || []).map((email) => (
-                                        <option key={email.id} value={email.id}>
-                                            {email.email}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Apple ID</label>
-                                <input
-                                    type="text"
-                                    value={formData.apple_account_id}
-                                    onChange={(e) => handleChange('apple_account_id', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
+                {/* 日付情報 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">📅 日付情報</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">注文日</label>
+                            <input
+                                type="date"
+                                value={formData.order_date || ''}
+                                onChange={(e) => updateField('order_date', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">納品日</label>
+                            <input
+                                type="date"
+                                value={formData.delivered_at || ''}
+                                onChange={(e) => updateField('delivered_at', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">お届け予定日（開始）</label>
+                            <input
+                                type="date"
+                                value={formData.expected_delivery_start || ''}
+                                onChange={(e) => updateField('expected_delivery_start', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">お届け予定日（終了）</label>
+                            <input
+                                type="date"
+                                value={formData.expected_delivery_end || ''}
+                                onChange={(e) => updateField('expected_delivery_end', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">当初お届け予定日（開始）</label>
+                            <input
+                                type="date"
+                                value={formData.original_delivery_start || ''}
+                                onChange={(e) => updateField('original_delivery_start', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">当初お届け予定日（終了）</label>
+                            <input
+                                type="date"
+                                value={formData.original_delivery_end || ''}
+                                onChange={(e) => updateField('original_delivery_end', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* Date Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">日付情報</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    注文日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.order_date}
-                                    onChange={(e) => handleChange('order_date', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    お届け予定日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.expected_delivery_date}
-                                    onChange={(e) => handleChange('expected_delivery_date', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    当初予定日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.original_expected_date}
-                                    onChange={(e) => handleChange('original_expected_date', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    納品日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.delivered_at}
-                                    onChange={(e) => handleChange('delivered_at', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
+                {/* Apple配送情報 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">📦 Apple配送情報</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">配送業者</label>
+                            <input
+                                type="text"
+                                value={formData.carrier || ''}
+                                onChange={(e) => updateField('carrier', e.target.value)}
+                                placeholder="ヤマト運輸"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">追跡番号</label>
+                            <input
+                                type="text"
+                                value={formData.tracking_number || ''}
+                                onChange={(e) => updateField('tracking_number', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* Apple Delivery Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Apple配送情報</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    配送業者
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.carrier}
-                                    onChange={(e) => handleChange('carrier', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    追跡番号
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.tracking_number}
-                                    onChange={(e) => handleChange('tracking_number', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
+                {/* 価格情報 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">💰 価格情報</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">仕入価格</label>
+                            <input
+                                type="number"
+                                value={formData.purchase_price || ''}
+                                onChange={(e) => updateField('purchase_price', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="194800"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">予想売価</label>
+                            <input
+                                type="number"
+                                value={formData.expected_price || ''}
+                                onChange={(e) => updateField('expected_price', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="203000"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">実売価格</label>
+                            <input
+                                type="number"
+                                value={formData.actual_price || ''}
+                                onChange={(e) => updateField('actual_price', e.target.value ? parseInt(e.target.value) : null)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* Price Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">価格情報</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    仕入価格
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formData.purchase_price ?? ''}
-                                    onChange={(e) => handleChange('purchase_price', e.target.value ? parseFloat(e.target.value) : null)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    予想売価
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formData.expected_price ?? ''}
-                                    onChange={(e) => handleChange('expected_price', e.target.value ? parseFloat(e.target.value) : null)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    実売価格
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formData.actual_price ?? ''}
-                                    onChange={(e) => handleChange('actual_price', e.target.value ? parseFloat(e.target.value) : null)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
+                {/* 買取・販売情報 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">🚚 買取・販売情報</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">販売先</label>
+                            <input
+                                type="text"
+                                value={formData.sold_to || ''}
+                                onChange={(e) => updateField('sold_to', e.target.value)}
+                                placeholder="モバイルミックス"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">買取発送日</label>
+                            <input
+                                type="date"
+                                value={formData.shipped_to_buyer_at || ''}
+                                onChange={(e) => updateField('shipped_to_buyer_at', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">買取配送業者</label>
+                            <input
+                                type="text"
+                                value={formData.buyer_carrier || ''}
+                                onChange={(e) => updateField('buyer_carrier', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">買取伝票番号</label>
+                            <input
+                                type="text"
+                                value={formData.buyer_tracking_number || ''}
+                                onChange={(e) => updateField('buyer_tracking_number', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">売却日</label>
+                            <input
+                                type="date"
+                                value={formData.sold_at || ''}
+                                onChange={(e) => updateField('sold_at', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">入金日</label>
+                            <input
+                                type="date"
+                                value={formData.paid_at || ''}
+                                onChange={(e) => updateField('paid_at', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">領収書受領日</label>
+                            <input
+                                type="date"
+                                value={formData.receipt_received_at || ''}
+                                onChange={(e) => updateField('receipt_received_at', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* Buyer/Sales Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">買取・販売情報</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    販売先
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.sold_to}
-                                    onChange={(e) => handleChange('sold_to', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    配送業者
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.buyer_carrier}
-                                    onChange={(e) => handleChange('buyer_carrier', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    伝票番号
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.buyer_tracking_number}
-                                    onChange={(e) => handleChange('buyer_tracking_number', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    発送日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.sent_to_buyer_at}
-                                    onChange={(e) => handleChange('sent_to_buyer_at', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    売却日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.sold_at}
-                                    onChange={(e) => handleChange('sold_at', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    入金日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.paid_at}
-                                    onChange={(e) => handleChange('paid_at', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    領収書受領日
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.receipt_received_at}
-                                    onChange={(e) => handleChange('receipt_received_at', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                {/* 備考 */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">📝 備考</h2>
 
-                    {/* Notes */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">備考</h2>
-                        <textarea
-                            value={formData.notes}
-                            onChange={(e) => handleChange('notes', e.target.value)}
-                            rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
+                    <textarea
+                        value={formData.notes || ''}
+                        onChange={(e) => updateField('notes', e.target.value)}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="備考を入力..."
+                    />
+                </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-4">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-                        >
-                            {saving ? '保存中...' : '保存'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => router.push('/inventory')}
-                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                        >
-                            キャンセル
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className="ml-auto px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400"
-                        >
-                            {deleting ? '削除中...' : '削除'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </>
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                    >
+                        {saving ? '更新中...' : '更新する'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/inventory')}
+                        className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    >
+                        戻る
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                    >
+                        削除
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 }

@@ -94,15 +94,20 @@ export interface InventoryInput {
     order_tracking_url?: string;
 }
 
-// V2 Inventory Types
-export type InventoryV2Status =
-    | 'ordered'
-    | 'shipped'
-    | 'delivered'
-    | 'sent_to_buyer'
-    | 'buyer_completed'
-    | 'paid'
-    | 'receipt_received';
+// V2 Inventory Types - Based on DATABASE.md
+export const INVENTORY_STATUSES = [
+    'ordered',
+    'processing',
+    'preparing_shipment',
+    'shipped',
+    'delivered',
+    'sent_to_buyer',
+    'buyer_completed',
+    'paid',
+    'receipt_received'
+] as const;
+
+export type InventoryV2Status = typeof INVENTORY_STATUSES[number];
 
 export interface InventoryV2 {
     id: string;
@@ -110,30 +115,36 @@ export interface InventoryV2 {
     inventory_code: string;
     order_number: string;
     item_index: number;
-    model_name: string;
-    storage: string;
+    model_name: string | null;
+    storage: string | null;
     color: string | null;
-    purchase_source: string | null;
-    payment_method_id: string | null;
-    apple_account_id: string | null;
-    contact_email_id: string | null;
+    serial_number: string | null;
+    imei: string | null;
     status: InventoryV2Status;
-    order_date: string | null;
-    expected_delivery_date: string | null;
-    original_expected_date: string | null;
-    delivered_at: string | null;
-    carrier: string | null;
-    tracking_number: string | null;
     purchase_price: number | null;
     expected_price: number | null;
     actual_price: number | null;
+    order_date: string | null;
+    expected_delivery_start: string | null;
+    expected_delivery_end: string | null;
+    original_delivery_start: string | null;
+    original_delivery_end: string | null;
+    delivered_at: string | null;
+    carrier: string | null;
+    tracking_number: string | null;
+    purchase_source: string | null;
+    apple_account_id: string | null;
+    contact_email_id: string | null;
+    contact_phone_id: string | null;
+    payment_method_id: string | null;
     sold_to: string | null;
     buyer_carrier: string | null;
     buyer_tracking_number: string | null;
-    sent_to_buyer_at: string | null;
+    shipped_to_buyer_at: string | null;
     sold_at: string | null;
     paid_at: string | null;
     receipt_received_at: string | null;
+    shipment_id: string | null;
     notes: string | null;
     created_at: string;
     updated_at: string;
@@ -142,30 +153,36 @@ export interface InventoryV2 {
 export interface InventoryV2Input {
     order_number: string;
     item_index?: number;
-    model_name: string;
-    storage: string;
+    model_name?: string;
+    storage?: string;
     color?: string;
-    purchase_source?: string;
-    payment_method_id?: string;
-    apple_account_id?: string;
-    contact_email_id?: string;
-    status: InventoryV2Status;
-    order_date?: string;
-    expected_delivery_date?: string;
-    original_expected_date?: string;
-    delivered_at?: string;
-    carrier?: string;
-    tracking_number?: string;
+    serial_number?: string;
+    imei?: string;
+    status?: InventoryV2Status;
     purchase_price?: number | null;
     expected_price?: number | null;
     actual_price?: number | null;
+    order_date?: string;
+    expected_delivery_start?: string;
+    expected_delivery_end?: string;
+    original_delivery_start?: string;
+    original_delivery_end?: string;
+    delivered_at?: string;
+    carrier?: string;
+    tracking_number?: string;
+    purchase_source?: string;
+    apple_account_id?: string;
+    contact_email_id?: string;
+    contact_phone_id?: string;
+    payment_method_id?: string;
     sold_to?: string;
     buyer_carrier?: string;
     buyer_tracking_number?: string;
-    sent_to_buyer_at?: string;
+    shipped_to_buyer_at?: string;
     sold_at?: string;
     paid_at?: string;
     receipt_received_at?: string;
+    shipment_id?: string;
     notes?: string;
 }
 
@@ -193,6 +210,8 @@ export const STATUS_COLORS: Record<InventoryStatus, string> = {
 // V2 Status labels and colors
 export const STATUS_V2_LABELS: Record<InventoryV2Status, string> = {
     ordered: '注文確定',
+    processing: '処理中',
+    preparing_shipment: '配送準備中',
     shipped: '出荷完了',
     delivered: '配送済み',
     sent_to_buyer: '買取発送済み',
@@ -203,6 +222,8 @@ export const STATUS_V2_LABELS: Record<InventoryV2Status, string> = {
 
 export const STATUS_V2_COLORS: Record<InventoryV2Status, string> = {
     ordered: 'bg-blue-100 text-blue-800',
+    processing: 'bg-sky-100 text-sky-800',
+    preparing_shipment: 'bg-cyan-100 text-cyan-800',
     shipped: 'bg-indigo-100 text-indigo-800',
     delivered: 'bg-purple-100 text-purple-800',
     sent_to_buyer: 'bg-yellow-100 text-yellow-800',
@@ -287,16 +308,18 @@ export interface EarlyRepaymentInput {
 // Apple Account types
 export interface AppleAccount {
     id: string;
+    user_id: string;
     name: string;
-    email: string;
+    email: string | null;
+    is_guest: boolean;
     notes: string | null;
     created_at: string;
-    updated_at: string;
 }
 
 export interface AppleAccountInput {
     name: string;
-    email: string;
+    email?: string | null;
+    is_guest?: boolean;
     notes?: string | null;
 }
 
@@ -305,27 +328,31 @@ export interface ContactEmail {
     id: string;
     user_id: string;
     email: string;
-    notes: string | null;
+    label: string | null;
+    is_active: boolean;
     created_at: string;
 }
 
 export interface ContactEmailInput {
     email: string;
-    notes?: string | null;
+    label?: string | null;
+    is_active?: boolean;
 }
 
 // Contact Phone types
 export interface ContactPhone {
     id: string;
     user_id: string;
-    phone: string;
-    notes: string | null;
+    phone_number: string;
+    label: string | null;
+    is_active: boolean;
     created_at: string;
 }
 
 export interface ContactPhoneInput {
-    phone: string;
-    notes?: string | null;
+    phone_number: string;
+    label?: string | null;
+    is_active?: boolean;
 }
 
 // Purchase source options (仕入先)

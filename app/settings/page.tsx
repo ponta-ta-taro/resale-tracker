@@ -32,13 +32,13 @@ export default function SettingsPage() {
     const [contactEmails, setContactEmails] = useState<ContactEmail[]>([]);
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
-    const [emailFormData, setEmailFormData] = useState({ email: '', notes: '' });
+    const [emailFormData, setEmailFormData] = useState({ email: '', label: '' });
 
     // Contact Phones state
     const [contactPhones, setContactPhones] = useState<ContactPhone[]>([]);
     const [showPhoneForm, setShowPhoneForm] = useState(false);
     const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null);
-    const [phoneFormData, setPhoneFormData] = useState({ phone: '', notes: '' });
+    const [phoneFormData, setPhoneFormData] = useState({ phone_number: '', label: '' });
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -196,13 +196,13 @@ export default function SettingsPage() {
 
     // Contact Email handlers
     const resetEmailForm = () => {
-        setEmailFormData({ email: '', notes: '' });
+        setEmailFormData({ email: '', label: '' });
         setEditingEmailId(null);
         setShowEmailForm(false);
     };
 
     const handleEditEmail = (email: ContactEmail) => {
-        setEmailFormData({ email: email.email, notes: email.notes || '' });
+        setEmailFormData({ email: email.email, label: email.label || '' });
         setEditingEmailId(email.id);
         setShowEmailForm(true);
     };
@@ -216,7 +216,7 @@ export default function SettingsPage() {
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...emailFormData, notes: emailFormData.notes || null }),
+                body: JSON.stringify({ ...emailFormData, label: emailFormData.label || null }),
             });
             if (response.ok) {
                 await fetchAllData();
@@ -246,13 +246,13 @@ export default function SettingsPage() {
 
     // Contact Phone handlers
     const resetPhoneForm = () => {
-        setPhoneFormData({ phone: '', notes: '' });
+        setPhoneFormData({ phone_number: '', label: '' });
         setEditingPhoneId(null);
         setShowPhoneForm(false);
     };
 
     const handleEditPhone = (phone: ContactPhone) => {
-        setPhoneFormData({ phone: phone.phone, notes: phone.notes || '' });
+        setPhoneFormData({ phone_number: phone.phone_number, label: phone.label || '' });
         setEditingPhoneId(phone.id);
         setShowPhoneForm(true);
     };
@@ -266,7 +266,7 @@ export default function SettingsPage() {
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...phoneFormData, notes: phoneFormData.notes || null }),
+                body: JSON.stringify({ ...phoneFormData, label: phoneFormData.label || null }),
             });
             if (response.ok) {
                 await fetchAllData();
@@ -684,11 +684,11 @@ export default function SettingsPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">メモ</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">ラベル</label>
                                             <input
                                                 type="text"
-                                                value={emailFormData.notes}
-                                                onChange={(e) => setEmailFormData({ ...emailFormData, notes: e.target.value })}
+                                                value={emailFormData.label}
+                                                onChange={(e) => setEmailFormData({ ...emailFormData, label: e.target.value })}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             />
                                         </div>
@@ -718,7 +718,7 @@ export default function SettingsPage() {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メールアドレス</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メモ</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ラベル</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
@@ -736,7 +736,7 @@ export default function SettingsPage() {
                                                     <div className="font-medium text-gray-900">{email.email}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {email.notes || '-'}
+                                                    {email.label || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                                                     <button
@@ -785,19 +785,19 @@ export default function SettingsPage() {
                                             </label>
                                             <input
                                                 type="tel"
-                                                value={phoneFormData.phone}
-                                                onChange={(e) => setPhoneFormData({ ...phoneFormData, phone: e.target.value })}
+                                                value={phoneFormData.phone_number}
+                                                onChange={(e) => setPhoneFormData({ ...phoneFormData, phone_number: e.target.value })}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="例: 090-1234-5678"
                                                 required
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">メモ</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">ラベル</label>
                                             <input
                                                 type="text"
-                                                value={phoneFormData.notes}
-                                                onChange={(e) => setPhoneFormData({ ...phoneFormData, notes: e.target.value })}
+                                                value={phoneFormData.label}
+                                                onChange={(e) => setPhoneFormData({ ...phoneFormData, label: e.target.value })}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             />
                                         </div>
@@ -827,7 +827,7 @@ export default function SettingsPage() {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">電話番号</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メモ</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ラベル</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
@@ -842,10 +842,10 @@ export default function SettingsPage() {
                                         contactPhones.map((phone) => (
                                             <tr key={phone.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{phone.phone}</div>
+                                                    <div className="font-medium text-gray-900">{phone.phone_number}</div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {phone.notes || '-'}
+                                                    {phone.label || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                                                     <button

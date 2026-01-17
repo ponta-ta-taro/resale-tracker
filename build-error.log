@@ -1,0 +1,95 @@
+﻿
+> resale-tracker@0.1.0 build
+> next build
+
+  笆ｲ Next.js 14.2.18
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ 笨・Compiled successfully
+   Linting and checking validity of types ...
+
+./app/emails/page.tsx
+66:8  Warning: React Hook useEffect has a missing dependency: 'fetchEmails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/inventory/page.tsx
+17:8  Warning: React Hook useEffect has a missing dependency: 'fetchInventory'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/inventory/[id]/page.tsx
+20:8  Warning: React Hook useEffect has a missing dependency: 'fetchInventory'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/rewards/page.tsx
+33:8  Warning: React Hook useEffect has missing dependencies: 'fetchRewards' and 'fetchSummary'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/rewards/[id]/page.tsx
+29:8  Warning: React Hook useEffect has a missing dependency: 'fetchReward'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shipments/[id]/page.tsx
+29:8  Warning: React Hook useEffect has a missing dependency: 'fetchShipment'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/PriceChart.tsx
+93:8  Warning: React Hook useEffect has a missing dependency: 'models'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+node.exe : Failed to c
+ompile.
+発生場所 行:1 文字:1
++ & "C:\Program Files\
+nodejs/node.exe" "C:\P
+rogram Files\nodejs/no
+de_mo ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Failed to    
+ compile.:String)     
+[], RemoteExcepti    o
+n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+./app/settings/page.ts
+x:205:61
+Type error: Property '
+notes' does not exist 
+on type 'ContactEmail'
+.
+
+[0m [90m 203 |[39m
+[0m
+[0m [90m 204 |[39m 
+    [36mconst[39m ha
+ndleEditEmail [33m=[
+39m (email[33m:[39m 
+[33mContactEmail[39m
+) [33m=>[39m {[0m
+[0m[31m[1m>[22m[3
+9m[90m 205 |[39m    
+     setEmailFormData(
+{ email[33m:[39m ema
+il[33m.[39memail[33
+m,[39m notes[33m:[3
+9m email[33m.[39mnot
+es [33m||[39m [32m'
+'[39m })[33m;[39m[
+0m
+[0m [90m     |[39m 
+                      
+                      
+                [31m
+[1m^[22m[39m[0m
+[0m [90m 206 |[39m 
+        setEditingEmai
+lId(email[33m.[39mid
+)[33m;[39m[0m
+[0m [90m 207 |[39m 
+        setShowEmailFo
+rm([36mtrue[39m)[33
+m;[39m[0m
+[0m [90m 208 |[39m 
+    }[33m;[39m[0m

@@ -1,106 +1,128 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 import type { InventoryV2Input } from '@/types';
 
-// GET: Fetch all inventory_v2 items
-export async function GET(request: Request) {
+// GET /api/inventory - 在庫一覧取得
+export async function GET(request: NextRequest) {
     try {
-        const supabase = await createServerSupabaseClient();
+        const supabase = await createClient();
 
-        // Check authentication
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        // 認証チェック
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { searchParams } = new URL(request.url);
+        // クエリパラメータ
+        const searchParams = request.nextUrl.searchParams;
         const status = searchParams.get('status');
+        const limit = parseInt(searchParams.get('limit') || '50');
+        const offset = parseInt(searchParams.get('offset') || '0');
 
-        // RLS will automatically filter to user's data
+        // クエリ構築
         let query = supabase
-            .from('inventory_v2')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .from('inventory')
+            .select('*', { count: 'exact' })
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
-        if (status && status !== 'all') {
+        // ステータスフィルター
+        if (status) {
             query = query.eq('status', status);
         }
 
-        const { data, error } = await query;
+        const { data, error, count } = await query;
 
         if (error) {
-            console.error('Error fetching inventory_v2:', error);
-            return NextResponse.json(
-                { error: 'Failed to fetch inventory' },
-                { status: 500 }
-            );
+            console.error('Error fetching inventory:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json(data);
+        return NextResponse.json({ data, count });
     } catch (error) {
         console.error('Unexpected error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
-// POST: Create new inventory_v2 item
-export async function POST(request: Request) {
+// POST /api/inventory - 在庫新規登録
+export async function POST(request: NextRequest) {
     try {
-        const supabase = await createServerSupabaseClient();
+        const supabase = await createClient();
 
-        // Check authentication
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        // 認証チェック
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const body: InventoryV2Input = await request.json();
 
-        // Convert all empty strings to null
-        const sanitizedData = Object.fromEntries(
-            Object.entries(body).map(([key, value]) => [
-                key,
-                value === '' ? null : value
-            ])
-        );
+        // 必須フィールドチェック
+        if (!body.order_number) {
+            return NextResponse.json({ error: 'order_number is required' }, { status: 400 });
+        }
 
-        // Generate inventory_code
-        const item_index = sanitizedData.item_index || 1;
-        const inventory_code = `${sanitizedData.order_number}-${item_index}`;
+        // item_indexのデフォルト値
+        const item_index = body.item_index || 1;
 
-        // Prepare data for insertion
+        // inventory_code を自動生成
+        const inventory_code = `${body.order_number}-${item_index}`;
+
+        // データ準備
         const insertData = {
-            ...sanitizedData,
+            user_id: user.id,
             inventory_code,
+            order_number: body.order_number,
             item_index,
-            user_id: user.id
+            model_name: body.model_name || null,
+            storage: body.storage || null,
+            color: body.color || null,
+            serial_number: body.serial_number || null,
+            imei: body.imei || null,
+            status: body.status || 'ordered',
+            purchase_price: body.purchase_price || null,
+            expected_price: body.expected_price || null,
+            actual_price: body.actual_price || null,
+            order_date: body.order_date || null,
+            expected_delivery_start: body.expected_delivery_start || null,
+            expected_delivery_end: body.expected_delivery_end || null,
+            original_delivery_start: body.original_delivery_start || null,
+            original_delivery_end: body.original_delivery_end || null,
+            delivered_at: body.delivered_at || null,
+            carrier: body.carrier || null,
+            tracking_number: body.tracking_number || null,
+            purchase_source: body.purchase_source || null,
+            apple_account_id: body.apple_account_id || null,
+            contact_email_id: body.contact_email_id || null,
+            contact_phone_id: body.contact_phone_id || null,
+            payment_method_id: body.payment_method_id || null,
+            sold_to: body.sold_to || null,
+            buyer_carrier: body.buyer_carrier || null,
+            buyer_tracking_number: body.buyer_tracking_number || null,
+            shipped_to_buyer_at: body.shipped_to_buyer_at || null,
+            sold_at: body.sold_at || null,
+            paid_at: body.paid_at || null,
+            receipt_received_at: body.receipt_received_at || null,
+            shipment_id: body.shipment_id || null,
+            notes: body.notes || null,
         };
 
         const { data, error } = await supabase
-            .from('inventory_v2')
-            .insert([insertData])
+            .from('inventory')
+            .insert(insertData)
             .select()
             .single();
 
         if (error) {
-            console.error('Error creating inventory_v2:', error);
-            return NextResponse.json(
-                { error: 'Failed to create inventory', details: error.message },
-                { status: 500 }
-            );
+            console.error('Error creating inventory:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json(data, { status: 201 });
+        return NextResponse.json({ data }, { status: 201 });
     } catch (error) {
         console.error('Unexpected error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
