@@ -343,6 +343,64 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             <span className="ml-2 text-gray-900">{inventory.credit_card || '-'}</span>
                         </div>
 
+                        {/* Apple配送情報 */}
+                        {(inventory.apple_carrier || inventory.apple_tracking_number || inventory.order_tracking_url) && (
+                            <>
+                                <div className="col-span-3 border-t border-gray-200 pt-4 mt-4">
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-3">📦 Apple配送情報</h3>
+                                </div>
+                                {inventory.apple_carrier && (
+                                    <div>
+                                        <span className="text-gray-500">Appleからの配送業者:</span>
+                                        <span className="ml-2 text-gray-900">{inventory.apple_carrier}</span>
+                                    </div>
+                                )}
+                                {inventory.apple_tracking_number && (
+                                    <div>
+                                        <span className="text-gray-500">Appleからの追跡番号:</span>
+                                        <span className="ml-2 text-gray-900">
+                                            {inventory.apple_carrier === 'ヤマト運輸' ? (
+                                                <a
+                                                    href={`https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number=${inventory.apple_tracking_number}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {inventory.apple_tracking_number} 🔗
+                                                </a>
+                                            ) : inventory.apple_carrier === '日本郵便（ゆうパック）' ? (
+                                                <a
+                                                    href={`https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${inventory.apple_tracking_number}&locale=JP`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {inventory.apple_tracking_number} 🔗
+                                                </a>
+                                            ) : (
+                                                inventory.apple_tracking_number
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
+                                {inventory.order_tracking_url && (
+                                    <div>
+                                        <span className="text-gray-500">注文状況URL:</span>
+                                        <span className="ml-2">
+                                            <a
+                                                href={inventory.order_tracking_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline break-all"
+                                            >
+                                                {inventory.order_tracking_url} 🔗
+                                            </a>
+                                        </span>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
                         {/* Shipment Information */}
                         {inventory.shipment_id && (
                             <>

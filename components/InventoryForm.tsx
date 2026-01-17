@@ -47,6 +47,9 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
         contact_phone_id: initialData?.contact_phone_id || '',
         credit_card_id: initialData?.credit_card_id || '',
         apple_account: initialData?.apple_account || '',
+        apple_tracking_number: initialData?.apple_tracking_number || '',
+        apple_carrier: initialData?.apple_carrier || '',
+        order_tracking_url: initialData?.order_tracking_url || '',
     });
 
     // Fetch payment methods, apple accounts, and contact info on mount
@@ -415,6 +418,50 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                             value={formData.paid_at || ''}
                             onChange={handleChange}
                             className={inputClass}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Apple配送情報 */}
+            <div className={sectionClass}>
+                <h3 className={sectionTitleClass}>📦 Apple配送情報</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className={labelClass}>Appleからの配送業者</label>
+                        <select
+                            name="apple_carrier"
+                            value={formData.apple_carrier || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                        >
+                            <option value="">選択してください</option>
+                            <option value="ヤマト運輸">ヤマト運輸</option>
+                            <option value="日本郵便（ゆうパック）">日本郵便（ゆうパック）</option>
+                            <option value="佐川急便">佐川急便</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Appleからの追跡番号</label>
+                        <input
+                            type="text"
+                            name="apple_tracking_number"
+                            value={formData.apple_tracking_number || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                            placeholder="例: 123456789012"
+                        />
+                    </div>
+                    <div>
+                        <label className={labelClass}>注文状況URL</label>
+                        <input
+                            type="text"
+                            name="order_tracking_url"
+                            value={formData.order_tracking_url || ''}
+                            onChange={handleChange}
+                            className={inputClass}
+                            placeholder="https://..."
                         />
                     </div>
                 </div>

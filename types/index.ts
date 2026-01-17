@@ -58,6 +58,10 @@ export interface Inventory {
     credit_card?: string | null;
     created_at: string;
     updated_at: string;
+    // Apple配送情報
+    apple_tracking_number: string | null;
+    apple_carrier: string | null;
+    order_tracking_url: string | null;
 }
 
 
@@ -94,9 +98,10 @@ export interface InventoryInput {
     contact_phone_id?: string;
     credit_card_id?: string;
     apple_account?: string;
-    // 直接保存される連絡先情報（テキストフィールド）
-    contact_email?: string;
-    contact_phone?: string;
+    // Apple配送情報
+    apple_tracking_number?: string;
+    apple_carrier?: string;
+    order_tracking_url?: string;
 }
 
 // Status labels and colors
