@@ -117,7 +117,7 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">在庫詳細・編集</h1>
                     <div className="text-sm text-gray-500">
-                        在庫コード: <span className="font-semibold">{inventory.inventory_code}</span>
+                        在庫コード: <span className="font-semibold">{inventory.inventory_code || 'N/A'}</span>
                     </div>
                 </div>
 
