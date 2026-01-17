@@ -9,21 +9,24 @@ export default function EmailsPage() {
     const [emails, setEmails] = useState<EmailLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedType, setSelectedType] = useState<EmailType | 'all'>('all');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
 
-    useEffect(() => {
-        // Set default date range (last 30 days)
+    // Initialize dates immediately, not in useEffect
+    const getDefaultStartDate = () => {
         const now = new Date();
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
-        setEndDate(now.toISOString().split('T')[0]);
-    }, []);
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return oneMonthAgo.toISOString().split('T')[0];
+    };
+
+    const getDefaultEndDate = () => {
+        const now = new Date();
+        return now.toISOString().split('T')[0];
+    };
+
+    const [startDate, setStartDate] = useState(getDefaultStartDate());
+    const [endDate, setEndDate] = useState(getDefaultEndDate());
 
     useEffect(() => {
-        if (startDate && endDate) {
-            fetchEmails();
-        }
+        fetchEmails();
     }, [startDate, endDate, selectedType]);
 
     const fetchEmails = async () => {
