@@ -216,7 +216,7 @@ export default function NewInventoryPage() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">選択してください</option>
-                                    {paymentMethods.map((method) => (
+                                    {(paymentMethods || []).map((method) => (
                                         <option key={method.id} value={method.id}>
                                             {method.name}
                                         </option>
@@ -233,7 +233,7 @@ export default function NewInventoryPage() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">選択してください</option>
-                                    {contactEmails.map((email) => (
+                                    {(contactEmails || []).map((email) => (
                                         <option key={email.id} value={email.id}>
                                             {email.email}
                                         </option>
