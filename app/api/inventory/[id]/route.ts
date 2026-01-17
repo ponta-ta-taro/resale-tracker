@@ -103,10 +103,13 @@ export async function PUT(
         } = body;
 
         // Convert empty strings to null for optional fields
+        // Also convert "なし" to null for apple_id_used
         const sanitizedData: any = {};
 
         for (const [key, value] of Object.entries(updateData)) {
             if (value === '' || value === undefined) {
+                sanitizedData[key] = null;
+            } else if (key === 'apple_id_used' && value === 'なし') {
                 sanitizedData[key] = null;
             } else {
                 sanitizedData[key] = value;

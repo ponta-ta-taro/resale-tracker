@@ -78,17 +78,24 @@ export async function POST(request: Request) {
 
         const body: InventoryInput = await request.json();
 
+        // Sanitize apple_id_used: convert "なし" and empty string to null
+        const sanitizedData = {
+            ...body,
+            apple_id_used: body.apple_id_used === 'なし' || body.apple_id_used === '' ? null : body.apple_id_used,
+            user_id: user.id
+        };
+
         // Automatically add user_id
         const { data, error } = await supabase
             .from('inventory')
-            .insert([{ ...body, user_id: user.id }])
+            .insert([sanitizedData])
             .select()
             .single();
 
         if (error) {
             console.error('Error creating inventory:', error);
             return NextResponse.json(
-                { error: 'Failed to create inventory' },
+                { error: 'Failed to create inventory', details: error.message },
                 { status: 500 }
             );
         }
