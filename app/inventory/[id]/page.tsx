@@ -4,17 +4,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import InventoryForm from '@/components/InventoryForm';
-import { Inventory, STATUS_LABELS, STATUS_COLORS_DETAIL, calculateProfit, calculateProfitRate } from '@/types';
+import { Inventory, STATUS_LABELS, STATUS_COLORS_DETAIL, calculateProfit, calculateProfitRate, Reward, REWARD_TYPES } from '@/types';
 
 export default function InventoryDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const [inventory, setInventory] = useState<Inventory | null>(null);
     const [currentMarketPrice, setCurrentMarketPrice] = useState<number | null>(null);
+    const [rewards, setRewards] = useState<Reward[]>([]);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchInventory();
+        fetchRewards();
     }, [params.id]);
 
     const fetchInventory = async () => {
@@ -43,6 +45,19 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             console.error('Error fetching inventory:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchRewards = async () => {
+        try {
+            const response = await fetch(`/api/rewards`);
+            if (response.ok) {
+                const data = await response.json();
+                const linkedRewards = data.filter((r: Reward) => r.inventory_id === params.id);
+                setRewards(linkedRewards);
+            }
+        } catch (error) {
+            console.error('Error fetching rewards:', error);
         }
     };
 
@@ -323,6 +338,40 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                             </>
                         )}
                     </div>
+
+                    {/* Linked Rewards */}
+                    {rewards.length > 0 && (
+                        <div className="mt-6 pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">紐付きポイント・特典</h3>
+                            <div className="space-y-2">
+                                {rewards.map((reward) => (
+                                    <div key={reward.id} className="flex justify-between items-center bg-gray-50 p-3 rounded">
+                                        <div>
+                                            <span className="font-medium text-gray-900">{REWARD_TYPES[reward.type]}</span>
+                                            <span className="text-gray-600 ml-2">- {reward.description}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            {reward.type === 'gift_card' ? (
+                                                <span className="font-semibold text-green-600">¥{(reward.amount || 0).toLocaleString()}</span>
+                                            ) : (
+                                                <div>
+                                                    <span className="font-semibold text-purple-600">
+                                                        {(reward.points || 0).toLocaleString()}pt
+                                                    </span>
+                                                    <span className="text-gray-600 text-sm ml-2">
+                                                        (¥{Math.round((reward.points || 0) * (reward.point_rate || 0)).toLocaleString()})
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                {new Date(reward.earned_at).toLocaleDateString('ja-JP')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {inventory.notes && (
                         <div className="mt-4">

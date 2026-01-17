@@ -73,6 +73,23 @@ export async function GET() {
         const monthlyShippingCost = (shipments || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
         const monthlyNetProfit = monthlyProfit - monthlyShippingCost;
 
+        // Get current month's rewards
+        const { data: rewards } = await supabase
+            .from('rewards')
+            .select('type, amount, points, point_rate')
+            .gte('earned_at', firstDayOfMonth.toISOString().split('T')[0])
+            .lte('earned_at', lastDayOfMonth.toISOString().split('T')[0]);
+
+        const giftCardTotal = rewards?.filter(r => r.type === 'gift_card')
+            .reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
+
+        const creditPointsTotal = rewards?.filter(r => r.type === 'credit_card_points')
+            .reduce((sum, r) => sum + (r.points || 0), 0) || 0;
+
+        const creditPointsValue = rewards?.filter(r => r.type === 'credit_card_points')
+            .reduce((sum, r) => sum + ((r.points || 0) * (r.point_rate || 0)), 0) || 0;
+
+
         // Calculate inventory status
         const statusBreakdown = {
             ordered: { count: 0, amount: 0 },
@@ -200,6 +217,12 @@ export async function GET() {
                 priceDrops: priceDropAlerts,
                 oldInventory: oldInventoryAlerts,
                 paymentDelays: paymentDelayAlerts,
+            },
+            rewards: {
+                giftCardTotal,
+                creditPointsTotal,
+                creditPointsValue: Math.round(creditPointsValue),
+                total: giftCardTotal + Math.round(creditPointsValue),
             },
             monthlyTrend,
         });

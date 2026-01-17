@@ -33,6 +33,12 @@ interface DashboardMetrics {
         oldInventory: Array<{ id: string; model: string; days: number; arrivedAt: string }>;
         paymentDelays: Array<{ id: string; model: string; days: number; soldAt: string }>;
     };
+    rewards: {
+        giftCardTotal: number;
+        creditPointsTotal: number;
+        creditPointsValue: number;
+        total: number;
+    };
     monthlyTrend: Array<{ month: string; profit: number }>;
 }
 
@@ -141,6 +147,26 @@ export default function Dashboard() {
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">今月の販売台数</h3>
                                 <p className="text-3xl font-bold text-indigo-600">{metrics.monthly.salesCount}台</p>
                                 <p className="text-sm text-gray-600 mt-1">入金済み件数</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Rewards Summary */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">ポイント・特典（今月）</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">ギフトカード還元</h3>
+                                <p className="text-3xl font-bold text-green-600">{formatCurrency(metrics.rewards.giftCardTotal)}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">クレカポイント</h3>
+                                <p className="text-3xl font-bold text-purple-600">{formatCurrency(metrics.rewards.creditPointsValue)}</p>
+                                <p className="text-sm text-gray-600 mt-1">{metrics.rewards.creditPointsTotal.toLocaleString()}pt</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">合計</h3>
+                                <p className="text-3xl font-bold text-blue-600">{formatCurrency(metrics.rewards.total)}</p>
                             </div>
                         </div>
                     </div>

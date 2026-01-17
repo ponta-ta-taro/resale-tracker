@@ -281,6 +281,40 @@ export interface ShipmentInput {
     notes?: string | null;
 }
 
+// Reward types
+export type RewardType = 'gift_card' | 'credit_card_points';
+
+export const REWARD_TYPES: Record<RewardType, string> = {
+    gift_card: 'ギフトカード還元',
+    credit_card_points: 'クレカポイント',
+};
+
+export interface Reward {
+    id: string;
+    user_id: string;
+    inventory_id: string | null;
+    type: RewardType;
+    description: string;
+    amount: number | null;
+    points: number | null;
+    point_rate: number | null;
+    earned_at: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface RewardInput {
+    inventory_id?: string | null;
+    type: RewardType;
+    description: string;
+    amount?: number | null;
+    points?: number | null;
+    point_rate?: number | null;
+    earned_at: string;
+    notes?: string | null;
+}
+
 // Parsed Apple order data
 export interface ParsedAppleOrder {
     orderNumber: string;
