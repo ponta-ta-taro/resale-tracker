@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { InventoryV2, InventoryV2Status } from '@/types';
@@ -12,11 +12,7 @@ export default function InventoryPage() {
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState<InventoryV2Status | 'all'>('all');
 
-    useEffect(() => {
-        fetchInventory();
-    }, [statusFilter]);
-
-    async function fetchInventory() {
+    const fetchInventory = useCallback(async () => {
         setLoading(true);
         try {
             const url = statusFilter === 'all'
@@ -34,7 +30,11 @@ export default function InventoryPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [statusFilter]);
+
+    useEffect(() => {
+        fetchInventory();
+    }, [fetchInventory]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -55,8 +55,8 @@ export default function InventoryPage() {
                     <button
                         onClick={() => setStatusFilter('all')}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${statusFilter === 'all'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         すべて
@@ -66,8 +66,8 @@ export default function InventoryPage() {
                             key={status}
                             onClick={() => setStatusFilter(status)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${statusFilter === status
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             {STATUS_V2_LABELS[status]}

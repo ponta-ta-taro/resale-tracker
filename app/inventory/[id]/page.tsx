@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import StatusProgressBar from '@/components/StatusProgressBar';
@@ -15,11 +15,7 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
     const [inventory, setInventory] = useState<InventoryV2 | null>(null);
     const [formData, setFormData] = useState<Partial<InventoryV2Input>>({});
 
-    useEffect(() => {
-        fetchInventory();
-    }, [id]);
-
-    async function fetchInventory() {
+    const fetchInventory = useCallback(async () => {
         try {
             const res = await fetch(`/api/inventory/${id}`);
             const json = await res.json();
@@ -33,7 +29,11 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
+
+    useEffect(() => {
+        fetchInventory();
+    }, [fetchInventory]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
