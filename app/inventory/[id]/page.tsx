@@ -101,7 +101,8 @@ export default function InventoryDetailPage() {
             const response = await fetch('/api/payment-methods');
             if (response.ok) {
                 const data = await response.json();
-                setPaymentMethods(data);
+                console.log('Payment methods response:', data, 'Is array:', Array.isArray(data));
+                setPaymentMethods(Array.isArray(data) ? data : []);
             }
         } catch (error) {
             console.error('Error fetching payment methods:', error);
@@ -113,7 +114,8 @@ export default function InventoryDetailPage() {
             const response = await fetch('/api/contact-emails');
             if (response.ok) {
                 const data = await response.json();
-                setContactEmails(data);
+                console.log('Contact emails response:', data, 'Is array:', Array.isArray(data));
+                setContactEmails(Array.isArray(data) ? data : []);
             }
         } catch (error) {
             console.error('Error fetching contact emails:', error);
@@ -207,7 +209,7 @@ export default function InventoryDetailPage() {
                                 onChange={(e) => handleChange('status', e.target.value as InventoryV2Status)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                {Object.entries(STATUS_V2_LABELS).map(([value, label]) => (
+                                {STATUS_V2_LABELS && Object.entries(STATUS_V2_LABELS).map(([value, label]) => (
                                     <option key={value} value={value}>
                                         {label}
                                     </option>
