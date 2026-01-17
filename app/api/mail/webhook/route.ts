@@ -323,14 +323,17 @@ export async function POST(request: NextRequest) {
             }
         );
 
-        // Extract To email from header (連絡先メール)
+        // Extract To email from header (連絡先メール) - kept for processOrderConfirmationEmail
         const toEmail = to;
-        console.log('  🔍 Looking up user from contact_emails for To:', toEmail);
+
+        // Extract From email (Gmail転送の場合、Fromが連絡先メール)
+        const contactEmailAddress = from;
+        console.log('  🔍 Looking up user from contact_emails for From:', contactEmailAddress);
 
         const { data: contactEmail } = await supabaseAdmin
             .from('contact_emails')
             .select('user_id, id')
-            .eq('email', toEmail)
+            .eq('email', contactEmailAddress)
             .limit(1)
             .single();
 
@@ -338,13 +341,13 @@ export async function POST(request: NextRequest) {
             userId = contactEmail.user_id;
             console.log('  ✅ Found user_id:', userId);
         } else {
-            console.log('  ⚠️  No user found for email:', toEmail);
-            logNotes = `User not found for email: ${toEmail}`;
+            console.log('  ⚠️  No user found for email:', contactEmailAddress);
+            logNotes = `User not found for email: ${contactEmailAddress}`;
         }
 
         // Process based on email type
         if (emailType === 'order_confirmation' && userId && contactEmail) {
-            const result = await processOrderConfirmationEmail(toEmail, contactEmail.id, rawEmail, userId, supabaseAdmin);
+            const result = await processOrderConfirmationEmail(contactEmailAddress, contactEmail.id, rawEmail, userId, supabaseAdmin);
             processResult = result.success ? 'success' : 'error';
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
@@ -357,7 +360,7 @@ export async function POST(request: NextRequest) {
             orderNumber = result.orderNumber || null;
         } else {
             console.log('  Skipping processing for this email type');
-            logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${toEmail}`;
+            logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${contactEmailAddress}`;
         }
 
         // Log email to database if user was found
