@@ -32,14 +32,14 @@ export default function InventoryDetailPage() {
         expected_delivery_date: '',
         original_expected_date: '',
         delivered_at: '',
-        apple_carrier: '',
-        apple_tracking_number: '',
+        carrier: '',
+        tracking_number: '',
         purchase_price: null,
         expected_price: null,
         actual_price: null,
         sold_to: '',
-        carrier: '',
-        tracking_number: '',
+        buyer_carrier: '',
+        buyer_tracking_number: '',
         sent_to_buyer_at: '',
         sold_at: '',
         paid_at: '',
@@ -74,14 +74,14 @@ export default function InventoryDetailPage() {
                 expected_delivery_date: data.expected_delivery_date || '',
                 original_expected_date: data.original_expected_date || '',
                 delivered_at: data.delivered_at || '',
-                apple_carrier: data.apple_carrier || '',
-                apple_tracking_number: data.apple_tracking_number || '',
+                carrier: data.carrier || '',
+                tracking_number: data.tracking_number || '',
                 purchase_price: data.purchase_price,
                 expected_price: data.expected_price,
                 actual_price: data.actual_price,
                 sold_to: data.sold_to || '',
-                carrier: data.carrier || '',
-                tracking_number: data.tracking_number || '',
+                buyer_carrier: data.buyer_carrier || '',
+                buyer_tracking_number: data.buyer_tracking_number || '',
                 sent_to_buyer_at: data.sent_to_buyer_at || '',
                 sold_at: data.sold_at || '',
                 paid_at: data.paid_at || '',
@@ -393,7 +393,7 @@ export default function InventoryDetailPage() {
                         </div>
                     </div>
 
-                    {/* Apple Shipping Information */}
+                    {/* Apple Delivery Information */}
                     <div className="bg-white rounded-lg shadow p-6">
                         <h2 className="text-xl font-semibold text-gray-900 mb-4">Apple配送情報</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -403,8 +403,8 @@ export default function InventoryDetailPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.apple_carrier}
-                                    onChange={(e) => handleChange('apple_carrier', e.target.value)}
+                                    value={formData.carrier}
+                                    onChange={(e) => handleChange('carrier', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -414,8 +414,8 @@ export default function InventoryDetailPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.apple_tracking_number}
-                                    onChange={(e) => handleChange('apple_tracking_number', e.target.value)}
+                                    value={formData.tracking_number}
+                                    onChange={(e) => handleChange('tracking_number', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -483,8 +483,8 @@ export default function InventoryDetailPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.carrier}
-                                    onChange={(e) => handleChange('carrier', e.target.value)}
+                                    value={formData.buyer_carrier}
+                                    onChange={(e) => handleChange('buyer_carrier', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -494,8 +494,8 @@ export default function InventoryDetailPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.tracking_number}
-                                    onChange={(e) => handleChange('tracking_number', e.target.value)}
+                                    value={formData.buyer_tracking_number}
+                                    onChange={(e) => handleChange('buyer_tracking_number', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
