@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
         const supabase = await createClient();
         const body = await request.json();
 
-        // バリデーション
-        if (!body.name || !body.email) {
+        // バリデーション - 名前のみ必須、メールアドレスは任意
+        if (!body.name) {
             return NextResponse.json(
-                { error: '名前とメールアドレスは必須です' },
+                { error: '名前は必須です' },
                 { status: 400 }
             );
         }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
             .from('apple_accounts')
             .insert({
                 name: body.name,
-                email: body.email,
+                email: body.email || null,
                 notes: body.notes || null,
             })
             .select()

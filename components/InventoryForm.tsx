@@ -295,29 +295,19 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         >
                             <option value="">選択してください</option>
                             {appleAccounts.map(aa => (
-                                <option key={aa.id} value={aa.name}>{aa.name} ({aa.email})</option>
+                                <option key={aa.id} value={aa.name}>
+                                    {aa.name}{aa.email ? ` (${aa.email})` : ''}
+                                </option>
                             ))}
                         </select>
                         {appleAccounts.length === 0 && (
                             <p className="text-xs text-gray-500 mt-1">
-                                <a href="/apple-accounts" className="text-blue-600 hover:underline">Apple ID管理</a>で登録
+                                <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録
                             </p>
                         )}
                     </div>
                     <div></div>
 
-                    {/* Row 4 - Contact Information */}
-                    <div>
-                        <label className={labelClass}>Apple Account</label>
-                        <input
-                            type="text"
-                            name="apple_account"
-                            value={formData.apple_account || ''}
-                            onChange={handleChange}
-                            placeholder="例: ゲスト、個人用など"
-                            className={inputClass}
-                        />
-                    </div>
                     <div>
                         <label className={labelClass}>連絡先メール</label>
                         <select
@@ -333,7 +323,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         </select>
                         {contactEmails.length === 0 && (
                             <p className="text-xs text-gray-500 mt-1">
-                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
+                                <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録
                             </p>
                         )}
                     </div>
@@ -352,7 +342,7 @@ export default function InventoryForm({ initialData, mode }: InventoryFormProps)
                         </select>
                         {contactPhones.length === 0 && (
                             <p className="text-xs text-gray-500 mt-1">
-                                <a href="/settings/contacts" className="text-blue-600 hover:underline">連絡先設定</a>で登録
+                                <a href="/settings" className="text-blue-600 hover:underline">設定</a>で登録
                             </p>
                         )}
                     </div>

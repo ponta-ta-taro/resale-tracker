@@ -324,10 +324,6 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
 
                         {/* Contact Information */}
                         <div>
-                            <span className="text-gray-500">Apple Account:</span>
-                            <span className="ml-2 text-gray-900">{inventory.apple_account || '-'}</span>
-                        </div>
-                        <div>
                             <span className="text-gray-500">連絡先メール:</span>
                             <span className="ml-2 text-gray-900">{inventory.contact_email || '-'}</span>
                         </div>

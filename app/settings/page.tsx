@@ -82,7 +82,7 @@ export default function SettingsPage() {
     };
 
     const handleEditApple = (account: AppleAccount) => {
-        setAppleFormData({ name: account.name, email: account.email, notes: account.notes || '' });
+        setAppleFormData({ name: account.name, email: account.email || '', notes: account.notes || '' });
         setEditingAppleId(account.id);
         setShowAppleForm(true);
     };
@@ -358,7 +358,7 @@ export default function SettingsPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                メールアドレス <span className="text-red-500">*</span>
+                                                メールアドレス
                                             </label>
                                             <input
                                                 type="email"
@@ -366,7 +366,6 @@ export default function SettingsPage() {
                                                 onChange={(e) => setAppleFormData({ ...appleFormData, email: e.target.value })}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="例: example@icloud.com"
-                                                required
                                             />
                                         </div>
                                     </div>
@@ -423,7 +422,7 @@ export default function SettingsPage() {
                                                     <div className="font-medium text-gray-900">{account.name}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                                    {account.email}
+                                                    {account.email || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">
                                                     {account.notes || '-'}
@@ -618,8 +617,8 @@ export default function SettingsPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${method.type === 'credit' ? 'bg-blue-100 text-blue-800' :
-                                                            method.type === 'debit' ? 'bg-green-100 text-green-800' :
-                                                                'bg-gray-100 text-gray-800'
+                                                        method.type === 'debit' ? 'bg-green-100 text-green-800' :
+                                                            'bg-gray-100 text-gray-800'
                                                         }`}>
                                                         {PAYMENT_METHOD_TYPES[method.type]}
                                                     </span>
