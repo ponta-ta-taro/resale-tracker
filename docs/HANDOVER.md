@@ -7,7 +7,7 @@
 
 ---
 
-## 🚧 現在の状態：V2リビルド準備完了
+## 🚧 現在の状態：Phase 1 完了 → Phase 2 準備中
 
 **ResaleTracker V2** - iPhone転売の在庫管理・利益分析アプリ
 
@@ -113,21 +113,30 @@ email_logs → 新規作成
 ## 現在の進捗
 
 ### ✅ 完了済み
+
 - [x] V2用ドキュメント整備（SPEC.md, DATABASE.md, API.md, RULES.md, SETUP.md）
 - [x] メールサンプル整理（apple-account, apple-guest-gmail, amazon）
 - [x] 実装方針・フェーズ順序の決定
 - [x] item_indexロジックの確定
+- [x] **Phase 1: DB基盤構築**
+  - [x] 新テーブル8つ作成（inventory, apple_accounts, contact_emails, contact_phones, payment_methods, shipments, rewards, email_logs）
+  - [x] RLSポリシー設定完了
+  - [x] 既存inventoryテーブルをinventory_v1_backupにリネーム
+- [x] **在庫管理UI構築**
+  - [x] 在庫一覧ページ（9ステータス対応フィルター）
+  - [x] 在庫登録フォーム
+  - [x] 在庫詳細・編集ページ
+  - [x] ステータス進捗バーコンポーネント
+  - [x] ヘッダーナビゲーション統一
 
-### 🔄 次にやること：Phase 1 - DB基盤
+### 🔄 次にやること：Phase 2 - メール自動取り込み
 
-1. **Supabaseで作業**
-   - 既存の`inventory`テーブルをどうするか決める（削除 or リネーム）
-   - DATABASE.mdに基づいて新テーブル作成
-   - RLSポリシー設定
-
-2. **コード側**
-   - 型定義（types/index.ts）更新
-   - Supabaseクライアント確認
+1. **メール受信API作成**（/api/mail/webhook）
+2. **Appleメールパーサー実装**
+   - 注文確認メール → 在庫レコード作成
+   - 出荷通知メール → ステータス更新 + 追跡番号
+3. **Cloudflare Worker改修**
+4. **docs/email-samples/ を使ったテスト**
 
 ---
 
@@ -204,3 +213,4 @@ email_logs → 新規作成
 | 2026/01/11 | 本番稼働確認、引き継ぎメモ作成 |
 | 2026/01/12 | Google認証機能追加、RLS設定、価格推移グラフ改善 |
 | 2026/01/17 | V2リビルド方針決定、ドキュメント整備完了、Phase順序・item_indexロジック確定 |
+| 2026/01/18 | Phase 1完了（DB基盤 + 在庫管理UI）、Phase 2準備 |
