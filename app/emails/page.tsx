@@ -10,28 +10,53 @@ export default function EmailsPage() {
     const [loading, setLoading] = useState(true);
     const [selectedType, setSelectedType] = useState<EmailType | 'all'>('all');
 
-    // Initialize dates immediately, not in useEffect
-    const getDefaultStartDate = () => {
-        const now = new Date();
-        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        return oneMonthAgo.toISOString().split('T')[0];
-    };
+    // Period presets
+    type Period = '1week' | '1month' | '3months' | '1year' | 'all';
+    const [selectedPeriod, setSelectedPeriod] = useState<Period>('1month');
 
-    const getDefaultEndDate = () => {
+    // Calculate date range based on selected period
+    const getDateRange = (period: Period): { startDate: string; endDate: string } => {
         const now = new Date();
-        return now.toISOString().split('T')[0];
-    };
+        const endDate = now.toISOString().split('T')[0];
 
-    const [startDate, setStartDate] = useState(getDefaultStartDate());
-    const [endDate, setEndDate] = useState(getDefaultEndDate());
+        let startDate: string;
+        switch (period) {
+            case '1week':
+                const oneWeekAgo = new Date(now);
+                oneWeekAgo.setDate(now.getDate() - 7);
+                startDate = oneWeekAgo.toISOString().split('T')[0];
+                break;
+            case '1month':
+                const oneMonthAgo = new Date(now);
+                oneMonthAgo.setMonth(now.getMonth() - 1);
+                startDate = oneMonthAgo.toISOString().split('T')[0];
+                break;
+            case '3months':
+                const threeMonthsAgo = new Date(now);
+                threeMonthsAgo.setMonth(now.getMonth() - 3);
+                startDate = threeMonthsAgo.toISOString().split('T')[0];
+                break;
+            case '1year':
+                const oneYearAgo = new Date(now);
+                oneYearAgo.setFullYear(now.getFullYear() - 1);
+                startDate = oneYearAgo.toISOString().split('T')[0];
+                break;
+            case 'all':
+                startDate = '2000-01-01'; // Far past date to get all records
+                break;
+        }
+
+        return { startDate, endDate };
+    };
 
     useEffect(() => {
         fetchEmails();
-    }, [startDate, endDate, selectedType]);
+    }, [selectedPeriod, selectedType]);
 
     const fetchEmails = async () => {
         try {
             setLoading(true);
+            const { startDate, endDate } = getDateRange(selectedPeriod);
             const params = new URLSearchParams({
                 start_date: startDate,
                 end_date: endDate,
@@ -96,30 +121,63 @@ export default function EmailsPage() {
 
                 {/* Filters */}
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        {/* Period Presets */}
+                        <div className="flex-1">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                開始日
+                                期間
                             </label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                            />
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setSelectedPeriod('1week')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1week'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    1週間
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPeriod('1month')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1month'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    1ヶ月
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPeriod('3months')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '3months'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    3ヶ月
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPeriod('1year')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1year'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    1年
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPeriod('all')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'all'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    全期間
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                終了日
-                            </label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                            />
-                        </div>
-                        <div>
+
+                        {/* Email Type Filter */}
+                        <div className="w-full md:w-48">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 種類
                             </label>
