@@ -11,11 +11,23 @@ export default function EmailsPage() {
     const [selectedType, setSelectedType] = useState<EmailType | 'all'>('all');
 
     // Period presets
-    type Period = '1week' | '1month' | '3months' | '1year' | 'all';
+    type Period = '1week' | '1month' | '3months' | '1year' | 'all' | 'custom';
     const [selectedPeriod, setSelectedPeriod] = useState<Period>('1month');
+
+    // Custom date range state
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
 
     // Calculate date range based on selected period
     const getDateRange = (period: Period): { startDate: string; endDate: string } => {
+        // Use custom dates if custom period is selected
+        if (period === 'custom') {
+            return {
+                startDate: customStartDate || '2000-01-01',
+                endDate: customEndDate || new Date().toISOString().split('T')[0]
+            };
+        }
+
         const now = new Date();
         const endDate = now.toISOString().split('T')[0];
 
@@ -51,7 +63,7 @@ export default function EmailsPage() {
 
     useEffect(() => {
         fetchEmails();
-    }, [selectedPeriod, selectedType]);
+    }, [selectedPeriod, selectedType, customStartDate, customEndDate]);
 
     const fetchEmails = async () => {
         try {
@@ -121,79 +133,118 @@ export default function EmailsPage() {
 
                 {/* Filters */}
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        {/* Period Presets */}
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                期間
-                            </label>
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    onClick={() => setSelectedPeriod('1week')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1week'
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-start gap-4">
+                            {/* Period Presets */}
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    期間
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        onClick={() => setSelectedPeriod('1week')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1week'
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    1週間
-                                </button>
-                                <button
-                                    onClick={() => setSelectedPeriod('1month')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1month'
+                                            }`}
+                                    >
+                                        1週間
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedPeriod('1month')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1month'
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    1ヶ月
-                                </button>
-                                <button
-                                    onClick={() => setSelectedPeriod('3months')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '3months'
+                                            }`}
+                                    >
+                                        1ヶ月
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedPeriod('3months')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '3months'
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    3ヶ月
-                                </button>
-                                <button
-                                    onClick={() => setSelectedPeriod('1year')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1year'
+                                            }`}
+                                    >
+                                        3ヶ月
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedPeriod('1year')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === '1year'
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    1年
-                                </button>
-                                <button
-                                    onClick={() => setSelectedPeriod('all')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'all'
+                                            }`}
+                                    >
+                                        1年
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedPeriod('all')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'all'
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                            }`}
+                                    >
+                                        全期間
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedPeriod('custom')}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'custom'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        カスタム
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Email Type Filter */}
+                            <div className="w-full md:w-48">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    種類
+                                </label>
+                                <select
+                                    value={selectedType}
+                                    onChange={(e) => setSelectedType(e.target.value as EmailType | 'all')}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
                                 >
-                                    全期間
-                                </button>
+                                    <option value="all">すべて</option>
+                                    {Object.entries(EMAIL_TYPES).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
-                        {/* Email Type Filter */}
-                        <div className="w-full md:w-48">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                種類
-                            </label>
-                            <select
-                                value={selectedType}
-                                onChange={(e) => setSelectedType(e.target.value as EmailType | 'all')}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                            >
-                                <option value="all">すべて</option>
-                                {Object.entries(EMAIL_TYPES).map(([value, label]) => (
-                                    <option key={value} value={value}>
-                                        {label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        {/* Custom Date Range Inputs - Only show when custom is selected */}
+                        {selectedPeriod === 'custom' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        開始日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={customStartDate}
+                                        onChange={(e) => setCustomStartDate(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        終了日
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
