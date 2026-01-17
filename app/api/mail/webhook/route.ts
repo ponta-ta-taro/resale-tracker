@@ -379,15 +379,18 @@ export async function POST(request: NextRequest) {
         // Log email to database if user was found
         if (userId) {
             try {
+                const now = new Date().toISOString();
                 const logData = {
                     user_id: userId,
-                    inventory_id: inventoryId,
-                    from_email: from,
-                    to_email: contactEmailAddress, // Use the contact email, not forwarding destination
-                    subject: subject,
                     email_type: dbEmailType,
-                    process_result: processResult,
-                    notes: logNotes || `Order: ${orderNumber || 'N/A'}`,
+                    subject: subject,
+                    sender: contactEmailAddress,
+                    order_number: orderNumber,
+                    status: processResult,
+                    error_message: logNotes,
+                    parsed_data: inventoryId ? { inventory_id: inventoryId } : null,
+                    received_at: now,
+                    processed_at: now,
                 };
 
                 console.log('  📝 Logging email to database:', logData);
