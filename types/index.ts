@@ -104,6 +104,82 @@ export interface InventoryInput {
     order_tracking_url?: string;
 }
 
+// V2 Inventory Types
+export type InventoryV2Status =
+    | 'ordered'
+    | 'shipped'
+    | 'delivered'
+    | 'sent_to_buyer'
+    | 'buyer_completed'
+    | 'paid'
+    | 'receipt_received';
+
+export interface InventoryV2 {
+    id: string;
+    user_id: string;
+    inventory_code: string;
+    order_number: string;
+    item_index: number;
+    model_name: string;
+    storage: string;
+    color: string | null;
+    purchase_source: string | null;
+    payment_method_id: string | null;
+    apple_id_used: string | null;
+    contact_email_id: string | null;
+    status: InventoryV2Status;
+    order_date: string | null;
+    expected_delivery_date: string | null;
+    original_expected_date: string | null;
+    delivered_at: string | null;
+    apple_carrier: string | null;
+    apple_tracking_number: string | null;
+    purchase_price: number | null;
+    expected_price: number | null;
+    actual_price: number | null;
+    sold_to: string | null;
+    carrier: string | null;
+    tracking_number: string | null;
+    sent_to_buyer_at: string | null;
+    sold_at: string | null;
+    paid_at: string | null;
+    receipt_received_at: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface InventoryV2Input {
+    order_number: string;
+    item_index?: number;
+    model_name: string;
+    storage: string;
+    color?: string;
+    purchase_source?: string;
+    payment_method_id?: string;
+    apple_id_used?: string;
+    contact_email_id?: string;
+    status: InventoryV2Status;
+    order_date?: string;
+    expected_delivery_date?: string;
+    original_expected_date?: string;
+    delivered_at?: string;
+    apple_carrier?: string;
+    apple_tracking_number?: string;
+    purchase_price?: number | null;
+    expected_price?: number | null;
+    actual_price?: number | null;
+    sold_to?: string;
+    carrier?: string;
+    tracking_number?: string;
+    sent_to_buyer_at?: string;
+    sold_at?: string;
+    paid_at?: string;
+    receipt_received_at?: string;
+    notes?: string;
+}
+
+
 // Status labels and colors
 export const STATUS_LABELS: Record<InventoryStatus, string> = {
     ordered: '発注済み',
@@ -116,13 +192,35 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
 
 
 export const STATUS_COLORS: Record<InventoryStatus, string> = {
-    ordered: 'bg-blue-100 text-blue-700',
-    shipped: 'bg-orange-100 text-orange-700',
-    arrived: 'bg-green-100 text-green-700',
-    selling: 'bg-yellow-100 text-yellow-700',
-    sold: 'bg-purple-100 text-purple-700',
-    paid: 'bg-gray-100 text-gray-700',
+    ordered: 'bg-blue-100 text-blue-800',
+    shipped: 'bg-indigo-100 text-indigo-800',
+    arrived: 'bg-purple-100 text-purple-800',
+    selling: 'bg-yellow-100 text-yellow-800',
+    sold: 'bg-green-100 text-green-800',
+    paid: 'bg-gray-100 text-gray-800',
 };
+
+// V2 Status labels and colors
+export const STATUS_V2_LABELS: Record<InventoryV2Status, string> = {
+    ordered: '注文確定',
+    shipped: '出荷完了',
+    delivered: '配送済み',
+    sent_to_buyer: '買取発送済み',
+    buyer_completed: '買取手続完了',
+    paid: '入金済み',
+    receipt_received: '領収書受領',
+};
+
+export const STATUS_V2_COLORS: Record<InventoryV2Status, string> = {
+    ordered: 'bg-blue-100 text-blue-800',
+    shipped: 'bg-indigo-100 text-indigo-800',
+    delivered: 'bg-purple-100 text-purple-800',
+    sent_to_buyer: 'bg-yellow-100 text-yellow-800',
+    buyer_completed: 'bg-orange-100 text-orange-800',
+    paid: 'bg-green-100 text-green-800',
+    receipt_received: 'bg-gray-100 text-gray-800',
+};
+
 
 // 詳細ページ用のステータス色（枠線付き）
 export const STATUS_COLORS_DETAIL: Record<InventoryStatus, string> = {

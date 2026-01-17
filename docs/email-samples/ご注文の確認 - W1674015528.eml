@@ -1,0 +1,1642 @@
+Delivered-To: ponta10sakura@gmail.com
+Received: by 2002:a05:6214:2f81:b0:88a:344b:85a3 with SMTP id ob1csp4475584qvb;
+        Tue, 13 Jan 2026 21:17:10 -0800 (PST)
+X-Received: by 2002:a05:620a:31a9:b0:8a7:2373:1c75 with SMTP id af79cd13be357-8c5317f088fmr103249485a.49.1768367830232;
+        Tue, 13 Jan 2026 21:17:10 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1768367830; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MNZ60G601sD+ow8R1+m0KlzcdsEfMtUY92tJeHGMbZuzNVNNely65PsnZpdIwZMD6p
+         ME97K3lq/hAo/bKXWQTXFr/M24aCfZCeMwhtEGIBjB2sXfsLEwX3+47yZaV272kdoRTA
+         cU85V7WkIS4qxsViQiUSMekTlYyVibMJ4Cj3f/LIZ7msf3YGSLfaFsNenGhhlxwxhIgr
+         jn1v5XKquG9czV1NO8zHnj4P1fryqv0ZI5C7ua1jQt4+YQS3Bhqo4BvzI8q8fuLGTybG
+         R1eYnXmvR3zRa5x4f99eGePgl1QHzPW/VKaZwEqfsziua3t1vC/F1fZAeHsnwDAIajMy
+         OaZg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=mime-version:subject:message-id:to:from:date:dkim-signature;
+        bh=BUAECzCMQLmD30BM8tRhgs3sPojycirNw68YMHDPNcI=;
+        fh=RdkxYKVh+kTXqXy5q0NkJyBhiCu820Vg+HWt9HT4EHg=;
+        b=JaCmMWmGhz4JErJ9IRB6MayqSpBy3XHRGCMcDUHqstn4OKer5oiTBHlj+5OhTXWC14
+         QkYyfTD5yP7NO5UTRMZ0fRsPU4abFLzO7XpETkomo+BtVXLhTA3S5C/SHbt/pUyvnPUO
+         DaVUHEGAZHEPuuWDw5SxOq+RcwPIv8TY/KM1FSGTiFNoqeENQjXLog9m1vodk6KlVnmx
+         pHKqO/LJUjOurxw7OPfCI6Dts7lyRYypj8tL70fQGDhOrLKyrhZiaN4gcVpzd/tmJ3Fu
+         Dt0YIzP7BY2kGawQECaTIGs66Gu4ZoPQQFc/PLei93rmkZvyglRZdJKV5nE5lfd1Dj0A
+         hriA==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@orders.apple.com header.s=orders0517 header.b=DTocQTh7;
+       spf=pass (google.com: domain of noreply_apac@orders.apple.com designates 17.23.6.72 as permitted sender) smtp.mailfrom=noreply_apac@orders.apple.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=orders.apple.com
+Return-Path: <noreply_apac@orders.apple.com>
+Received: from st56p01nt-txnmsbadger001102.apple.com (st56p01nt-txnmsbadger001102.apple.com. [17.23.6.72])
+        by mx.google.com with ESMTPS id af79cd13be357-8c530bdd239si112853285a.233.2026.01.13.21.17.10
+        for <ponta10sakura@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 13 Jan 2026 21:17:10 -0800 (PST)
+Received-SPF: pass (google.com: domain of noreply_apac@orders.apple.com designates 17.23.6.72 as permitted sender) client-ip=17.23.6.72;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@orders.apple.com header.s=orders0517 header.b=DTocQTh7;
+       spf=pass (google.com: domain of noreply_apac@orders.apple.com designates 17.23.6.72 as permitted sender) smtp.mailfrom=noreply_apac@orders.apple.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=orders.apple.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=orders.apple.com;
+	s=orders0517; t=1768367828;
+	bh=BUAECzCMQLmD30BM8tRhgs3sPojycirNw68YMHDPNcI=;
+	h=Date:From:To:Message-ID:Subject:Content-Type;
+	b=DTocQTh7WhQT01KovJ8k6PLUns3nswFwAuTHICuwnflgXHKn+bEngesIFzIBAXFpp
+	 sdBHxy6Ua1xmcdaOR2ee+cudoMsoSCHn8WDpH4eHZDJtuzHx2fIuK+5Sg5/sWg5diA
+	 fcEHLADheL7oRvQ727dMJwHxXCloT5OI/6caxFARQkrdP4ZTGJqumDhMom+zp+MIS+
+	 4XmmaokkZm9qBDL9Qgbb+284AkdjBrNllfQgm8K2kYG8NHWdvTyQ6dRtvuZc/NSFt9
+	 4NPrVv8Pvr7F/7UnX0bPtrcvdPPfaTRM1QisWdunLkqgF8tY7fLkW4b7b6Hl52X0IZ
+	 59GoUELwrTnUw==
+Date: Wed, 14 Jan 2026 05:17:08 +0000 (GMT)
+From: Apple Store <noreply_apac@orders.apple.com>
+To: ponta10sakura@gmail.com
+Message-ID: <1294763734.3283016.1768367828892@email.apple.com>
+Subject: =?ISO-2022-JP?Q?=1B$B$4CmJ8$N3NG'=1B(B_-_W1674015528?=
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_3283014_1709771276.1768367828891"
+X-EmailType-Id: 1020806651
+X-Broadcast-Id: 1020806651
+X-Sent-To: ponta10sakura@gmail.com,2,lu4DiRbYeDW2NDwtmyUUoGH5xQbdYYePLCTww4AoY9BIUZNdkxlyJLn4BGgNXpxutB0SiZenEpNOBIDAxydegXIkFK%2Br2P1W9hXdDIEGVN6yXze28O7Gde3lC5muuj89c5liOuHO9%2BFmeiLDYkrLWUmZOwXH9sisOBerAikH7%2FYGY53Mi4jNLNg9MZRcCjx0is4vgjWQ5EvF9HUki%2B8r3D4pGRi49LgwCaKMZWFLWFzXxh4JPWt7uj30LyuPfibZH4Lj6e67O%2FCD%2BYrPs85s57C144p4MRaWhxXCxxZgiXc9x0c5EswxDKzi3OcgqDUt68hyokjPO%2BcGURJlXCCA72NkuGGQTUrfTspBmwu2pOhy2VO%2FZ3NIe9M7ktb3FbgFAF7uyeRKPG8AsMA1ypX1%2BuFOnQ%2BiV6DyLSA2aQwiANYpualOGxtsNkjdp9AwtURGVdkAqrmrnq8dVWxqR2h5y7Yc9s91o%2FCk1qMxMS1wGA%2FVyjqRrVXaLlSOHam8gNJc1cQu%2B0cccJsJgs5MJHKiDDU%2FfKexZlKsGMCtHfwX2W%2B6%2FyRiKlTE%2BMP%2BLoGHt2vr1Va2mVjVx2Hj%2FIzscAUba0EG1w7Nfkcy%2Bosc7PzT9AbplCqp%2BEND6ymTSJhWu2l9RjomYgszzSYZyn6YuAMuYZxuAoF61KduWasGrcpuG9vvJR08uBVuFO3Q%2BMPKbBb9H0K%2BOvN6roqvTseT43ZPIkTlftVRn1L2Zo0xeMVOX35fWEuuqgqCyh4f8V8T8V8VIoh4ex0XWDfGqJ%2B7FqNQ4g%3D%3D
+X-COMMS-C: false
+X-Business-Group: AOS-OMS
+X-Attach-Flag: N
+X-TXN_ID: 3303c3b5-7782-40e0-b4ef-b31453c6884e
+X-DKIM_SIGN_REQUIRED: YES
+
+------=_Part_3283014_1709771276.1768367828891
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Disposition: inline
+
+Apple Store
+=E3=81=94=E6=B3=A8=E6=96=87=E5=86=85=E5=AE=B9=E3=82=92=E3=81=94=E7=A2=BA=E8=
+=AA=8D=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=80=82
+
+=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AE=E7=8A=B6=E6=B3=81=E3=81=AB=E5=BF=9C=E3=
+=81=98=E3=81=A6=E3=81=94=E6=A1=88=E5=86=85=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=
+=AB=E3=82=92=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=E3=80=82
+=09
+=E3=81=94=E6=B3=A8=E6=96=87=E7=95=AA=E5=8F=B7: W1674015528 https://store.ap=
+ple.com/xc/jp/vieworder/W1674015528/ponta10sakura@gmail.com/
+
+=E3=81=94=E6=B3=A8=E6=96=87=E6=97=A5 : 2026/01/14
+
+----------------------------------------------
+
+=E3=81=8A=E6=94=AF=E6=89=95=E3=81=84=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6
+=E3=81=93=E3=81=AE=E5=BA=A6=E3=81=AFApple Store=E3=82=92=E3=81=94=E5=88=A9=
+=E7=94=A8=E3=81=84=E3=81=9F=E3=81=A0=E3=81=8D=E3=80=81=E3=81=82=E3=82=8A=E3=
+=81=8C=E3=81=A8=E3=81=86=E3=81=94=E3=81=96=E3=81=84=E3=81=BE=E3=81=97=E3=81=
+=9F=E3=80=82 =E4=B8=8B=E8=A8=98=E3=81=AE=E5=86=85=E5=AE=B9=E3=81=A7=E3=81=
+=94=E6=B3=A8=E6=96=87=E3=82=92=E5=8F=97=E4=BB=98=E3=81=97=E3=81=BE=E3=81=97=
+=E3=81=9F=E3=80=82 =E3=81=94=E6=B3=A8=E6=96=87=E3=81=AE=E8=A9=B3=E7=B4=B0=
+=E3=82=92=E3=81=94=E7=A2=BA=E8=AA=8D=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=
+=80=82
+=E3=81=8A=E5=AE=A2=E6=A7=98=E3=82=88=E3=82=8A=E3=81=84=E3=81=9F=E3=81=A0=E3=
+=81=8D=E3=81=BE=E3=81=97=E3=81=9F=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AFApple =
+Store=E3=81=AE=E8=B2=A9=E5=A3=B2=E6=9D=A1=E4=BB=B6=E3=81=AB=E5=9F=BA=E3=81=
+=A5=E3=81=84=E3=81=A6=E8=B2=A9=E5=A3=B2=E3=81=95=E3=81=9B=E3=81=A6=E3=81=84=
+=E3=81=9F=E3=81=A0=E3=81=8D=E3=81=BE=E3=81=99=E3=80=82=20
+=E3=81=AA=E3=81=8A=E3=80=81=E6=9C=AC=E3=83=A1=E3=83=BC=E3=83=AB=E3=81=AF=E5=
+=A5=91=E7=B4=84=E3=81=AE=E6=88=90=E7=AB=8B=E3=82=92=E9=80=9A=E7=9F=A5=E3=81=
+=99=E3=82=8B=E3=82=82=E3=81=AE=E3=81=A7=E3=81=AF=E3=81=82=E3=82=8A=E3=81=BE=
+=E3=81=9B=E3=82=93=E3=81=AE=E3=81=A7=E3=81=94=E6=B3=A8=E6=84=8F=E3=81=8F=E3=
+=81=A0=E3=81=95=E3=81=84=E3=80=82=E3=81=94=E6=B3=A8=E6=96=87=E3=81=8C=E6=88=
+=90=E7=AB=8B=E3=81=97=E3=81=9F=E6=99=82=E7=82=B9=E3=81=A7=E3=80=81=E3=80=8C=
+=E3=81=94=E6=B3=A8=E6=96=87=E3=81=82=E3=82=8A=E3=81=8C=E3=81=A8=E3=81=86=E3=
+=81=94=E3=81=96=E3=81=84=E3=81=BE=E3=81=99=E3=80=8D=E3=81=A8=E3=81=84=E3=81=
+=86=E3=81=8A=E7=9F=A5=E3=82=89=E3=81=9B=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=
+=E3=82=92=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=E3=80=82
+
+-----------------------
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+
+=E9=85=8D=E9=80=81=E5=AF=BE=E8=B1=A1=E3=81=AE=E8=A3=BD=E5=93=81
+=E3=81=8A=E5=AE=A2=E6=A7=98=E3=81=AE=E3=81=94=E6=B3=A8=E6=96=87=E7=A2=BA=E8=
+=AA=8D=E5=BE=8C=E3=80=81=E6=9C=80=E6=96=B0=E3=81=AE=E5=87=BA=E8=8D=B7=E3=80=
+=81=E3=81=8A=E5=B1=8A=E3=81=91=E4=BA=88=E5=AE=9A=E6=97=A5=E3=82=92=E3=81=8A=
+=E7=9F=A5=E3=82=89=E3=81=9B=E3=81=97=E3=81=BE=E3=81=99=E3=80=82=20
+-----------------------
+ iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=83=9F=E3=83=83=E3=82=AF=E3=82=AA=
+=E3=83=AC=E3=83=B3=E3=82=B8=09
+=E5=87=BA=E8=8D=B7=E6=97=A5=EF=BC=9A
+1=E3=80=9C2=E5=96=B6=E6=A5=AD=E6=97=A5
+=E3=81=8A=E5=B1=8A=E3=81=91=E4=BA=88=E5=AE=9A=E6=97=A5=EF=BC=9A=20
+2026/01/16 =E2=80=93 2026/01/17 : =E9=80=9A=E5=B8=B8=E9=85=8D=E9=80=81=09=
+=09=09=09=09=09=09=09=09=09=09
+179,800=E5=86=86=E6=95=B0=E9=87=8F 1
+179,800=E5=86=86
+-----------------------
+iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=83=9F=E3=83=83=E3=82=AF=E3=82=AA=
+=E3=83=AC=E3=83=B3=E3=82=B8=09
+=E5=87=BA=E8=8D=B7=E6=97=A5=EF=BC=9A
+1=E3=80=9C2=E5=96=B6=E6=A5=AD=E6=97=A5
+=E3=81=8A=E5=B1=8A=E3=81=91=E4=BA=88=E5=AE=9A=E6=97=A5=EF=BC=9A=20
+2026/01/16 =E2=80=93 2026/01/17 : =E9=80=9A=E5=B8=B8=E9=85=8D=E9=80=81=09=
+=09=09=09=09=09=09=09=09=09=09
+179,800=E5=86=86=E6=95=B0=E9=87=8F 1
+179,800=E5=86=86=09=09=09=09=09
+-----------------------
+=E9=85=8D=E9=80=81=E5=85=88:
+
+=E5=B0=8F=E5=B7=9D =E5=AD=9D=E5=A4=AA =E6=A7=98
+422-8006
+
+=E9=9D=99=E5=B2=A1=E7=9C=8C    =E9=9D=99=E5=B2=A1=E5=B8=82=E9=A7=BF=E6=B2=
+=B3=E5=8C=BA=E6=9B=B2=E9=87=916=E4=B8=81=E7=9B=AE=20
+1=E7=95=AA10-3
+
+=E6=97=A5=E6=9C=AC =20
+
+=E8=A3=BD=E5=93=81=E5=87=BA=E8=8D=B7=E3=81=AE=E3=81=8A=E7=9F=A5=E3=82=89=E3=
+=81=9B:
+
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=
+=80=A255
+
+-----------------------
+=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=E6=94=AF=E6=89=95=E3=81=84=E3=81=A8=E8=AB=8B=E6=B1=82=E3=81=AB=E9=96=A2=E3=
+=81=99=E3=82=8B=E8=A9=B3=E7=B4=B0=09=09
+=E8=AB=8B=E6=B1=82=E6=9B=B8=E9=80=81=E4=BB=98=E5=85=88:
+=E5=B0=8F=E5=B7=9D =E5=AD=9D=E5=A4=AA =E6=A7=98
+ponta10sakura@gmail.com
+
+=E8=AB=8B=E6=B1=82=E5=85=88=E4=BD=8F=E6=89=80:
+422-8006
+=E9=9D=99=E5=B2=A1=E7=9C=8C =E9=9D=99=E5=B2=A1=E5=B8=82=E9=A7=BF=E6=B2=B3=
+=E5=8C=BA=E6=9B=B2=E9=87=916=E4=B8=81=E7=9B=AE
+1=E7=95=AA10-3
+=E6=97=A5=E6=9C=AC
+
+=E6=94=AF=E6=89=95=E3=81=84=E6=96=B9=E6=B3=95:
+Mastercard
+
+=E3=82=AF=E3=83=AC=E3=82=B8=E3=83=83=E3=83=88=E3=82=AB=E3=83=BC=E3=83=89=E6=
+=94=AF=E6=89=95=E3=81=84=E5=9B=9E=E6=95=B0:
+ 1=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=E5=B0=8F=E8=A8=88 359,600=E5=86=86
+=E9=80=81=E6=96=99=E7=84=A1=E6=96=99 0=E5=86=86
+
+=E6=B3=A8=E6=96=87=E5=90=88=E8=A8=88 359,600=E5=86=86
+32,690=E5=86=86=EF=BC=88=E6=B6=88=E8=B2=BB=E7=A8=8E=E3=82=92=E5=90=AB=E3=82=
+=80=EF=BC=89
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=09=09=09
+=E3=82=88=E3=81=8F=E3=81=82=E3=82=8B=E3=81=94=E8=B3=AA=E5=95=8F
+
+----------------------
+=E6=AC=A1=E3=81=AE=E3=82=B9=E3=83=86=E3=83=83=E3=83=97=E3=81=AF=EF=BC=9F
+=E3=81=94=E5=85=A5=E9=87=91=E3=81=AE=E7=A2=BA=E8=AA=8D=E3=82=84=E5=AF=A9=E6=
+=9F=BB=EF=BC=8F=E6=89=BF=E8=AA=8D=E3=81=AE=E7=A2=BA=E8=AA=8D=E5=BE=8C=E3=81=
+=AB=E3=80=8C=E3=81=94=E6=B3=A8=E6=96=87=E3=81=82=E3=82=8A=E3=81=8C=E3=81=A8=
+=E3=81=86=E3=81=94=E3=81=96=E3=81=84=E3=81=BE=E3=81=99=E3=80=8D=E3=81=A8=E3=
+=81=84=E3=81=86=E3=81=94=E6=A1=88=E5=86=85=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=
+=AB=E3=82=92Apple=E3=81=8B=E3=82=89=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=
+=81=BE=E3=81=99=E3=80=82 =E3=81=93=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=
+=81=AB=E3=81=AF=E3=80=81=E3=81=94=E6=B3=A8=E6=96=87=E6=83=85=E5=A0=B1=E3=81=
+=A8=E6=9C=80=E6=96=B0=E3=81=AE=E3=81=94=E6=B3=A8=E6=96=87=E7=8A=B6=E6=B3=81=
+=E3=82=92=E3=81=94=E7=A2=BA=E8=AA=8D=E3=81=84=E3=81=9F=E3=81=A0=E3=81=91=E3=
+=82=8B=E3=83=AA=E3=83=B3=E3=82=AF=E3=81=8C=E8=BC=89=E3=81=9B=E3=82=89=E3=82=
+=8C=E3=81=A6=E3=81=84=E3=81=BE=E3=81=99=E3=80=82=E3=81=BE=E3=81=9F=E3=80=81=
+=E8=A3=BD=E5=93=81=E3=82=92=E5=87=BA=E8=8D=B7=E3=81=97=E3=81=9F=E9=9A=9B=E3=
+=81=AB=E3=81=AF=E3=80=8C=E8=A3=BD=E5=93=81=E5=87=BA=E8=8D=B7=E3=81=AE=E3=81=
+=8A=E7=9F=A5=E3=82=89=E3=81=9B=E3=80=8D=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=
+=E3=82=92=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=E3=80=82
+=E6=B3=A8=E6=96=87=E3=81=AE=E7=A2=BA=E8=AA=8D=E3=81=A8=E5=A4=89=E6=9B=B4=E3=
+=81=AF=E3=81=A7=E3=81=8D=E3=81=BE=E3=81=99=E3=81=8B=EF=BC=9F
+=E3=81=94=E6=B3=A8=E6=96=87=E7=8A=B6=E6=B3=81=E3=81=AB=E3=82=A2=E3=82=AF=E3=
+=82=BB=E3=82=B9=E3=81=97=E3=80=81=E3=82=B5=E3=82=A4=E3=83=B3=E3=82=A4=E3=83=
+=B3=E3=81=97=E3=81=A6=E3=81=94=E6=B3=A8=E6=96=87=E5=86=85=E5=AE=B9=E3=82=92=
+Apple Account=E3=81=AB=E8=BF=BD=E5=8A=A0=E3=81=97=E3=81=A6=E3=81=8F=E3=81=
+=A0=E3=81=95=E3=81=84=E3=80=82=E8=A9=B2=E5=BD=93=E3=81=99=E3=82=8B=E8=A3=BD=
+=E5=93=81=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6=E3=81=AF=E3=80=81=E5=A4=89=E6=
+=9B=B4=E3=82=84=E8=BF=94=E5=93=81=E3=80=81=E3=82=AD=E3=83=A3=E3=83=B3=E3=82=
+=BB=E3=83=AB=E3=82=92=E3=81=97=E3=81=A6=E3=81=84=E3=81=9F=E3=81=A0=E3=81=8F=
+=E3=81=93=E3=81=A8=E3=81=8C=E3=81=A7=E3=81=8D=E3=81=BE=E3=81=99=E3=80=82=E3=
+=81=94=E6=B3=A8=E6=96=87=E3=81=AE=E9=85=8D=E9=80=81=E3=80=81=E5=A4=89=E6=9B=
+=B4=E3=80=81=E8=BF=94=E5=93=81=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6=E8=A9=B3=
+=E3=81=97=E3=81=8F=E3=81=AF=E3=80=81=E3=83=98=E3=83=AB=E3=83=97=E3=83=9A=E3=
+=83=BC=E3=82=B8=E3=82=92=E3=81=94=E8=A6=A7=E3=81=8F=E3=81=A0=E3=81=95=E3=81=
+=84=E3=80=82https://store.apple.com/xc/jp/vieworder/W1674015528/ponta10saku=
+ra@gmail.com/AOS-JP-104700
+=E3=81=94=E4=B8=8D=E6=98=8E=E3=81=AA=E7=82=B9=E3=81=AB=E3=81=A4=E3=81=8D=E3=
+=81=BE=E3=81=97=E3=81=A6=E3=81=AF=E3=80=81=E3=81=94=E6=B3=A8=E6=96=87=E7=95=
+=AA=E5=8F=B7=E3=82=92=E3=81=8A=E6=89=8B=E5=85=83=E3=81=AB=E3=81=94=E7=94=A8=
+=E6=84=8F=E3=81=AE=E4=B8=8A=E3=80=81Apple Online Store=E3=82=AB=E3=82=B9=E3=
+=82=BF=E3=83=9E=E3=83=BC=E3=82=B5=E3=83=BC=E3=83=93=E3=82=B9=EF=BC=880120-9=
+93-993=E3=80=81=E5=B9=B3=E6=97=A5=E3=81=8A=E3=82=88=E3=81=B3=E7=A5=9D=E6=97=
+=A59=E3=80=9C21=E6=99=82=E3=83=BB=E5=9C=9F=E6=97=A59=E3=80=9C18=E6=99=82=EF=
+=BC=89=E3=81=B8=E3=81=8A=E9=9B=BB=E8=A9=B1=E3=81=8F=E3=81=A0=E3=81=95=E3=81=
+=84=E3=80=82
+
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=E3=82=AA=E3=83=B3=E3=83=A9=E3=82=A4=E3=83=B3=E3=81=A7=E8=B3=BC=E5=85=A5
+https://store.apple.com/jp
+
+=E3=81=8A=E8=BF=91=E3=81=8F=E3=81=AEApple Store
+https://www.apple.com/jp/retail/
+
+0120-993-993
+
+Apple Store App=E3=82=92=E3=83=80=E3=82=A6=E3=83=B3=E3=83=AD=E3=83=BC=E3=83=
+=89
+https://store.apple.com/us/go/app?
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=09=09=09=09=09=09=09
+=20
+Copyright 2026 Apple Inc. All rights reserved.
+
+=E3=81=94=E5=88=A9=E7=94=A8=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6
+https://www.apple.com/jp/legal/terms/site.html
+
+=E3=83=97=E3=83=A9=E3=82=A4=E3=83=90=E3=82=B7=E3=83=BC=E3=83=9D=E3=83=AA=E3=
+=82=B7=E3=83=BC
+https://www.apple.com/jp/privacy/
+
+=E8=B2=A9=E5=A3=B2=E6=9D=A1=E4=BB=B6
+https://store.apple.com/jp/open/salespolicies
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+------=_Part_3283014_1709771276.1768367828891
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Disposition: inline
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org=
+/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns=3D"http://www.w3.org/1999/xhtml">
+<head>
+=09<meta http-equiv=3D"content-type" content=3D"text/html; charset=3Dutf-8"=
+ />
+=09<meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=
+=3D1.0"/>
+=09<meta content=3D"Title in here" property=3D"og:title" />
+=09<title>Your Message Subject or Title</title>
+=09<style type=3D"text/css">
+=09=09@font-face { font-family: 'SF UI Display Medium'; src: local('SF UI D=
+isplay Medium'), local('SF UI Display Medium'), url('https://email.images.a=
+pple.com/rover/aos/moe/Fonts/SFUIDisplay-Medium.ttf'); } /* font-weight:100=
+;  */
+=09=09@font-face { font-family: 'SF UI Text Regular'; src: local('SF UI Tex=
+t Regular'), local('SF UI Text Regular'), url('https://email.images.apple.c=
+om/rover/aos/moe/Fonts/SFUIText-Regular.ttf'); } /* font-weight:100;  */
+=09</style>
+<style type=3D"text/css">
+/* Reset */=09=09
+.break-me { word-wrap:break-word; word-break:break-all; overflow-wrap:break=
+-word; } /* to target long Emails in desktop */
+body { width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-=
+adjust:100%;=09background-color: #FFFFFF; }
+img { outline:none;=09text-decoration:none; }
+a img {=09border:none; }
+p {=09margin: 1em 0; }
+br { line-height:12px; }
+h1, h2, h3, h4, h5, h6 { color: #333333 !important; margin: 0;=09padding: 0=
+;=09border: 0;=09outline: 0;=09font-weight: inherit;=09font-style: inherit;=
+=09font-size: 100%;=09font-family: inherit;=09vertical-align: baseline; /* =
+Reset - https://css-tricks.com/snippets/css/meyer-reset/ */=09}=20
+/* hotmail fix */
+a {=09color: #0070C9;=09text-decoration:none; }
+a:link { color: #0070C9;=09text-decoration:none; }
+a:visited {=09color: #0070C9;=09text-decoration:none; }
+a:hover { color: #0070C9;=09text-decoration:underline; }
+a:focus { text-decoration:underline; } /* to handle Accessibility radar - r=
+dar://problem/32073927 */
+
+ul { padding-left:20px; padding-top:6px; padding-bottom:0px; margin-bottom:=
+5px; } /* pad top/bot 0/6 (26-20). pad bot 6/0. pad left 0 means bullet com=
+es to the very edge of page */
+.list-lr-nopad { padding-left:1px !important; padding-right:0px !important;=
+ padding-top:6px !important; padding-bottom:0px !important; } /* pad top/bo=
+t 0/6 (26-20). pad left 0 means bullet comes to the very edge of page */
+li { padding-left:0px !important; padding-bottom:9px !important; }
+.last-point { padding-left:0px !important; padding-bottom:0px !important; }
+
+/* Client Specific */
+table td {=09border-collapse: collapse; }
+#outlook a { padding:0; }
+.ExternalClass { width:100%; }
+.ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font,=
+ .ExternalClass td, .ExternalClass div {=09line-height: 100%; }
+.ExternalClass img[class^=3DEmoji] {=09width: 10px !important;=09height: 10=
+px !important;=09display: inline !important; }
+
+/* iPad Targeting */
+@media only screen and (device-width: 768px) {
+a, a:link, a:visited, a:active {
+=09text-decoration:none !important;
+} /* fix unwanted styling on date, tel and address */
+
+a:hover {=09text-decoration:underline !important; }
+}
+/* Accessibility Radar 35362696 */
+@media (inverted-colors) { =20
+  img {  filter: invert(1);  } =20
+}
+
+/* Trying this media query for QQ.com - works - otherwise whole page has ba=
+ckground gradient */
+@media only screen and (min-width:769px) and (max-width:6000px) {
+
+ .blue-button {=20
+=09-webkit-border-radius:8px !important; -moz-border-radius:8px !important;=
+ border-radius:8px !important;  border-top:0px !important; border-bottom:0p=
+x !important; border-left:0px !important; border-right:0px !important;
+=09background: #3b9ce8; /* Old browsers */
+=09background: -moz-linear-gradient(top, #3b9ce8 0%, #0171c9 100%); /* FF3.=
+6-15 */
+=09background: linear-gradient(to bottom, #3b9ce8 0%,#0171c9 100%); /* W3C,=
+ IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+=09background-position: top left !important; background-repeat: repeat-x !i=
+mportant; /* added */
+=09}
+}
+
+
+@media only screen and (min-width:50px) and (max-width:768px) {=09
+
+/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 1A AMR clas=
+ses =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D */
+.h2-botgap { padding-bottom:0px !important; } /* for ATT agreement static c=
+ontent - loanAgreementHeading */
+.gap-btn-td { padding-bottom:38px !important; }
+
+/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 3A EMEA cla=
+sses =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D */
+=09.blue-button { width:100% !important; }=09 /* float:none !important; pad=
+ding-left:0px !important; padding-right:0px !important; margin-right:0px !i=
+mportant, */=09=09=09
+=09
+/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 1B EMEA cla=
+sses =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D */
+.moe-warranty-line { display:block !important; mso-hide:none !important; li=
+ne-height:16px !important; font-size:11px !important; height:auto !importan=
+t; padding:10 0 0 0 !important; padding-top:25px !important; color:#888888 =
+!important; }
+.agreement-section-td { padding-left:20px !important; padding-right:20px !i=
+mportant; padding-bottom:25px !important; }
+
+/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 1B AMR clas=
+ses =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D */
+.subline-recycle-td { padding-bottom:6px !important; }
+.note-td { padding-top:19px !important; }
+.footer-menu-item-table { width:100% !important; display:block !important; =
+padding-bottom:11px !important; padding-top:13px !important; border-bottom-=
+color:#D6D6D6 !important; border-bottom-width:1px !important; border-bottom=
+-style:solid !important; }
+.hide-line { display:none !important; }
+.footer-menu-item-td { font-size:11px !important; line-height:16px !importa=
+nt; }
+.bart-td { padding-right: 20px !important; padding-left:0px !important; pad=
+ding-top:4px !important; padding-bottom:2px !important; }
+.personalSetup-table { padding-bottom:0px !important; }
+.promo-tiles-td { padding-bottom:28px !important; }
+.promo-banner-td { padding-bottom:30px !important; padding-right:20px !impo=
+rtant; padding-left:20px !important; }
+.moe-tile-table-1 { width:100% !important; margin:0 auto !important; }
+.moe-tile-table-2 { width:100% !important; margin:0 auto !important; paddin=
+g-top:30px !important; }
+=09.moe-tile-td { width:auto !important; padding-left:20px !important; padd=
+ing-right:20px !important; }
+.padtopright-20 { padding-right: 20px !important; padding-left:0px !importa=
+nt; padding-bottom: 0px !important; }
+/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3Dend of 1B AM=
+R classes =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D */
+=09.main-table { width:100% !important; padding-bottom:20px !important; }
+=09.apple-logo-td { padding-top:15px !important; padding-left:20px !importa=
+nt;  }
+=09=09.header-logo-img { height:23px !important; width:auto !important; mar=
+gin-right:10px !important; }
+/* Greeting td */
+=09.greeting-td { padding-top:41px !important; padding-bottom:25px !importa=
+nt; padding-left:20px !important; padding-right:20px !important; } /* pad b=
+ot 37 to 34 to make it look like 37 */
+=09=09.heading-email { line-height:47px !important; font-size:28px !importa=
+nt; padding-top:0px !important; } /* line height is more for some locales .=
+  letter-spacing:7px !important; padding-bottom:10px !important;  line-heig=
+ht:31px !important;  */
+=09=09.sub-heading { line-height:26px !important; padding-top:10px !importa=
+nt; }
+=09=09.order-num-td { padding-bottom:27px !important; padding-left:20px !im=
+portant; padding-right:20px !important; }
+/* Section Heading */=09
+=09.section-heading-table { width:100% !important; padding-bottom:2px !impo=
+rtant; padding-left:20px !important; padding-right:20px !important; } /* pa=
+d bot 44|22px between underline and 1st product */
+=09.section-heading-table-underline { width:100% !important; padding-bottom=
+:22px !important; padding-left:20px !important; padding-right:20px !importa=
+nt; } /* pad bot 44|22px between underline and 1st product */
+=09.section-heading-td { width:auto !important; padding-bottom:26px !import=
+ant; padding-right:0px !important; } /* pad bot 52|26 for gap between Headi=
+ng and its underline */
+=09.section-items-heading-td { width:auto !important; padding-bottom:14px !=
+important; padding-right:0px !important; } /* pad bot 52|26 for gap between=
+ Heading and its underline */
+=09.section-heading-td-underline { width:auto !important; padding-bottom:26=
+px !important; padding-right:0px !important; border-bottom-color: #D6D6D6 !=
+important; border-bottom-width: 1px !important; border-bottom-style: solid =
+!important; } /* pad bot 52|26 for gap between Heading and its underline */
+=09=09.sectionHeading { font-size:22px !important; line-height:26px !import=
+ant; }=20
+=09.section-container-table { padding-bottom:24px !important; }=09/* macro =
+RENDER_TAX_ID_SECTION */
+=09.section-details-table { padding:0px !important; width:100% !important; =
+}
+=09=09.section-details-td { padding-left:20px !important; padding-right:20p=
+x !important; }=09
+=09.moe-heading-divider { background-color:#D6D6D6 !important; padding-righ=
+t:0px !important; }=09=09
+/* Products section */
+=09.engraving-table { padding-bottom:24px !important; } /* macro RENDER_ENG=
+RAVING_ITEMS */
+=09.render-lineitems-table-bot { padding-top:39px !important; padding-botto=
+m:24px !important; } /* 44px (shows 49. try 39) (design MOE 44) pad bot 24 =
+instead of 48. */
+=09.render-lineitems-table { padding-top:39px !important; } /* 44px (shows =
+49. try 39) (design MOE 44) gap between line under Greetings section and Ca=
+nceled items headline */
+=09.divider-line-productList { margin-top:15px !important; margin-bottom:15=
+px !important; }
+=09.product-name-td { padding-right:20px !important; }
+=09.base-price-td { padding-top:2px !important; padding-right:20px !importa=
+nt; }
+=09.qty-price-td { padding-right:20px !important; padding-bottom:6px !impor=
+tant; } /* pad bot 12 - make it 6 to accomodate engraving, gift etc */
+=09.product-image-td { width:86px !important; padding-left:20px !important;=
+ padding-right:7px !important; }
+=09.product-name-td-giveback { padding-right:20px !important; padding-botto=
+m:6px !important; }
+=09.product-name-td-giveback-left { padding-left:20px !important; padding-r=
+ight:20px !important; padding-bottom:6px !important; }
+=09.product-image-td-apu { width:86px !important; padding-left:20px !import=
+ant; padding-top:0px !important;}
+=09.product-image-td-child { width:86px !important; padding-left:20px !impo=
+rtant; padding-top:18px !important;}=09=09
+=09.product-image-img { width:86px !important; height:86px !important; }
+=09.product-image-apu { width:25px !important; height:auto !important; }
+=09.product-list-table { padding:0px !important; width:100% !important; }
+=09.gift-msg-td { padding-right:20px !important; } /* gap between divider l=
+ine and gift msg */
+=09.gift-heading { padding-top:0px !important; padding-bottom:0px !importan=
+t; padding-left:0px !important; padding-right:0px !important; }=09
+=09.subline-price-td { padding-right:20px !important; }
+=09.line-item-table-intend { padding-top:4px !important; }
+=09.giveBackSection { padding-bottom:23px !important; }
+=09.giveBackSection-para { padding-top:5px !important;}
+=09.services-billed{ padding-bottom:23px !important; }
+/* H3 Headings. eg. Billing Address */
+=09.subsec-heading { padding-bottom:0px !important; padding-right:0px !impo=
+rtant; padding-left:0px !important; margin-bottom:0px !important; text-alig=
+n:left !important; font-size:16px !important; line-height:22px !important; =
+}=09
+=09
+/* Payment Table */
+=09.amts-section-td { padding-left:20px !important; padding-right:20px !imp=
+ortant; padding-bottom:25px !important; }
+=09.amt-row-table { width:100% !important; }
+=09
+/* Billing section */
+=09.payment-section-td { padding-top:0px !important; padding-bottom:27px !i=
+mportant; }=09/* pad bot 32/0/27. pad top 39px/0. */
+=09
+/* Amount section */
+=09=09.amt-divider-table { margin-top:10px !important; }
+=09=09.amt-row-td { width:100% !important; }
+=09=09.amt-label-table { width:55% !important; }
+=09=09=09.amt-label-td { width:100% !important; font-size:16px !important; =
+line-height:18px !important; padding-top:6px !important; }
+=09=09=09.ordTotal-label-td { width:100% !important; font-size:16px !import=
+ant; line-height:18px !important; }
+=09=09.amt-value-table { width:43% !important; }
+=09=09.amt-tax-table { width:100% !important; }
+=09=09=09.amt-value-td { width:100% !important; font-size:16px !important; =
+line-height:18px !important; padding-top:6px !important; }
+=09=09=09.note-td-value { width:100% !important; font-size:14px !important;=
+ line-height:18px !important; padding-top:6px !important; }=09=20
+=09=09=09.ordTotal-value-td { width:100% !important; font-size:16px !import=
+ant; line-height:18px !important; }
+=09=09.amt-divider { width:100% !important; background:#D6D6D6; }=09
+=09=09.line-moe-rightgap { padding-right:20px !important;}
+=09=09
+/* invoice section */
+=09=09
+=09=09.invoice-label-table { width:100% !important; padding-bottom: 21px !i=
+mportant;}
+=09=09.invoice-value-table { width:100% !important;}=09
+=09=09
+/* BLT */
+ =09=09.blt-mouse-table {padding-bottom:35px !important;}
+=09=09.blt-mouse-para {padding-top:20px !important; }=09
+=09=09
+/* FAQ, WHN */=09
+=09.qa-table { padding-bottom:0px !important; }
+=09.answer-h3 { padding-top:0px !important; }
+=09.answer-para { padding-bottom:25px !important; }
+=09.answer-para-1 { padding-bottom:21px !important; }
+=09.answers-table { width:100% !important; padding-bottom:0px !important; }
+=09=09.answers-td { padding-left:20px !important; padding-right:20px !impor=
+tant; }
+=09=09
+/* Footer section */=09
+=09.footer-container-table { padding-top:1px !important; padding-left:20px =
+!important; padding-right:20px !important; } /* gray footer space. pad top =
+13/0/1 (MOE - 16px) */
+=09.footer-section-table { width:100% !important; }
+=09=09.footer-copyright-td { padding-left:0px !important; padding-right:0px=
+ !important; } /* copyright line */
+=09=09=09.footer-copyright-div { padding-top:15px !important; }
+=09.footer-menu-table { padding-bottom:0px !important; border-bottom-color:=
+transparent !important; border-bottom-width:0px !important; border-bottom-s=
+tyle:none !important;}=09
+=09.footer-links-div a:hover { text-decoration:underline !important; } /* f=
+or last footer menu links */=09
+=09=09.footer-links-a a:hover { text-decoration:underline !important; }
+=09=09.footer-links-a a, .footer-links-a a:link, .footer-links-a a:visited,=
+ .footer-links-a a:active { text-decoration:none !important; }=20
+=09.footer-menu-td-top { padding-top:2px !important; padding-bottom:11px !i=
+mportant; font-size:11px !important; line-height:16px !important; color:#88=
+8888 !important; width:100% !important; height:auto !important; mso-hide:no=
+ne !important; text-align:center !important; }
+=09.footer-menu-td-bottom { padding-top:13px !important; padding-bottom:11p=
+x !important; font-size:11px !important; line-height:16px !important; color=
+:#888888 !important; width:100% !important; height:auto !important; mso-hid=
+e:none !important; text-align:center !important; }=09=09=09
+=09.footer-menu-phone { font-size:11px !important; line-height:16px !import=
+ant; color:#888888 !important;}
+=09
+/* General */
+=09.qty-price-divider { padding-right:20px !important; }
+=09.pad-lr { padding-left:20px !important; padding-right:20px !important; }
+=09.pad-r { padding-right:20px !important; }
+=09span { display: inline-block !important; }
+=09.cto-padtopright-20 { padding-right: 20px !important; padding-left:0px !=
+important; padding-bottom: 0px !important; }
+=09.padtop-20 { padding-top: 20px !important; padding-left:0px !important; =
+padding-bottom: 0px !important; }
+=09.padtop-10 { width:100% !important; }
+=09.padtop-10 { padding-top: 10px !important; padding-left:0px !important; =
+padding-bottom: 0px !important; }
+=09.moe-line-col { background-color:#D6D6D6 !important; }=09
+=09ul { padding-left:20px !important; padding-top:6px !important; padding-b=
+ottom:0px !important; } /* pad top/bot 0/6 (26-20). pad bot 6/0. pad left 0=
+ means bullet comes to the very edge of page */
+=09.list-lr-nopad { padding-left:1px !important; padding-right:0px !importa=
+nt; padding-top:6px !important; padding-bottom:0px !important; } /* pad top=
+/bot 0/6 (26-20). pad left 0 means bullet comes to the very edge of page */
+=09=09li { padding-left:0px !important; padding-bottom:9px !important; }
+=09=09.last-point { padding-left:0px !important; padding-bottom:0px !import=
+ant; }
+=09=09
+/* SHOW/HIDE in MOE */
+=09.moe-show { display:inline !important; height:auto !important; width:aut=
+o !important;  }=09
+=09.moe-hide, .divider-line-dsk { display:none !important; width:0px !impor=
+tant; height:0px !important; margin:0 !important; padding:0 !important; pad=
+ding-bottom:0 !important; background-color:none !important; background:none=
+ !important; font-size:0px !important; line-height:0px !important; font-wei=
+ght:none !important; letter-spacing:0px !important; } =09
+=09
+/* GAPS */=09=09
+=09.gap-1 { height:1px !important;}
+=09.gap-2 { height:2px !important;}
+=09.gap-3 { height:3px !important;}
+=09.gap-5 { height:5px !important;}
+=09.gap-6 { height:6px !important; }
+=09.gap-7 { height:7px !important;}
+=09.gap-8 { height:8px !important;}
+=09.gap-10 { height:10px !important;}
+=09.gap-12 { height:12px !important;}
+=09.gap-13 { height:13px !important;}
+=09.gap-14 {  height:14px !important;}
+=09.gap-15 { height:15px !important;}
+=09.gap-16 { height:16px !important;}
+=09.gap-20 { height:20px !important;}
+=09.gap-21 { height:21px !important;}
+=09.gap-22 { height:22px !important;}
+=09.gap-23 { height:23px !important;}
+=09.gap-24 { height:24px !important;}
+=09.gap-25 { height:25px !important;}
+=09.gap-26 { height:26px !important;}
+=09.gap-28 { height:28px !important;}
+=09.gap-30 { height:30px !important;}
+=09.gap-32 { height:32px !important;}
+=09.gap-33 { height:33px !important;}
+=09.gap-37 { height:37px !important;}
+=09.gap-39 { height:39px !important;}
+=09.gap-40 { height:40px !important;}
+=09.gap-44 { height:44px !important;}
+=09.gap-45 { height:45px !important;}
+
+=09.moe-break-me { word-wrap:break-word; word-break:break-all; overflow-wra=
+p:break-word; }
+=09.aapl-link { color:#0070C9 !important; }
+
+=09.invoiceBusiness-padding  { padding-top:24px !important; }
+
+}=09
+
+/* Android Targeting */
+@media only screen and (-webkit-device-pixel-ratio:.75) {/* low density (ld=
+pi) layouts */ }
+@media only screen and (-webkit-device-pixel-ratio:1) {/* medium density (m=
+dpi) layouts */ }
+@media only screen and (-webkit-device-pixel-ratio:1.5) {/* high density (h=
+dpi) layouts */ }
+
+</style>=09=09
+</head>
+
+
+<body leftmargin=3D"0" marginwidth=3D"0" topmargin=3D"0" marginheight=3D"0"=
+ offset=3D"0" bgcolor=3D"FFFFFF" style=3D"-webkit-font-smoothing: antialias=
+ed; padding:0px; width:100% !important; -webkit-text-size-adjust:100%; -ms-=
+text-size-adjust:100%; background-color:#FFFFFF;">
+=09<center>
+=09=09<table align=3D"center" width=3D"100%" border=3D"0" cellpadding=3D"0"=
+ cellspacing=3D"0"><tr><td align=3D"center">=20
+=09=09=09<table class=3D"main-table" align=3D"center" width=3D"660" border=
+=3D"0" cellpadding=3D"0" cellspacing=3D"0">=09=09=09=09
+=09=09=09=09=09=09=09=09<!--<tr><td>DISPLAY_MASTERCARD_DETAILS</td></tr>-->
+=09=09 =09=09=09<tr><td class=3D"apple-logo-td" valign=3D"top" align=3D"lef=
+t" style=3D"padding-top:32px;">
+=09=09<img class=3D"header-logo-img" src=3D"https://email.images.apple.com/=
+rover/aos/moe/apple_icon_2x.png" style=3D"outline:none; display:block;" bor=
+der=3D"0" height=3D"25" width=3D"auto" alt=3D"Apple">
+</td></tr>
+<tr><td class=3D"greeting-td" valign=3D"top" align=3D"left" style=3D"paddin=
+g-top:75px; padding-bottom:51px;">
+=09=09
+=09=09=09   =09    <h1 class=3D"heading-email" style=3D"font-family:'SF UI =
+Display Medium',system,-apple-system,-webkit-system-font,'SFNSText','Segoe =
+UI','Helvetica Neue',Helvetica,Arial,sans-serif; font-weight:normal; color:=
+#333333; line-height:53px; font-size:34px; margin-top:0px; margin-left:0px;=
+ margin-right:0px; margin-bottom:2px; border-bottom:0px;">
+   =09=09 =09=09=E3=81=94=E6=B3=A8=E6=96=87=E5=86=85=E5=AE=B9=E3=82=92=E3=
+=81=94=E7=A2=BA=E8=AA=8D=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=80=82</h1>
+   =09    =09   =09 =09=09=09<p class=3D"sub-heading" style=3D"font-family:=
+system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',=
+ Helvetica, Arial, sans-serif;; font-size:17px; line-height:24px; color:#33=
+3333; padding-top:13px; margin-top:0; margin-left:0; margin-right:0; margin=
+-bottom:0;">
+=09=09=09=09=09=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AE=E7=8A=B6=E6=B3=81=E3=81=
+=AB=E5=BF=9C=E3=81=98=E3=81=A6=E3=81=94=E6=A1=88=E5=86=85=E3=81=AE=E3=83=A1=
+=E3=83=BC=E3=83=AB=E3=82=92=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=
+=81=99=E3=80=82</p>
+=09=09=09=09=09</td></tr>=09
+<tr><td class=3D"order-num-td" style=3D"padding-bottom:14px;">
+=09=09=09=09<div class=3D"order-num" style=3D"color:#333333; font-weight:no=
+rmal; font-size:14px; line-height:21px; margin-top:0px; margin-bottom:0px;"=
+>
+=09=09=09<span style=3D"font-family:system-ui, -apple-system, BlinkMacSyste=
+mFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; font-we=
+ight:600; letter-spacing:0px;">=E3=81=94=E6=B3=A8=E6=96=87=E7=95=AA=E5=8F=
+=B7:</span> <span style=3D"font-family:system-ui, -apple-system, BlinkMacSy=
+stemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; colo=
+r:#0070C9;">=09<a href=3D"https://store.apple.com/xc/jp/vieworder/W16740155=
+28/ponta10sakura@gmail.com/" style=3D"color:#4e9cde;font-weight:normal" ari=
+a-label=3D"=E3=81=94=E6=B3=A8=E6=96=87=E7=95=AA=E5=8F=B7 W1674015528">W1674=
+015528</a>
+    </span></div>=20
+=09=09<div class=3D"order-num" style=3D"color:#333333; font-weight:normal; =
+font-size:14px; line-height:21px; margin-top:0px; margin-bottom:0px;">
+=09=09=09<span style=3D"font-family:system-ui, -apple-system, BlinkMacSyste=
+mFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; font-we=
+ight:600; letter-spacing:0px;">=E3=81=94=E6=B3=A8=E6=96=87=E6=97=A5 :</span=
+> <span style=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, =
+'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; font-weight:no=
+rmal;">2026/01/14</span></div>
+</td></tr>
+<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=3D"=
+1" align=3D"left"><div style=3D"background-color:#D6D6D6 !important; font-s=
+ize:1px !important; height:1px !important;"></div></td></tr>
+
+=09
+=09
+=09=09=09=09=09=09<tr><td class=3D"gap-td" style=3D"padding-top:42px; paddi=
+ng-bottom:42px;">=09
+=09=09=09=09=09=09=09<table width=3D"29%" class=3D"section-heading-table" a=
+lign=3D"left" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"wid=
+th:29%;">
+=09<tr><td class=3D"section-items-heading-td" valign=3D"top" align=3D"left"=
+ style=3D"font-family:'SF UI Display Medium',system,-apple-system,-webkit-s=
+ystem-font,'SFNSText','Segoe UI','Helvetica Neue',Helvetica,Arial,sans-seri=
+f; font-weight:500; letter-spacing:0px; color:#333333; font-size:22px; line=
+-height:27px; margin-top:0; margin-left:0; margin-right:0; margin-bottom:0;=
+">
+=09=09=09<h2 class=3D"sectionHeading" style=3D"font-family:'SF UI Display M=
+edium',system,-apple-system,-webkit-system-font,'SFNSText','Segoe UI','Helv=
+etica Neue',Helvetica,Arial,sans-serif; font-weight:500; letter-spacing:0px=
+; color:#333333; font-size:22px; line-height:27px; margin-top:0; margin-lef=
+t:0; margin-right:0; margin-bottom:0;">=E3=81=8A=E6=94=AF=E6=89=95=E3=81=84=
+=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6
+</h2></td></tr></table> =09 =09=09=09=09=09<table class=3D"section-details-=
+table" width=3D"66.5%" align=3D"right" cellspacing=3D"0" cellpadding=3D"0" =
+border=3D"0" style=3D"width:66.5%;">
+=09=09=09=09=09=09<tr><td class=3D"section-details-td" align=3D"left" valig=
+n=3D"top" style=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont=
+, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:17p=
+x; line-height:26px; color:#333333;">
+=09=09=09=09=09=09=09=09=09=09    =09=09=09=09=09=09=09=09=09<div class=3D"=
+gen-txt" style=3D"width:100%;">=E3=81=93=E3=81=AE=E5=BA=A6=E3=81=AFApple St=
+ore=E3=82=92=E3=81=94=E5=88=A9=E7=94=A8=E3=81=84=E3=81=9F=E3=81=A0=E3=81=8D=
+=E3=80=81=E3=81=82=E3=82=8A=E3=81=8C=E3=81=A8=E3=81=86=E3=81=94=E3=81=96=E3=
+=81=84=E3=81=BE=E3=81=97=E3=81=9F=E3=80=82 =E4=B8=8B=E8=A8=98=E3=81=AE=E5=
+=86=85=E5=AE=B9=E3=81=A7=E3=81=94=E6=B3=A8=E6=96=87=E3=82=92=E5=8F=97=E4=BB=
+=98=E3=81=97=E3=81=BE=E3=81=97=E3=81=9F=E3=80=82 =E3=81=94=E6=B3=A8=E6=96=
+=87=E3=81=AE=E8=A9=B3=E7=B4=B0=E3=82=92=E3=81=94=E7=A2=BA=E8=AA=8D=E3=81=8F=
+=E3=81=A0=E3=81=95=E3=81=84=E3=80=82</div>
+=09=09=09=09=09=09=09=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:1=
+00%;"><div class=3D"gen-txt" style=3D"padding-top:12px; font-family:system-=
+ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvet=
+ica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;">=
+=E3=81=8A=E5=AE=A2=E6=A7=98=E3=82=88=E3=82=8A=E3=81=84=E3=81=9F=E3=81=A0=E3=
+=81=8D=E3=81=BE=E3=81=97=E3=81=9F=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AFApple =
+Store=E3=81=AE=E8=B2=A9=E5=A3=B2=E6=9D=A1=E4=BB=B6=E3=81=AB=E5=9F=BA=E3=81=
+=A5=E3=81=84=E3=81=A6=E8=B2=A9=E5=A3=B2=E3=81=95=E3=81=9B=E3=81=A6=E3=81=84=
+=E3=81=9F=E3=81=A0=E3=81=8D=E3=81=BE=E3=81=99=E3=80=82</div> </div>
+=09=09=09=09=09=09=09=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:1=
+00%;"><div class=3D"gen-txt" style=3D"width:100%; padding-top:12px; font-fa=
+mily:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica N=
+eue', Helvetica, Arial, sans-serif; font-size:17px; line-height:26px; color=
+:#333333;">=E3=81=AA=E3=81=8A=E3=80=81=E6=9C=AC=E3=83=A1=E3=83=BC=E3=83=AB=
+=E3=81=AF=E5=A5=91=E7=B4=84=E3=81=AE=E6=88=90=E7=AB=8B=E3=82=92=E9=80=9A=E7=
+=9F=A5=E3=81=99=E3=82=8B=E3=82=82=E3=81=AE=E3=81=A7=E3=81=AF=E3=81=82=E3=82=
+=8A=E3=81=BE=E3=81=9B=E3=82=93=E3=81=AE=E3=81=A7=E3=81=94=E6=B3=A8=E6=84=8F=
+=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=80=82=E3=81=94=E6=B3=A8=E6=96=87=E3=
+=81=8C=E6=88=90=E7=AB=8B=E3=81=97=E3=81=9F=E6=99=82=E7=82=B9=E3=81=A7=E3=80=
+=81=E3=80=8C=E3=81=94=E6=B3=A8=E6=96=87=E3=81=82=E3=82=8A=E3=81=8C=E3=81=A8=
+=E3=81=86=E3=81=94=E3=81=96=E3=81=84=E3=81=BE=E3=81=99=E3=80=8D=E3=81=A8=E3=
+=81=84=E3=81=86=E3=81=8A=E7=9F=A5=E3=82=89=E3=81=9B=E3=81=AE=E3=83=A1=E3=83=
+=BC=E3=83=AB=E3=82=92=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=
+=E3=80=82</div></div>
+=09=09=09=09=09=09=09=09=09=09=09</td></tr></table>=09=09
+=09=09=09=09=09<table width=3D"100%" align=3D"center" cellspacing=3D"0" cel=
+lpadding=3D"0" border=3D"0" style=3D"width:100%; min-width:100%;">
+=09<tr><td class=3D"gap-40" valign=3D"top" height=3D"41" align=3D"left" sty=
+le=3D"height:41px; font-size:41px; line-height:41px; min-width:100%;"><img =
+class=3D"gap-40" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"41" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-1" valign=3D"top" height=3D"1" align=3D"left" style=
+=3D"height:1px; font-size:1px; line-height:1px; min-width:100%;"><img class=
+=3D"gap-1" src=3D"https://email.images.apple.com/dm/groups/aos/om/global/cm=
+on/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=3D"0"=
+ height=3D"1" width=3D"1"></td></tr>
+</table>
+=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09
+
+=09<tr><td valign=3D"top" align=3D"center">=09=09=09
+                    =09=09
+=09=09=09
+                           =20
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table cl=
+ass=3D"render-lineitems-table-notop" width=3D"100%" cellspacing=3D"0" cellp=
+adding=3D"0" border=3D"0" > =09=09=09=09=09=09=09=09<tr><td>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09                                            =09=09=09=09=09=09=09=
+=09=09=09=09=09<table width=3D"29%" class=3D"section-heading-table" align=
+=3D"left" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width:2=
+9%;">
+=09<tr><td class=3D"section-items-heading-td" valign=3D"top" align=3D"left"=
+ style=3D"font-family:'SF UI Display Medium',system,-apple-system,-webkit-s=
+ystem-font,'SFNSText','Segoe UI','Helvetica Neue',Helvetica,Arial,sans-seri=
+f; font-weight:500; letter-spacing:0px; color:#333333; font-size:22px; line=
+-height:27px; margin-top:0; margin-left:0; margin-right:0; margin-bottom:0;=
+">
+=09=09=09<h2 class=3D"sectionHeading" style=3D"font-family:'SF UI Display M=
+edium',system,-apple-system,-webkit-system-font,'SFNSText','Segoe UI','Helv=
+etica Neue',Helvetica,Arial,sans-serif; font-weight:500; letter-spacing:0px=
+; color:#333333; font-size:22px; line-height:27px; margin-top:0; margin-lef=
+t:0; margin-right:0; margin-bottom:0;">=E9=85=8D=E9=80=81=E5=AF=BE=E8=B1=A1=
+=E3=81=AE=E8=A3=BD=E5=93=81</h2></td></tr></table> =09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09 <table class=3D"product-list-table" width=3D"66.5%=
+" align=3D"right" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D=
+"width:66.5%;">
+=09<tr><td class=3D"pad-lr" valign=3D"top" align=3D"left">
+=09=09=09=09=09=09=09<div style=3D"width:100%; font-family:system-ui, -appl=
+e-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Aria=
+l, sans-serif; font-size:17px; line-height:26px; color:#333333;">=E3=81=8A=
+=E5=AE=A2=E6=A7=98=E3=81=AE=E3=81=94=E6=B3=A8=E6=96=87=E7=A2=BA=E8=AA=8D=E5=
+=BE=8C=E3=80=81=E6=9C=80=E6=96=B0=E3=81=AE=E5=87=BA=E8=8D=B7=E3=80=81=E3=81=
+=8A=E5=B1=8A=E3=81=91=E4=BA=88=E5=AE=9A=E6=97=A5=E3=82=92=E3=81=8A=E7=9F=A5=
+=E3=82=89=E3=81=9B=E3=81=97=E3=81=BE=E3=81=99=E3=80=82 </div>
+=09=09=09=09<table width=3D"100%" align=3D"center" cellspacing=3D"0" cellpa=
+dding=3D"0" border=3D"0" style=3D"width:100%; min-width:100%;">
+=09<tr><td class=3D"gap-33" valign=3D"top" height=3D"21" align=3D"left" sty=
+le=3D"height:21px; font-size:21px; line-height:21px; min-width:100%;"><img =
+class=3D"gap-33" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"21" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-22" valign=3D"top" height=3D"28" align=3D"left" sty=
+le=3D"height:28px; font-size:28px; line-height:28px; min-width:100%;"><img =
+class=3D"gap-22" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"28" width=3D"1"></td></tr>
+</table>
+=09=09=09=09=09=09
+=09</td></tr>
+ =09=09=09=09=09=09=09=09=09<tr><td class=3D"pad-lr" valign=3D"top" align=
+=3D"left">
+=09=09=09=09=09 =09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09<tr><td valign=3D"top" align=3D"left">
+=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09<tr><td valign=3D"top" align=3D"left">=09=09=09=09=09=09=09=09=09=
+=09=09=09=09
+=09=09=09=09=09<table class=3D"line-item-table" width=3D"100%" align=3D"rig=
+ht" border=3D"0" cellspacing=3D"0" cellpadding=3D"0" >
+=09=09=09=09=09=09<tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09  =09
+=09=09=09
+    =09=09=09=09=09=09=09<td class=3D"product-image-td" align=3D"center" wi=
+dth=3D"96" valign=3D"top" style=3D"padding-right:10px;"><img class=3D"produ=
+ct-image-img" src=3D"https://store.storeimages.cdn-apple.com/1/as-images.ap=
+ple.com/is/iphone-17-pro-finish-select-cosmicorange-202509?wid=3D192&hei=3D=
+192&fmt=3Djpeg&qlt=3D95&.v=3D1757586870879" alt=3D"" height=3D"96" width=3D=
+"96" style=3D"outline:none; display:block;"></td>=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<td valign=3D"top" align=3D=
+"left">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"item-det=
+ails-table" width=3D"100%" align=3D"left" border=3D"0" cellspacing=3D"0" ce=
+llpadding=3D"0">
+=09=09=09=09=09=09=09=09=09<tr><td class=3D"product-name-td" align=3D"left"=
+ valign=3D"top" style=3D"font-family:system-ui, -apple-system, BlinkMacSyst=
+emFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-we=
+ight:600; letter-spacing:0px; font-size:17px; line-height:26px; color:#3333=
+33; margin:0;">iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=83=9F=E3=83=83=E3=
+=82=AF=E3=82=AA=E3=83=AC=E3=83=B3=E3=82=B8</td></tr>=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09<tr><td class=3D"cto-padtopright-20" align=3D"left" valig=
+n=3D"top" style=3D"padding-top:3px; padding-bottom:2px; font-family:system-=
+ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvet=
+ica, Arial, sans-serif; color:#333333; font-size:14px; line-height:21px;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+<div align=3D"left" style=3D"width:100%;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09<span style=3D"font-weight:600;">=E5=87=BA=E8=8D=B7=E6=97=A5=EF=
+=BC=9A
+</span>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09 1=E3=80=9C2=E5=96=B6=E6=A5=AD=E6=97=A5</div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr=
+>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09<tr><td class=3D"cto-padtopright-20" align=3D"left" valign=3D"top"=
+ style=3D"padding-top:3px; padding-bottom:2px; font-family:system-ui, -appl=
+e-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Aria=
+l, sans-serif; color:#333333; font-size:14px; line-height:21px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<div align=3D"left" style=3D"width:100%=
+;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09<span style=3D"font-weight:600;">=E3=81=8A=E5=B1=8A=E3=81=91=E4=BA=88=
+=E5=AE=9A=E6=97=A5=EF=BC=9A</span>=20
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09 2026/01/16 =E2=80=93 2026/01/17 : =E9=80=9A=E5=B8=B8=E9=85=8D=E9=80=
+=81</div>=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"base-price=
+-td" align=3D"left" style=3D"padding-top:6px; font-family:system-ui, -apple=
+-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial=
+, sans-serif; font-size:17px; line-height:26px; color:#333333;">
+=09=09=09=09=09=09=09=09=09=09=09=09<nobr>179,800=E5=86=86</nobr></td></tr>=
+ =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td width=
+=3D"100%" class=3D"qty-price-divider" style=3D"padding-top:6px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<table width=3D"100%" align=3D"center" =
+cellspacing=3D"0" cellpadding=3D"0" border=3D"0" height=3D"1" style=3D"heig=
+ht:1px; font-size:1px; line-height:1px; width:100%;"> <tr><td class=3D"moe-=
+line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=3D"1" align=3D"left"><di=
+v style=3D"background-color:#D6D6D6 !important; font-size:1px !important; h=
+eight:1px !important;"></td></tr>
+</table>
+</td></tr> =09=09=09=09=09=09=09=09=09=09<tr><td class=3D"qty-price-td" sty=
+le=3D"padding-top:6px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"product-quantity-table"=
+ width=3D"45%" align=3D"left" cellpadding=3D"0" border=3D"0" cellspacing=3D=
+"0">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"product-quantity" a=
+lign=3D"left" style=3D"font-family:system-ui, -apple-system, BlinkMacSystem=
+Font, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size=
+:17px; line-height:26px; color:#333333;">=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<nobr>=E6=95=B0=E9=87=8F 1</no=
+br></td></tr></table>
+=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"total-price-table" widt=
+h=3D"50%" align=3D"right" cellpadding=3D"0" border=3D"0" cellspacing=3D"0">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"total-price" align=
+=3D"right" style=3D"font-family:system-ui, -apple-system, BlinkMacSystemFon=
+t, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight:=
+600; letter-spacing:0px; font-size:17px; line-height:26px; color:#333333; m=
+argin:0;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09<nobr>179,800=E5=86=86</nobr>=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr=
+> =09=09=09=09=09=09=09=09=09=09
+=09=09=09
+=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09 =09=09=09=
+=09=09=09=09=09=09</table> =09=09=09=09=09=09=09=09=09=09=09=09=09=09</td><=
+/tr></table> =09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09  =09    =09=09=
+=09=09=09=09=09=09=09<tr><td class=3D"pad-lr" valign=3D"top" align=3D"left"=
+>
+=09=09=09=09=09=09=09=09=09=09=09<table width=3D"100%" align=3D"center" cel=
+lspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width:100%; min-widt=
+h:100%;">
+=09<tr><td class=3D"gap-21" valign=3D"top" height=3D"29" align=3D"left" sty=
+le=3D"height:29px; font-size:29px; line-height:29px; min-width:100%;"><img =
+class=3D"gap-21" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"29" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-24" valign=3D"top" height=3D"28" align=3D"left" sty=
+le=3D"height:28px; font-size:28px; line-height:28px; min-width:100%;"><img =
+class=3D"gap-24" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"28" width=3D"1"></td></tr>
+</table>
+=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09<tr><td valign=3D"top" align=3D"left">
+=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09<tr><td valign=3D"top" align=3D"left">=09=09=09=09=09=09=09=09=09=
+=09=09=09=09
+=09=09=09=09=09<table class=3D"line-item-table" width=3D"100%" align=3D"rig=
+ht" border=3D"0" cellspacing=3D"0" cellpadding=3D"0" >
+=09=09=09=09=09=09<tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09  =09
+=09=09=09
+    =09=09=09=09=09=09=09<td class=3D"product-image-td" align=3D"center" wi=
+dth=3D"96" valign=3D"top" style=3D"padding-right:10px;"><img class=3D"produ=
+ct-image-img" src=3D"https://store.storeimages.cdn-apple.com/1/as-images.ap=
+ple.com/is/iphone-17-pro-finish-select-cosmicorange-202509?wid=3D192&hei=3D=
+192&fmt=3Djpeg&qlt=3D95&.v=3D1757586870879" alt=3D"" height=3D"96" width=3D=
+"96" style=3D"outline:none; display:block;"></td>=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<td valign=3D"top" align=3D=
+"left">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"item-det=
+ails-table" width=3D"100%" align=3D"left" border=3D"0" cellspacing=3D"0" ce=
+llpadding=3D"0">
+=09=09=09=09=09=09=09=09=09<tr><td class=3D"product-name-td" align=3D"left"=
+ valign=3D"top" style=3D"font-family:system-ui, -apple-system, BlinkMacSyst=
+emFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-we=
+ight:600; letter-spacing:0px; font-size:17px; line-height:26px; color:#3333=
+33; margin:0;">iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=83=9F=E3=83=83=E3=
+=82=AF=E3=82=AA=E3=83=AC=E3=83=B3=E3=82=B8</td></tr>=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09<tr><td class=3D"cto-padtopright-20" align=3D"left" valig=
+n=3D"top" style=3D"padding-top:3px; padding-bottom:2px; font-family:system-=
+ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvet=
+ica, Arial, sans-serif; color:#333333; font-size:14px; line-height:21px;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+<div align=3D"left" style=3D"width:100%;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09<span style=3D"font-weight:600;">=E5=87=BA=E8=8D=B7=E6=97=A5=EF=
+=BC=9A
+</span>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09 1=E3=80=9C2=E5=96=B6=E6=A5=AD=E6=97=A5</div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr=
+>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09<tr><td class=3D"cto-padtopright-20" align=3D"left" valign=3D"top"=
+ style=3D"padding-top:3px; padding-bottom:2px; font-family:system-ui, -appl=
+e-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Aria=
+l, sans-serif; color:#333333; font-size:14px; line-height:21px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<div align=3D"left" style=3D"width:100%=
+;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09<span style=3D"font-weight:600;">=E3=81=8A=E5=B1=8A=E3=81=91=E4=BA=88=
+=E5=AE=9A=E6=97=A5=EF=BC=9A</span>=20
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09 2026/01/16 =E2=80=93 2026/01/17 : =E9=80=9A=E5=B8=B8=E9=85=8D=E9=80=
+=81</div>=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"base-price=
+-td" align=3D"left" style=3D"padding-top:6px; font-family:system-ui, -apple=
+-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial=
+, sans-serif; font-size:17px; line-height:26px; color:#333333;">
+=09=09=09=09=09=09=09=09=09=09=09=09<nobr>179,800=E5=86=86</nobr></td></tr>=
+ =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td width=
+=3D"100%" class=3D"qty-price-divider" style=3D"padding-top:6px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<table width=3D"100%" align=3D"center" =
+cellspacing=3D"0" cellpadding=3D"0" border=3D"0" height=3D"1" style=3D"heig=
+ht:1px; font-size:1px; line-height:1px; width:100%;"> <tr><td class=3D"moe-=
+line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=3D"1" align=3D"left"><di=
+v style=3D"background-color:#D6D6D6 !important; font-size:1px !important; h=
+eight:1px !important;"></td></tr>
+</table>
+</td></tr> =09=09=09=09=09=09=09=09=09=09<tr><td class=3D"qty-price-td" sty=
+le=3D"padding-top:6px;">
+=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"product-quantity-table"=
+ width=3D"45%" align=3D"left" cellpadding=3D"0" border=3D"0" cellspacing=3D=
+"0">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"product-quantity" a=
+lign=3D"left" style=3D"font-family:system-ui, -apple-system, BlinkMacSystem=
+Font, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size=
+:17px; line-height:26px; color:#333333;">=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<nobr>=E6=95=B0=E9=87=8F 1</no=
+br></td></tr></table>
+=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"total-price-table" widt=
+h=3D"50%" align=3D"right" cellpadding=3D"0" border=3D"0" cellspacing=3D"0">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"total-price" align=
+=3D"right" style=3D"font-family:system-ui, -apple-system, BlinkMacSystemFon=
+t, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight:=
+600; letter-spacing:0px; font-size:17px; line-height:26px; color:#333333; m=
+argin:0;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09<nobr>179,800=E5=86=86</nobr>=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr=
+> =09=09=09=09=09=09=09=09=09=09
+=09=09=09
+=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09 =09=09=09=
+=09=09=09=09=09=09</table> =09=09=09=09=09=09=09=09=09=09=09=09=09=09</td><=
+/tr></table> =09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09  =09       </t=
+able> =09 =09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table class=
+=3D"section-details-table" width=3D"66.5%" align=3D"right" cellspacing=3D"0=
+" cellpadding=3D"0" border=3D"0" style=3D"width:66.5%;">
+=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"section-details-td" align=
+=3D"left" valign=3D"top" style=3D"font-family:system-ui, -apple-system, Bli=
+nkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif=
+; font-size:17px; line-height:26px; color:#333333;"> =09=09=09=09=09=09=09=
+=09=09=09=09=09=09<table width=3D"100%" align=3D"center" cellspacing=3D"0" =
+cellpadding=3D"0" border=3D"0" style=3D"width:100%; min-width:100%;">
+=09<tr><td class=3D"gap-21" valign=3D"top" height=3D"30" align=3D"left" sty=
+le=3D"height:30px; font-size:30px; line-height:30px; min-width:100%;"><img =
+class=3D"gap-21" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"30" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-32" valign=3D"top" height=3D"30" align=3D"left" sty=
+le=3D"height:30px; font-size:30px; line-height:30px; min-width:100%;"><img =
+class=3D"gap-32" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"30" width=3D"1"></td></tr>
+</table>
+                                                     =09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09<h3 class=3D"subsec-heading" style=3D"font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-weight:600; letter-spacing:0px; font-size:1=
+7px; line-height:26px; color:#333333; margin-top:0px; margin-bottom:0px;">=
+=E9=85=8D=E9=80=81=E5=85=88=EF=BC=9A
+</h3>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09<div class=3D"gen-txt" style=3D"width:100%; font-family:system-ui, -appl=
+e-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Aria=
+l, sans-serif; font-size:17px; line-height:26px; color:#333333;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+    =09=09<div class=3D"gen-txt" style=3D"font-family:system-ui, -apple-sys=
+tem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sa=
+ns-serif;;">=E5=B0=8F=E5=B7=9D =E5=AD=9D=E5=A4=AA =E6=A7=98</div>
+=09=09=09<!--<span class=3D"moe-hide"><br></span>-->
+=09=09=09=09<div class=3D"gen-txt" style=3D"font-family:system-ui, -apple-s=
+ystem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, =
+sans-serif;;">422-8006</div>
+=09=09<div class=3D"gen-txt" style=3D"font-family:system-ui, -apple-system,=
+ BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-s=
+erif;;">
+=09=09=09=E9=9D=99=E5=B2=A1=E7=9C=8C    =E9=9D=99=E5=B2=A1=E5=B8=82=E9=A7=
+=BF=E6=B2=B3=E5=8C=BA=E6=9B=B2=E9=87=916=E4=B8=81=E7=9B=AE =09</div>
+=09=09=09<div class=3D"gen-txt" style=3D"font-family:system-ui, -apple-syst=
+em, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, san=
+s-serif;;">1=E7=95=AA10-3</div>
+=09=09=09=09
+=09=09=09<div class=3D"gen-txt" style=3D"font-family:system-ui, -apple-syst=
+em, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, san=
+s-serif;;">=E6=97=A5=E6=9C=AC  </div>
+=09=09</div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09 =09=09=09=09=09=09=09=09=09=09=09=09=09=09<h3 class=3D"subsec-heading" =
+style=3D"padding-top:23px; font-family:system-ui, -apple-system, BlinkMacSy=
+stemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-=
+weight:600; letter-spacing:0px; font-size:17px; line-height:26px; color:#33=
+3333; margin-top:0px; margin-bottom:0px;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=E8=A3=
+=BD=E5=93=81=E5=87=BA=E8=8D=B7=E3=81=AE=E3=81=8A=E7=9F=A5=E3=82=89=E3=81=9B=
+=EF=BC=9A
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</h3>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09<div class=3D"gen-txt" style=3D"w=
+idth:100%; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe=
+ UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:17px; line-=
+height:26px; color:#333333;">=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:system-ui, -a=
+pple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, A=
+rial, sans-serif; font-size:17px; line-height:26px; color:#333333;">=E2=80=
+=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=E2=80=A2=
+55</div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr></table> =09=09=09=
+=09=09=09=09=09=09 =09=09=09=09=09=09=09=09=09<table width=3D"100%" align=
+=3D"center" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width=
+:100%; min-width:100%;">
+=09<tr><td class=3D"gap-33" valign=3D"top" height=3D"30" align=3D"left" sty=
+le=3D"height:30px; font-size:30px; line-height:30px; min-width:100%;"><img =
+class=3D"gap-33" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"30" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-40" valign=3D"top" height=3D"43" align=3D"left" sty=
+le=3D"height:43px; font-size:43px; line-height:43px; min-width:100%;"><img =
+class=3D"gap-40" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"43" width=3D"1"></td></tr>
+</table>
+ =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr></table> =09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=09=09</=
+td></tr>=20
+=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09<tr><td class=3D"payment-section-td" style=3D"padding-bottom=
+:34px;"> =09=09=09=09=09=09=09=09=09=09=09=09<table width=3D"29%" class=3D"=
+section-heading-table" align=3D"left" cellspacing=3D"0" cellpadding=3D"0" b=
+order=3D"0" style=3D"width:29%;">
+=09<tr><td class=3D"section-items-heading-td" valign=3D"top" align=3D"left"=
+ style=3D"font-family:'SF UI Display Medium',system,-apple-system,-webkit-s=
+ystem-font,'SFNSText','Segoe UI','Helvetica Neue',Helvetica,Arial,sans-seri=
+f; font-weight:500; letter-spacing:0px; color:#333333; font-size:22px; line=
+-height:27px; margin-top:0; margin-left:0; margin-right:0; margin-bottom:0;=
+">
+=09=09=09<h2 class=3D"sectionHeading" style=3D"font-family:'SF UI Display M=
+edium',system,-apple-system,-webkit-system-font,'SFNSText','Segoe UI','Helv=
+etica Neue',Helvetica,Arial,sans-serif; font-weight:500; letter-spacing:0px=
+; color:#333333; font-size:22px; line-height:27px; margin-top:0; margin-lef=
+t:0; margin-right:0; margin-bottom:0;">=E6=94=AF=E6=89=95=E3=81=84=E3=81=A8=
+=E8=AB=8B=E6=B1=82=E3=81=AB=E9=96=A2=E3=81=99=E3=82=8B=E8=A9=B3=E7=B4=B0</h=
+2></td></tr></table> =09=09=09=09=09=09<table class=3D"section-details-tabl=
+e" width=3D"66.5%" align=3D"right" cellspacing=3D"0" cellpadding=3D"0" bord=
+er=3D"0" style=3D"width:66.5%;">
+=09=09=09<tr><td class=3D"section-details-td" align=3D"left" valign=3D"top"=
+ style=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe =
+UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:17px; line-h=
+eight:26px; color:#333333;">
+=09=09=09=09=09=09=09
+=09
+=09=09
+=09=09=09         =20
+=09=09
+=09=09=09<h3 class=3D"subsec-heading" style=3D"font-family:system-ui, -appl=
+e-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Aria=
+l, sans-serif; font-weight:600; letter-spacing:0px; font-size:17px; line-he=
+ight:26px; color:#333333; margin-top:0px; margin-bottom:0px;">=E8=AB=8B=E6=
+=B1=82=E6=9B=B8=E9=80=81=E4=BB=98=E5=85=88=EF=BC=9A
+</h3>
+=09=09=09=09=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font=
+-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetic=
+a Neue', Helvetica, Arial, sans-serif; font-size:17px; line-height:26px; co=
+lor:#333333;">=E5=B0=8F=E5=B7=9D =E5=AD=9D=E5=A4=AA =E6=A7=98</div>
+=09=09=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-famil=
+y:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue=
+', Helvetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#3=
+33333;">=09</div>
+=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;=
+"><span class=3D"moe-break-me">ponta10sakura@gmail.com</span></div>
+=09=09=09=09
+=09=09=09<h3 class=3D"subsec-heading" style=3D"padding-top:23px; font-famil=
+y:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue=
+', Helvetica, Arial, sans-serif; font-weight:600; letter-spacing:0px; font-=
+size:17px; line-height:26px; color:#333333; margin-top:0px; margin-bottom:0=
+px;">=E8=AB=8B=E6=B1=82=E5=85=88=E4=BD=8F=E6=89=80=EF=BC=9A
+</h3>
+=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:system-ui, -a=
+pple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, A=
+rial, sans-serif; font-size:17px; line-height:26px; color:#333333;">       =
+      =09        =09     =09        =09     =09        =09     =09        =
+=09        =09        =09     =09        =09        =09    </div>
+=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;=
+">422-8006</div>
+=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;=
+">=E9=9D=99=E5=B2=A1=E7=9C=8C =E9=9D=99=E5=B2=A1=E5=B8=82=E9=A7=BF=E6=B2=B3=
+=E5=8C=BA=E6=9B=B2=E9=87=916=E4=B8=81=E7=9B=AE</div>
+=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;=
+">1=E7=95=AA10-3</div>
+=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:syst=
+em-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;=
+">=E6=97=A5=E6=9C=AC</div>
+=09=09=09=09
+=09=09
+=09=09=09=09=09=09<h3 class=3D"subsec-heading" style=3D"padding-top:23px; f=
+ont-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helve=
+tica Neue', Helvetica, Arial, sans-serif; font-weight:600; letter-spacing:0=
+px; font-size:17px; line-height:26px; color:#333333; margin-top:0px; margin=
+-bottom:0px;">=E6=94=AF=E6=89=95=E3=81=84=E6=96=B9=E6=B3=95=EF=BC=9A
+</h3>
+=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-family:system-ui,=
+ -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica=
+, Arial, sans-serif; font-size:17px; line-height:26px; color:#333333;">Mast=
+ercard</div>
+=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09<h3 class=3D"subsec-heading" style=3D"padding=
+-top:23px; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe=
+ UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight:600; lett=
+er-spacing:0px; font-size:17px; line-height:26px; color:#333333; margin-top=
+:0px; margin-bottom:0px;">=E3=82=AF=E3=83=AC=E3=82=B8=E3=83=83=E3=83=88=E3=
+=82=AB=E3=83=BC=E3=83=89=E6=94=AF=E6=89=95=E3=81=84=E5=9B=9E=E6=95=B0=EF=BC=
+=9A
+</h3> =09=09=09=09=09=09<div class=3D"gen-txt" style=3D"width:100%; font-fa=
+mily:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica N=
+eue', Helvetica, Arial, sans-serif; font-size:17px; line-height:26px; color=
+:#333333;">1</div> =09=09=09=09=09=09=09=09
+=09
+=09=09
+=09=09=09=09=09=09=09=09
+=09=09=09=09=09
+=09=09 =09
+=09
+=09=09
+=09=09</td></tr></table>
+</td></tr>
+=09=09=09=09=09<tr><td class=3D"amts-section-td" align=3D"center" style=3D"=
+padding-bottom:41px;">
+=09=09=09=09<table class=3D"amt-row-table" width=3D"66.5%" align=3D"right" =
+cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width:66.5%;">
+=09=09=09=09=09=09
+=09=09=09 =09=09=09
+=09=09=09<tr><td align=3D"center"><table width=3D"100%" align=3D"center" ce=
+llspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width:100%; min-wid=
+th:100%;">
+=09<tr><td class=3D"gap-1" valign=3D"top" height=3D"1" align=3D"left" style=
+=3D"height:1px; font-size:1px; line-height:1px; min-width:100%;"><img class=
+=3D"gap-1" src=3D"https://email.images.apple.com/dm/groups/aos/om/global/cm=
+on/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=3D"0"=
+ height=3D"1" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-15" valign=3D"top" height=3D"18" align=3D"left" sty=
+le=3D"height:18px; font-size:18px; line-height:18px; min-width:100%;"><img =
+class=3D"gap-15" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"18" width=3D"1"></td></tr>
+</table>
+</td></tr>=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"amt-row-td" style=3D"w=
+idth:100%; padding-top:4px;">
+=09=09<table class=3D"amt-label-table" width=3D"49%" align=3D"left" cellspa=
+cing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-label-td" align=3D"left" valign=3D"top" style=
+=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', '=
+Helvetica Neue', Helvetica, Arial, sans-serif;; color:#333333; font-size:17=
+px; line-height:24px; ">
+=09=09=09=09=09=E5=B0=8F=E8=A8=88</td></tr></table>
+=09=09<table class=3D"amt-value-table" width=3D"49%" align=3D"right" cellsp=
+acing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-value-td" align=3D"right" valign=3D"top" styl=
+e=3D"white-space:nowrap; font-family:system-ui, -apple-system, BlinkMacSyst=
+emFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; color:=
+#333333; font-size:17px; line-height:24px; " nowrap>
+=09=09=09=09=09<nobr><nobr>359,600=E5=86=86</nobr></nobr></td></tr></table>
+</td></tr> =09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"amt-=
+row-td" style=3D"width:100%; padding-top:4px;">
+=09=09<table class=3D"amt-label-table" width=3D"49%" align=3D"left" cellspa=
+cing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-label-td" align=3D"left" valign=3D"top" style=
+=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', '=
+Helvetica Neue', Helvetica, Arial, sans-serif;; color:#339900; font-size:17=
+px; line-height:24px; ">
+=09=09=09=09=09=E9=80=81=E6=96=99=E7=84=A1=E6=96=99</td></tr></table>
+=09=09<table class=3D"amt-value-table" width=3D"49%" align=3D"right" cellsp=
+acing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-value-td" align=3D"right" valign=3D"top" styl=
+e=3D"white-space:nowrap; font-family:system-ui, -apple-system, BlinkMacSyst=
+emFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; color:=
+#339900; font-size:17px; line-height:24px; " nowrap>
+=09=09=09=09=09<nobr><nobr>0=E5=86=86</nobr></nobr></td></tr></table>
+</td></tr>  =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09
+=09=09=09=09=09=09<tr><td class=3D"amt-row-td" style=3D"width:100%;">
+=09=09=09=09=09<table class=3D"amt-divider-table" width=3D"100%" align=3D"r=
+ight" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"margin-top:=
+11px;">=09=09=09=09=09=09<tr><td class=3D"amt-divider" align=3D"left" valig=
+n=3D"top" bgcolor=3D"D6D6D6" height=3D"1" style=3D"background-color:#D6D6D6=
+;">
+=09=09=09=09=09</td></tr></table>=09
+=09=09=09</td></tr>
+=09=09=09
+
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr><td class=3D"amt-row-td=
+" style=3D"width:100%; padding-top:4px;">
+=09=09<table class=3D"amt-label-table" width=3D"49%" align=3D"left" cellspa=
+cing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-label-td" align=3D"left" valign=3D"top" style=
+=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', '=
+Helvetica Neue', Helvetica, Arial, sans-serif;; color:#333333; font-size:17=
+px; line-height:24px; font-weight:600;">
+=09=09=09=09=09=E6=B3=A8=E6=96=87=E5=90=88=E8=A8=88</td></tr></table>
+=09=09<table class=3D"amt-value-table" width=3D"49%" align=3D"right" cellsp=
+acing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09<tr><td class=3D"amt-value-td" align=3D"right" valign=3D"top" styl=
+e=3D"white-space:nowrap; font-family:system-ui, -apple-system, BlinkMacSyst=
+emFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;; color:=
+#333333; font-size:17px; line-height:24px; font-weight:600;" nowrap>
+=09=09=09=09=09<nobr><nobr>359,600=E5=86=86</nobr></nobr></td></tr></table>
+</td></tr> =09=09=09=09=09=09  =09=09=09=09=09=09=09=09=09=09<tr><td class=
+=3D"amt-row-td" style=3D"width:100%;">
+=09=09=09=09=09=09<table class=3D"amt-value-table" width=3D"49%" align=3D"r=
+ight" cellspacing=3D"0" cellpadding=3D"0" border=3D"0">
+=09=09=09=09=09=09=09<tr><td class=3D"note-td-value" align=3D"right" valign=
+=3D"top" style=3D"white-space:nowrap; font-family:system-ui, -apple-system,=
+ BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-s=
+erif;; color:#888888; font-size:14px; line-height:24px;" nowrap>
+=09=09=09=09=09=09=09<nobr><nobr>32,690=E5=86=86</nobr>=EF=BC=88=E6=B6=88=
+=E8=B2=BB=E7=A8=8E=E3=82=92=E5=90=AB=E3=82=80=EF=BC=89</nobr></td></tr></ta=
+ble>
+=09=09=09=09=09</td></tr>
+=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=09</table> </td></tr> =09=09=09=
+=09=09
+=09=09=09=09=09=09=09=09=09=09 =09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09
+=09=09=09=09=09<tr><td>
+=09=09<table width=3D"100%" align=3D"center" cellspacing=3D"0" cellpadding=
+=3D"0" border=3D"0" style=3D"width:100%; min-width:100%;">
+=09<tr><td class=3D"gap-20" valign=3D"top" height=3D"1" align=3D"left" styl=
+e=3D"height:1px; font-size:1px; line-height:1px; min-width:100%;"><img clas=
+s=3D"gap-20" src=3D"https://email.images.apple.com/dm/groups/aos/om/global/=
+cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=3D"=
+0" height=3D"1" width=3D"1"></td></tr>
+=09<tr><td class=3D"moe-line-col" valign=3D"top" bgcolor=3D"D6D6D6" height=
+=3D"1" align=3D"left" style=3D"min-width:100%;"><div style=3D"background-co=
+lor:D6D6D6; font-size:1px !important; height:1px !important;"></td></tr> =
+=09<tr><td class=3D"gap-39" valign=3D"top" height=3D"43" align=3D"left" sty=
+le=3D"height:43px; font-size:43px; line-height:43px; min-width:100%;"><img =
+class=3D"gap-39" src=3D"https://email.images.apple.com/dm/groups/aos/om/glo=
+bal/cmon/spacer.gif" alt=3D"" style=3D"display:block; outline:none;" border=
+=3D"0" height=3D"43" width=3D"1"></td></tr>
+</table>
+=09<table class=3D"qa-table" width=3D"100%" cellspacing=3D"0" cellpadding=
+=3D"0" border=3D"0" style=3D"padding-bottom:10px;">=09=09<tr><td>
+=09=09=09=09<table width=3D"29%" class=3D"section-heading-table" align=3D"l=
+eft" cellspacing=3D"0" cellpadding=3D"0" border=3D"0" style=3D"width:29%;">
+=09<tr><td class=3D"section-items-heading-td" valign=3D"top" align=3D"left"=
+ style=3D"font-family:'SF UI Display Medium',system,-apple-system,-webkit-s=
+ystem-font,'SFNSText','Segoe UI','Helvetica Neue',Helvetica,Arial,sans-seri=
+f; font-weight:500; letter-spacing:0px; color:#333333; font-size:22px; line=
+-height:27px; margin-top:0; margin-left:0; margin-right:0; margin-bottom:0;=
+">
+=09=09=09<h2 class=3D"sectionHeading" style=3D"font-family:'SF UI Display M=
+edium',system,-apple-system,-webkit-system-font,'SFNSText','Segoe UI','Helv=
+etica Neue',Helvetica,Arial,sans-serif; font-weight:500; letter-spacing:0px=
+; color:#333333; font-size:22px; line-height:27px; margin-top:0; margin-lef=
+t:0; margin-right:0; margin-bottom:0;">=E3=82=88=E3=81=8F=E3=81=82=E3=82=8B=
+=E3=81=94=E8=B3=AA=E5=95=8F</h2></td></tr></table> =09=09=09=09=09    <tabl=
+e class=3D"answers-table" width=3D"66.5%" align=3D"right" cellspacing=3D"0"=
+ cellpadding=3D"0" border=3D"0" style=3D"width:66.5%; padding-bottom:30px;"=
+>
+=09=09=09=09<tr>
+                   <td class=3D"answers-td" valign=3D"top" align=3D"left" s=
+tyle=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI=
+', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:17px; line-hei=
+ght:26px; color:#333333;">
+                        =09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09<h3 class=3D"answer-h3" style=3D"font-family:system-ui, -app=
+le-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Ari=
+al, sans-serif; font-weight:600; letter-spacing:0px; font-size:17px; line-h=
+eight:26px; color:#333333; margin-top:0px; margin-bottom:0px; margin-left:0=
+; margin-right:0;">=E6=AC=A1=E3=81=AE=E3=82=B9=E3=83=86=E3=83=83=E3=83=97=
+=E3=81=AF=EF=BC=9F</h3>
+=09=09=09=09=09=09=09=09<div class=3D"answer-para">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=E3=81=94=E5=85=A5=E9=87=
+=91=E3=81=AE=E7=A2=BA=E8=AA=8D=E3=82=84=E5=AF=A9=E6=9F=BB=EF=BC=8F=E6=89=BF=
+=E8=AA=8D=E3=81=AE=E7=A2=BA=E8=AA=8D=E5=BE=8C=E3=81=AB=E3=80=8C=E3=81=94=E6=
+=B3=A8=E6=96=87=E3=81=82=E3=82=8A=E3=81=8C=E3=81=A8=E3=81=86=E3=81=94=E3=81=
+=96=E3=81=84=E3=81=BE=E3=81=99=E3=80=8D=E3=81=A8=E3=81=84=E3=81=86=E3=81=94=
+=E6=A1=88=E5=86=85=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=82=92Apple=E3=81=
+=8B=E3=82=89=E3=81=8A=E9=80=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=E3=80=82=
+ =E3=81=93=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=81=AB=E3=81=AF=E3=80=81=
+=E3=81=94=E6=B3=A8=E6=96=87=E6=83=85=E5=A0=B1=E3=81=A8=E6=9C=80=E6=96=B0=E3=
+=81=AE=E3=81=94=E6=B3=A8=E6=96=87=E7=8A=B6=E6=B3=81=E3=82=92=E3=81=94=E7=A2=
+=BA=E8=AA=8D=E3=81=84=E3=81=9F=E3=81=A0=E3=81=91=E3=82=8B=E3=83=AA=E3=83=B3=
+=E3=82=AF=E3=81=8C=E8=BC=89=E3=81=9B=E3=82=89=E3=82=8C=E3=81=A6=E3=81=84=E3=
+=81=BE=E3=81=99=E3=80=82=E3=81=BE=E3=81=9F=E3=80=81=E8=A3=BD=E5=93=81=E3=82=
+=92=E5=87=BA=E8=8D=B7=E3=81=97=E3=81=9F=E9=9A=9B=E3=81=AB=E3=81=AF=E3=80=8C=
+=E8=A3=BD=E5=93=81=E5=87=BA=E8=8D=B7=E3=81=AE=E3=81=8A=E7=9F=A5=E3=82=89=E3=
+=81=9B=E3=80=8D=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=82=92=E3=81=8A=E9=80=
+=81=E3=82=8A=E3=81=97=E3=81=BE=E3=81=99=E3=80=82
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<h3=
+ class=3D"answer-h3" style=3D"padding-top:23px; font-family:system-ui, -app=
+le-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Ari=
+al, sans-serif; font-weight:600; letter-spacing:0px; font-size:17px; line-h=
+eight:26px; color:#333333; margin-top:0px; margin-bottom:0px; margin-left:0=
+; margin-right:0;">=E6=B3=A8=E6=96=87=E3=81=AE=E7=A2=BA=E8=AA=8D=E3=81=A8=
+=E5=A4=89=E6=9B=B4=E3=81=AF=E3=81=A7=E3=81=8D=E3=81=BE=E3=81=99=E3=81=8B=EF=
+=BC=9F</h3>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<div class=3D"answer-para">=
+<a href=3D"https://store.apple.com/xc/jp/vieworder/W1674015528/ponta10sakur=
+a@gmail.com/AOS-JP-104700" style=3D"color:#0070C9;">=E3=81=94=E6=B3=A8=E6=
+=96=87=E7=8A=B6=E6=B3=81</a>=E3=81=AB=E3=82=A2=E3=82=AF=E3=82=BB=E3=82=B9=
+=E3=81=97=E3=80=81=E3=82=B5=E3=82=A4=E3=83=B3=E3=82=A4=E3=83=B3=E3=81=97=E3=
+=81=A6=E3=81=94=E6=B3=A8=E6=96=87=E5=86=85=E5=AE=B9=E3=82=92Apple Account=
+=E3=81=AB=E8=BF=BD=E5=8A=A0=E3=81=97=E3=81=A6=E3=81=8F=E3=81=A0=E3=81=95=E3=
+=81=84=E3=80=82=E8=A9=B2=E5=BD=93=E3=81=99=E3=82=8B=E8=A3=BD=E5=93=81=E3=81=
+=AB=E3=81=A4=E3=81=84=E3=81=A6=E3=81=AF=E3=80=81=E5=A4=89=E6=9B=B4=E3=82=84=
+=E8=BF=94=E5=93=81=E3=80=81=E3=82=AD=E3=83=A3=E3=83=B3=E3=82=BB=E3=83=AB=E3=
+=82=92=E3=81=97=E3=81=A6=E3=81=84=E3=81=9F=E3=81=A0=E3=81=8F=E3=81=93=E3=81=
+=A8=E3=81=8C=E3=81=A7=E3=81=8D=E3=81=BE=E3=81=99=E3=80=82=E3=81=94=E6=B3=A8=
+=E6=96=87=E3=81=AE=E9=85=8D=E9=80=81=E3=80=81=E5=A4=89=E6=9B=B4=E3=80=81=E8=
+=BF=94=E5=93=81=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6=E8=A9=B3=E3=81=97=E3=81=
+=8F=E3=81=AF=E3=80=81<a href=3D"https://store.apple.com/jp/help/" style=3D"=
+color:#0070C9" class=3D"aapl-link">=E3=83=98=E3=83=AB=E3=83=97=E3=83=9A=E3=
+=83=BC=E3=82=B8</a>=E3=82=92=E3=81=94=E8=A6=A7=E3=81=8F=E3=81=A0=E3=81=95=
+=E3=81=84=E3=80=82
+<div style=3D"padding-top:12px; width:100%;">=E3=81=94=E4=B8=8D=E6=98=8E=E3=
+=81=AA=E7=82=B9=E3=81=AB=E3=81=A4=E3=81=8D=E3=81=BE=E3=81=97=E3=81=A6=E3=81=
+=AF=E3=80=81=E3=81=94=E6=B3=A8=E6=96=87=E7=95=AA=E5=8F=B7=E3=82=92=E3=81=8A=
+=E6=89=8B=E5=85=83=E3=81=AB=E3=81=94=E7=94=A8=E6=84=8F=E3=81=AE=E4=B8=8A=E3=
+=80=81Apple Online Store=E3=82=AB=E3=82=B9=E3=82=BF=E3=83=9E=E3=83=BC=E3=82=
+=B5=E3=83=BC=E3=83=93=E3=82=B9=EF=BC=880120-993-993=E3=80=81=E5=B9=B3=E6=97=
+=A5=E3=81=8A=E3=82=88=E3=81=B3=E7=A5=9D=E6=97=A59=E3=80=9C21=E6=99=82=E3=83=
+=BB=E5=9C=9F=E6=97=A59=E3=80=9C18=E6=99=82=EF=BC=89=E3=81=B8=E3=81=8A=E9=9B=
+=BB=E8=A9=B1=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=80=82</div>
+</div>
+=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09</td></tr></table>    </td></tr></table> </td></tr>
+=09           </table>
+=09=09=09=09<table class=3D"footer-container-table" width=3D"100%" align=3D=
+"center" cellspacing=3D"0" bgcolor=3D"F2F2F2" cellpadding=3D"0" border=3D"0=
+" style=3D"margin:0; padding-top:19px; padding-bottom:13px; background-colo=
+r:#F2F2F2; margin-bottom:0px;">
+=09=09=09=09=09<tr><td align=3D"center">
+=09=09=09=09=09=09=09<table class=3D"footer-section-table" align=3D"center"=
+ bgcolor=3D"F2F2F2" width=3D"660" cellspacing=3D"0" cellpadding=3D"0" borde=
+r=3D"0">
+=09=09=09=09=09=09=09=09<tr><td class=3D"footer-copyright-td" style=3D"padd=
+ing-left:16px; padding-right:16px;"><table class=3D"footer-menu-table" widt=
+h=3D"100%" align=3D"center" cellspacing=3D"0" cellpadding=3D"0" border=3D"0=
+" style=3D"padding-bottom:14px; border-bottom-color:#D6D6D6; border-bottom-=
+width:1px; border-bottom-style:solid;">
+=09<tr><td class=3D"footer-menu-td-top" valign=3D"top" align=3D"center" sty=
+le=3D"font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',=
+ 'Helvetica Neue', Helvetica, Arial, sans-serif; color:#888888; font-size:1=
+2px; line-height:18px;">
+=09=09=09<table class=3D"footer-menu-item-table" width=3D"auto" cellspacing=
+=3D"0" cellpadding=3D"0" border=3D"0" style=3D"display: inline-table;"><tr>=
+<td class=3D"footer-menu-item-td" style=3D"font-family:system-ui, -apple-sy=
+stem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, s=
+ans-serif; color:#888888; font-size:12px; line-height:18px;">
+=09=09=09=09<a href=3D"https://store.apple.com/jp" style=3D"color:#888888" =
+color=3D"#888888">=E3=82=AA=E3=83=B3=E3=83=A9=E3=82=A4=E3=83=B3=E3=81=A7=E8=
+=B3=BC=E5=85=A5</a><span class=3D"hide-line" color=3D"#D6D6D6" style=3D"col=
+or:#D6D6D6;">=C2=A0=C2=A0|=C2=A0=C2=A0</span></td></tr></table>
+=09=09=09<table class=3D"footer-menu-item-table" width=3D"auto" cellspacing=
+=3D"0" cellpadding=3D"0" border=3D"0" style=3D"display: inline-table;"><tr>=
+<td class=3D"footer-menu-item-td" style=3D"font-family:system-ui, -apple-sy=
+stem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, s=
+ans-serif; color:#888888; font-size:12px; line-height:18px;">
+=09=09=09=09<a href=3D"https://www.apple.com/jp/retail/" style=3D"color:#88=
+8888" color=3D"#888888">=E3=81=8A=E8=BF=91=E3=81=8F=E3=81=AEApple Store</a>=
+<span class=3D"hide-line" color=3D"#D6D6D6" style=3D"color:#D6D6D6;">=C2=A0=
+=C2=A0|=C2=A0=C2=A0</span></td></tr></table>
+=09=09=09<table class=3D"footer-menu-item-table" width=3D"auto" cellspacing=
+=3D"0" cellpadding=3D"0" border=3D"0" style=3D"display: inline-table;"><tr>=
+<td class=3D"footer-menu-item-td" style=3D"font-family:system-ui, -apple-sy=
+stem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, s=
+ans-serif; color:#888888; font-size:12px; line-height:18px;">
+=09=09=09=09<span class=3D"footer-menu-phone" style=3D"white-space:nowrap; =
+color:#888888;">0120-993-993</span><span class=3D"hide-line" color=3D"#D6D6=
+D6" style=3D"color:#D6D6D6;">=C2=A0=C2=A0|=C2=A0=C2=A0</span></td></tr></ta=
+ble>
+=09=09=09<table class=3D"footer-menu-item-table" width=3D"auto" cellspacing=
+=3D"0" cellpadding=3D"0" border=3D"0" style=3D"display: inline-table;"><tr>=
+<td class=3D"footer-menu-item-td" style=3D"font-family:system-ui, -apple-sy=
+stem, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, s=
+ans-serif; color:#888888; font-size:12px; line-height:18px;">
+=09=09=09=09<a href=3D"https://store.apple.com/us/go/app?" style=3D"color:#=
+888888" color=3D"#888888">Apple Store App=E3=82=92=E3=83=80=E3=82=A6=E3=83=
+=B3=E3=83=AD=E3=83=BC=E3=83=89</a></span></td></tr></table>
+</td></tr></table>=09=09
+</td></tr>=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09 <tr><td class=3D"footer-copyright-td" align=3D"lef=
+t" valign=3D"top" style=3D"padding-left:16px; padding-right:16px; font-fami=
+ly:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neu=
+e', Helvetica, Arial, sans-serif;; color:#888888; font-size:11px; line-heig=
+ht:16px;">
+=09=09=09=09
+=09=09
+=09=09=09=09<div class=3D"footer-copyright-div" style=3D"padding-top:19px;"=
+>
+=09=09=09Copyright =C2=A9 2026=C2=A0<a color=3D"#888888" style=3D"text-deco=
+ration:none !important; color:#888888 !important;">Apple Inc.</a> All right=
+s reserved.
+=09=09</div>
+=09=09<div class=3D"footer-links-div" style=3D"padding-top:16px; font-famil=
+y:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue=
+', Helvetica, Arial, sans-serif;; font-size:11px; line-height:16px;">
+=09=09=09<a class=3D"footer-links-a" href=3D"https://www.apple.com/jp/legal=
+/terms/site.html" target=3D"_blank" style=3D"color:#555555;"><nobr>=E3=81=
+=94=E5=88=A9=E7=94=A8=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6</nobr></a>=C2=A0 =
+<span color=3D"#D6D6D6">|</span>=20
+=09=09=09=C2=A0<a class=3D"footer-links-a" href=3D"https://www.apple.com/jp=
+/privacy/" target=3D"_blank" style=3D"color:#555555;"><nobr>=E3=83=97=E3=83=
+=A9=E3=82=A4=E3=83=90=E3=82=B7=E3=83=BC=E3=83=9D=E3=83=AA=E3=82=B7=E3=83=BC=
+</nobr></a>=C2=A0 <span color=3D"#D6D6D6">|</span>=20
+=09=09=09=C2=A0<a class=3D"footer-links-a" href=3D"https://store.apple.com/=
+jp/open/salespolicies" target=3D"_blank" style=3D"color:#555555;"><nobr>=E8=
+=B2=A9=E5=A3=B2=E6=9D=A1=E4=BB=B6</nobr></a>
+=09=09</div>=09=09
+</td></tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td></tr></table>
+=09=09=09=09</td></tr></table>
+   =09=09</td></tr></table>
+   </center>=09=09
+</body>
+</html>
+------=_Part_3283014_1709771276.1768367828891--

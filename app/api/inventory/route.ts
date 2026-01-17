@@ -1,8 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
-import type { InventoryInput } from '@/types';
+import type { InventoryV2Input } from '@/types';
 
-// GET: Fetch all inventory items
+// GET: Fetch all inventory_v2 items
 export async function GET(request: Request) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -15,38 +15,22 @@ export async function GET(request: Request) {
         }
 
         const { searchParams } = new URL(request.url);
-
-        // Optional filters
         const status = searchParams.get('status');
-        const model = searchParams.get('model');
-        const shipmentId = searchParams.get('shipment_id');
 
         // RLS will automatically filter to user's data
         let query = supabase
-            .from('inventory')
+            .from('inventory_v2')
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (status) {
+        if (status && status !== 'all') {
             query = query.eq('status', status);
-        }
-
-        if (model) {
-            query = query.eq('model_name', model);
-        }
-
-        if (shipmentId !== null) {
-            if (shipmentId === 'null') {
-                query = query.is('shipment_id', null);
-            } else {
-                query = query.eq('shipment_id', shipmentId);
-            }
         }
 
         const { data, error } = await query;
 
         if (error) {
-            console.error('Error fetching inventory:', error);
+            console.error('Error fetching inventory_v2:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch inventory' },
                 { status: 500 }
@@ -63,8 +47,7 @@ export async function GET(request: Request) {
     }
 }
 
-
-// POST: Create new inventory item
+// POST: Create new inventory_v2 item
 export async function POST(request: Request) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -76,9 +59,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const body: InventoryInput = await request.json();
+        const body: InventoryV2Input = await request.json();
 
-        // Convert all empty strings to null (prevents UUID errors)
+        // Convert all empty strings to null
         const sanitizedData = Object.fromEntries(
             Object.entries(body).map(([key, value]) => [
                 key,
@@ -86,22 +69,26 @@ export async function POST(request: Request) {
             ])
         );
 
-        // Also convert "なし" to null for apple_id_used
-        if (sanitizedData.apple_id_used === 'なし') {
-            sanitizedData.apple_id_used = null;
-        }
+        // Generate inventory_code
+        const item_index = sanitizedData.item_index || 1;
+        const inventory_code = `${sanitizedData.order_number}-${item_index}`;
 
-        // Add user_id
-        sanitizedData.user_id = user.id;
+        // Prepare data for insertion
+        const insertData = {
+            ...sanitizedData,
+            inventory_code,
+            item_index,
+            user_id: user.id
+        };
 
         const { data, error } = await supabase
-            .from('inventory')
-            .insert([sanitizedData])
+            .from('inventory_v2')
+            .insert([insertData])
             .select()
             .single();
 
         if (error) {
-            console.error('Error creating inventory:', error);
+            console.error('Error creating inventory_v2:', error);
             return NextResponse.json(
                 { error: 'Failed to create inventory', details: error.message },
                 { status: 500 }
