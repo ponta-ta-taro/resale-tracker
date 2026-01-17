@@ -22,8 +22,44 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
             const json = await res.json();
 
             if (json.data) {
-                setInventory(json.data);
-                setFormData(json.data);
+                // Sanitize data to ensure all fields are properly typed
+                const sanitizedData = {
+                    ...json.data,
+                    // Ensure all date fields are strings (YYYY-MM-DD format)
+                    order_date: json.data.order_date || null,
+                    expected_delivery_start: json.data.expected_delivery_start || null,
+                    expected_delivery_end: json.data.expected_delivery_end || null,
+                    original_delivery_start: json.data.original_delivery_start || null,
+                    original_delivery_end: json.data.original_delivery_end || null,
+                    delivered_at: json.data.delivered_at || null,
+                    shipped_to_buyer_at: json.data.shipped_to_buyer_at || null,
+                    sold_at: json.data.sold_at || null,
+                    paid_at: json.data.paid_at || null,
+                    receipt_received_at: json.data.receipt_received_at || null,
+                    // Ensure string fields are strings
+                    inventory_code: json.data.inventory_code || null,
+                    order_number: json.data.order_number || null,
+                    model_name: json.data.model_name || '',
+                    storage: json.data.storage || '',
+                    color: json.data.color || null,
+                    serial_number: json.data.serial_number || null,
+                    imei: json.data.imei || null,
+                    carrier: json.data.carrier || null,
+                    tracking_number: json.data.tracking_number || null,
+                    purchase_source: json.data.purchase_source || null,
+                    sold_to: json.data.sold_to || null,
+                    buyer_carrier: json.data.buyer_carrier || null,
+                    buyer_tracking_number: json.data.buyer_tracking_number || null,
+                    notes: json.data.notes || null,
+                    // Ensure numeric fields are numbers or null
+                    item_index: json.data.item_index || 1,
+                    purchase_price: json.data.purchase_price || null,
+                    expected_price: json.data.expected_price || null,
+                    actual_price: json.data.actual_price || null,
+                };
+
+                setInventory(sanitizedData);
+                setFormData(sanitizedData);
             }
         } catch (error) {
             console.error('Error fetching inventory:', error);
