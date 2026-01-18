@@ -42,18 +42,16 @@
 - [x] **お届け日変更メールサンプル追加**: 02a_delivery_date_update（email-samples/README.md更新）
 - [x] **order_token HTML抽出修正**: text/html部分からもorder_token抽出可能に（フォールバック処理追加）
 - [x] **スキーマキャッシュ問題解決**: `NOTIFY pgrst, 'reload schema'` で対応
+- [x] **order_token自動取得機能**: リダイレクト経由でtoken取得するヘルパー関数追加、メール本文に無い場合のフォールバック動作実装
 
 ---
 
 ## 次にやること
 
-1. **order_token自動取得機能の実装** ← 今ここ
-   - 注文番号+メールアドレスからリダイレクトURLを取得
-   - tokenを抽出してDBに保存
-2. **email_logs確認UIの作成**
-3. **出荷通知メールのテスト**（Gmailに届き次第）
-4. **請求書PDF対応**（シリアル番号登録）
-5. **Apple注文ステータス自動取得**（Puppeteer必要、将来タスク）
+1. **email_logs確認UIの作成** ← 今ここ
+2. **出荷通知メールのテスト**（Gmailに届き次第）
+3. **請求書PDF対応**（シリアル番号登録）
+4. **Apple注文ステータス自動取得**（Puppeteer必要、将来タスク）
 
 ---
 
