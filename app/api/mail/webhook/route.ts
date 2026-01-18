@@ -250,12 +250,29 @@ function extractSinglePartBody(rawEmail: string): string {
 }
 
 /**
- * Decode quoted-printable encoding
+ * Decode quoted-printable encoding with proper UTF-8 support
  */
-function decodeQuotedPrintable(text: string): string {
-    return text
-        .replace(/=\r?\n/g, '') // Remove soft line breaks
-        .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+function decodeQuotedPrintable(str: string): string {
+    // Remove soft line breaks
+    str = str.replace(/=\r?\n/g, '');
+
+    // Convert =XX to byte array and decode as UTF-8
+    const bytes: number[] = [];
+    let i = 0;
+    while (i < str.length) {
+        if (str[i] === '=' && i + 2 < str.length) {
+            const hex = str.substring(i + 1, i + 3);
+            if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
+                bytes.push(parseInt(hex, 16));
+                i += 3;
+                continue;
+            }
+        }
+        bytes.push(str.charCodeAt(i));
+        i++;
+    }
+
+    return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
 }
 
 /**
