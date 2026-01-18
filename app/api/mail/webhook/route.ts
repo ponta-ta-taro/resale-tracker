@@ -883,6 +883,7 @@ async function processShippingNotificationEmail(
 /**
  * Parse delivery update email from HTML
  * Extracts order number and updated delivery dates for each product
+ * Works with Gmail forwarding (class attributes may be stripped)
  */
 function parseDeliveryUpdateEmail(htmlContent: string): {
     orderNumber: string | null;
@@ -900,17 +901,21 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
 
     const products: Array<any> = [];
 
-    // Find all product-body tables
-    const productMatches = Array.from(htmlContent.matchAll(/<table class="product-body"[\s\S]*?<\/table>/g));
+    // Find all product names (iPhone models in <strong> tags)
+    // Pattern: <strong>iPhone ... </strong>
+    const productNameMatches = Array.from(htmlContent.matchAll(/<strong>(iPhone[^<]+)<\/strong>/g));
 
-    for (const match of productMatches) {
-        const productHtml = match[0];
+    // Find all delivery dates
+    // Pattern: お届け日： or お届け日: followed by dates
+    const deliveryDateMatches = Array.from(htmlContent.matchAll(/お届け日[：:]\s*(\d{4})\/(\d{2})\/(\d{2})\s*-\s*(\d{4})\/(\d{2})\/(\d{2})/g));
 
-        // Extract product name: iPhone 17 Pro 256GB コズミックオレンジ
-        const nameMatch = productHtml.match(/<strong>(.*?)<\/strong>/);
-        if (!nameMatch) continue;
+    // Match products with their delivery dates
+    // Assumption: products and dates appear in the same order in the HTML
+    const matchCount = Math.min(productNameMatches.length, deliveryDateMatches.length);
 
-        const fullName = nameMatch[1];
+    for (let i = 0; i < matchCount; i++) {
+        const fullName = productNameMatches[i][1].trim();
+        const dateMatch = deliveryDateMatches[i];
 
         // Parse model, storage, color
         // Example: "iPhone 17 Pro 256GB コズミックオレンジ"
@@ -919,19 +924,16 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
         let storage = '';
         let color = '';
 
-        for (let i = 0; i < parts.length; i++) {
-            if (parts[i].match(/^\d+GB$/)) {
-                storage = parts[i];
-                modelName = parts.slice(0, i).join(' ');
-                color = parts.slice(i + 1).join(' ');
+        for (let j = 0; j < parts.length; j++) {
+            if (parts[j].match(/^\d+GB$/)) {
+                storage = parts[j];
+                modelName = parts.slice(0, j).join(' ');
+                color = parts.slice(j + 1).join(' ');
                 break;
             }
         }
 
-        // Extract delivery date: お届け日： 2026/01/27 - 2026/02/03
-        const dateMatch = productHtml.match(/お届け日：\s*(\d{4})\/(\d{2})\/(\d{2})\s*-\s*(\d{4})\/(\d{2})\/(\d{2})/);
-
-        if (dateMatch && modelName && storage) {
+        if (modelName && storage && dateMatch) {
             const deliveryStart = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
             const deliveryEnd = `${dateMatch[4]}-${dateMatch[5]}-${dateMatch[6]}`;
 
