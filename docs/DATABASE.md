@@ -44,6 +44,7 @@
 | delivered_at | date | YES | 納品日 |
 | carrier | text | YES | Apple配送業者 |
 | tracking_number | text | YES | Apple追跡番号 |
+| order_token | text | YES | Apple注文トークン（ゲスト注文ページ直接アクセス用） |
 | purchase_source | text | YES | 仕入先（Apple Store / Amazon） |
 | apple_account_id | uuid | YES | FK → apple_accounts.id |
 | contact_email_id | uuid | YES | FK → contact_emails.id |
