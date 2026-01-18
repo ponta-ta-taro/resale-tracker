@@ -73,6 +73,12 @@
 - [x] **iCloud転送動作確認**: Gmail転送と同様に処理可能と判明
 - [x] **配送通知パーサー確認**: 「お客様の商品は配送中です」は既に対応済み、tracking_number取得OK
 - [x] **iCloudパーサー修正**: `<blockquote type="cite">`ラッパー除去、color抽出の正規表現厳密化
+- [x] **Amazon対応**: 注文確認・発送・配達通知のパーサー実装完了
+  - `lib/amazonMailParser.ts` 新規作成
+  - 注文番号形式: `xxx-xxxxxxx-xxxxxxx`
+  - 在庫コード形式: `A{order_number}-{item_index}`
+  - source='amazon' で識別
+  - 配送時間帯対応（例: 5:00 AM - 11:59 AM）
 
 ---
 
@@ -84,8 +90,11 @@
    - Gmail/iCloudからメール再転送
    - colorが正しく抽出されるか確認
 
-2. **Amazon対応**
-   - 注文確認・配送通知のパーサー新規作成
+2. **Amazon対応テスト**
+   - Amazon注文確認メール転送テスト
+   - Amazon発送通知テスト
+   - Amazon配達完了テスト
+   - email_logs UI確認
 
 3. **買取販売情報の記入・テスト**
 
@@ -151,6 +160,30 @@
 - 問題: 正規表現が「コズミックオレンジ」以降のテキスト全体を取り込んでいた
 - 修正: 価格記号（¥、円）や配送キーワード（出荷、お届け、配送）で停止するよう変更
 - 既存データ修正用: `scripts/fix_color_field.sql`
+
+### Amazon Email Parsing
+
+#### 差出人アドレス
+- 注文確認: `auto-confirm@amazon.co.jp`
+- 発送通知: `shipment-tracking@amazon.co.jp`
+- 配達状況: `shipment-tracking@amazon.co.jp` (件名で判別)
+
+#### 注文番号形式
+- Amazon: `xxx-xxxxxxx-xxxxxxx` (例: `250-8477857-2415055`)
+- Apple: `Wxxxxxxxxxx`
+
+#### 在庫コード形式
+- Amazon: `A{order_number}-{item_index}` (例: `A250-8477857-2415055-1`)
+- Apple: `W{order_number}-{item_index}` (例: `W1234567890-1`)
+
+#### 配送時間帯
+- Amazonは時間帯まで指定される (例: 「明日5:00 午前～11:59 午前」)
+- `expected_delivery_start/end` に時刻付きで保存
+- 「明日」「本日」は実際の日付に変換
+
+#### Source識別
+- `inventory.source = 'amazon'` で Amazon注文を識別
+- `inventory.source = 'apple_store'` で Apple注文を識別
 
 ---
 
