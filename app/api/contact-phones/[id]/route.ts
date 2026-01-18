@@ -39,7 +39,7 @@ export async function PUT(
         const body = await request.json();
 
         // バリデーション
-        if (!body.phone) {
+        if (!body.phone_number) {
             return NextResponse.json(
                 { error: '電話番号は必須です' },
                 { status: 400 }
@@ -49,8 +49,8 @@ export async function PUT(
         const { data, error } = await supabase
             .from('contact_phones')
             .update({
-                phone: body.phone,
-                notes: body.notes || null,
+                phone_number: body.phone_number,
+                label: body.label || null,
             })
             .eq('id', params.id)
             .select()

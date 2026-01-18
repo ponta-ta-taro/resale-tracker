@@ -46,6 +46,28 @@ export async function PUT(
             );
         }
 
+        // Get user ID
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Check for duplicate email (excluding current record)
+        const { data: existing } = await supabase
+            .from('contact_emails')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('email', body.email)
+            .neq('id', params.id)
+            .single();
+
+        if (existing) {
+            return NextResponse.json(
+                { error: 'このメールアドレスは既に登録されています' },
+                { status: 400 }
+            );
+        }
+
         const { data, error } = await supabase
             .from('contact_emails')
             .update({

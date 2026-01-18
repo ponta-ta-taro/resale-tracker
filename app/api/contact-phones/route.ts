@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         // バリデーション
-        if (!body.phone) {
+        if (!body.phone_number) {
             return NextResponse.json(
                 { error: '電話番号は必須です' },
                 { status: 400 }
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
             .from('contact_phones')
             .insert({
                 user_id: user.id,
-                phone: body.phone,
-                notes: body.notes || null,
+                phone_number: body.phone_number,
+                label: body.label || null,
             })
             .select()
             .single();
