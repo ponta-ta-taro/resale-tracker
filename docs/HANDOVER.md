@@ -34,17 +34,20 @@
   - 注文確認メールのパース・在庫登録
   - 複数商品対応（item_index）
   - 実メールでのテスト成功（W1699438321: 2台登録）
+  - order_token抽出・保存機能追加（将来のスクレイピング用）
 - [x] **email_logs記録機能**: 実際のDB構造に合わせて修正
 - [x] **在庫詳細ページ**: Reactエラー修正（データサニタイゼーション）
 - [x] **React error #438修正**: Client Componentで use(params) → useParams() に変更、API側で明示的カラム選択
+- [x] **お届け日変更メールサンプル追加**: 02a_delivery_date_update（email-samples/README.md更新）
 
 ---
 
 ## 次にやること
 
-1. **出荷通知メールのテスト**（Gmailに届き次第）
-2. **email_logs確認UIの作成**
+1. **email_logs確認UIの作成**
+2. **出荷通知メールのテスト**（Gmailに届き次第）
 3. **請求書PDF対応**（シリアル番号登録）
+4. **Apple注文ステータス自動取得**（スクレイピング、order_token使用）← 将来タスク
 
 ---
 
