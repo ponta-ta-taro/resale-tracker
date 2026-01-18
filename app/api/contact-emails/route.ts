@@ -45,15 +45,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check for duplicate email
-        const { data: existing } = await supabase
+        // 重複チェック
+        const { data: existingEmail } = await supabase
             .from('contact_emails')
             .select('id')
             .eq('user_id', user.id)
             .eq('email', body.email)
-            .single();
+            .maybeSingle();
 
-        if (existing) {
+        if (existingEmail) {
             return NextResponse.json(
                 { error: 'このメールアドレスは既に登録されています' },
                 { status: 400 }

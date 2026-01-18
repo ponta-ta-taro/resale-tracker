@@ -52,16 +52,16 @@ export async function PUT(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check for duplicate email (excluding current record)
-        const { data: existing } = await supabase
+        // 重複チェック（自分以外）
+        const { data: existingEmail } = await supabase
             .from('contact_emails')
             .select('id')
             .eq('user_id', user.id)
             .eq('email', body.email)
             .neq('id', params.id)
-            .single();
+            .maybeSingle();
 
-        if (existing) {
+        if (existingEmail) {
             return NextResponse.json(
                 { error: 'このメールアドレスは既に登録されています' },
                 { status: 400 }
