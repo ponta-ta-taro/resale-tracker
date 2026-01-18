@@ -59,11 +59,29 @@ export function parseAppleShippingEmail(emailText: string): ParsedShippingInfo |
 }
 
 /**
+ * Remove iCloud email wrapper if present
+ * iCloud wraps forwarded emails in <blockquote type="cite"> tags
+ */
+function removeICloudWrapper(emailText: string): string {
+    // Check if email contains iCloud wrapper
+    const blockquoteMatch = emailText.match(/<blockquote type="cite">([\s\S]*?)<\/blockquote>/i);
+
+    if (blockquoteMatch) {
+        console.log('📧 iCloud wrapper detected, extracting content...');
+        return blockquoteMatch[1];
+    }
+
+    return emailText;
+}
+
+/**
  * Parse Apple order confirmation email to extract order details
  * @param emailText - Raw email text from Apple order confirmation
  * @returns Array of parsed order data (one per product)
  */
 export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
+    // Remove iCloud wrapper if present
+    emailText = removeICloudWrapper(emailText);
     const orders: ParsedAppleOrder[] = [];
 
     console.log('📧 parseAppleOrderEmail called');
@@ -113,7 +131,8 @@ export function parseAppleOrderEmail(emailText: string): ParsedAppleOrder[] {
     console.log('\n🔍 Searching for products...');
 
     // Fixed pattern: iPhone 17 is required, then optional Pro Max/Pro/Air
-    const productPattern = /(iPhone\s+17(?:\s+Pro(?:\s+Max)?|\s+Air)?)\s+(\d+(?:GB|TB))\s+([^\n\r]+?)(?=\r?\n|$)/gi;
+    // Color extraction stops at price symbols (¥, 円) or delivery keywords (出荷, お届け, 配送)
+    const productPattern = /(iPhone\s+17(?:\s+Pro(?:\s+Max)?|\s+Air)?)\s+(\d+(?:GB|TB))\s+([^¥\n\r]+?)(?=\s*(?:¥|出荷|お届け|配送|円|\r?\n|$))/gi;
     let productMatch;
     let matchCount = 0;
 
