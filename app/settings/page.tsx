@@ -102,7 +102,8 @@ export default function SettingsPage() {
                 await fetchAllData();
                 resetAppleForm();
             } else {
-                alert('保存に失敗しました');
+                const errorData = await response.json();
+                alert(errorData.error || '保存に失敗しました');
             }
         } catch (error) {
             console.error('Error saving apple account:', error);
@@ -172,7 +173,8 @@ export default function SettingsPage() {
                 await fetchAllData();
                 resetPaymentForm();
             } else {
-                alert('保存に失敗しました');
+                const errorData = await response.json();
+                alert(errorData.error || '保存に失敗しました');
             }
         } catch (error) {
             console.error('Error saving payment method:', error);
@@ -222,7 +224,8 @@ export default function SettingsPage() {
                 await fetchAllData();
                 resetEmailForm();
             } else {
-                alert('保存に失敗しました');
+                const errorData = await response.json();
+                alert(errorData.error || '保存に失敗しました');
             }
         } catch (error) {
             console.error('Error saving contact email:', error);
@@ -272,7 +275,8 @@ export default function SettingsPage() {
                 await fetchAllData();
                 resetPhoneForm();
             } else {
-                alert('保存に失敗しました');
+                const errorData = await response.json();
+                alert(errorData.error || '保存に失敗しました');
             }
         } catch (error) {
             console.error('Error saving contact phone:', error);
