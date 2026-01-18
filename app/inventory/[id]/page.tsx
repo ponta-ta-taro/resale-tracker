@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { use } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import StatusProgressBar from '@/components/StatusProgressBar';
 import type { InventoryV2, InventoryV2Input, InventoryV2Status } from '@/types';
 import { INVENTORY_STATUSES, STATUS_V2_LABELS } from '@/types';
 
-export default function InventoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
+export default function InventoryDetailPage() {
+    const params = useParams();
+    const id = params.id as string;
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
