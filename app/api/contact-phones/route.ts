@@ -45,6 +45,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // 重複チェック
+        const { data: existingPhone } = await supabase
+            .from('contact_phones')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('phone_number', body.phone_number)
+            .maybeSingle();
+
+        if (existingPhone) {
+            return NextResponse.json(
+                { error: 'この電話番号は既に登録されています' },
+                { status: 400 }
+            );
+        }
+
         const { data, error } = await supabase
             .from('contact_phones')
             .insert({

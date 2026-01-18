@@ -46,6 +46,28 @@ export async function PUT(
             );
         }
 
+        // Get user ID
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // 重複チェック（自分以外）
+        const { data: existingPhone } = await supabase
+            .from('contact_phones')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('phone_number', body.phone_number)
+            .neq('id', params.id)
+            .maybeSingle();
+
+        if (existingPhone) {
+            return NextResponse.json(
+                { error: 'この電話番号は既に登録されています' },
+                { status: 400 }
+            );
+        }
+
         const { data, error } = await supabase
             .from('contact_phones')
             .update({

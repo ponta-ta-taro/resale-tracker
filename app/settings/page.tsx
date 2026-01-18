@@ -518,7 +518,7 @@ export default function SettingsPage() {
                                                     >
                                                         <option value="">選択してください</option>
                                                         {[...Array(31)].map((_, i) => (
-                                                            <option key={i + 1} value={i + 1}>{i + 1 === 31 ? '末日' : `${i + 1}日`}</option>
+                                                            <option key={i + 1} value={i + 1}>{i + 1}日</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -546,7 +546,7 @@ export default function SettingsPage() {
                                                     >
                                                         <option value="">選択してください</option>
                                                         {[...Array(31)].map((_, i) => (
-                                                            <option key={i + 1} value={i + 1}>{i + 1 === 31 ? '末日' : `${i + 1}日`}</option>
+                                                            <option key={i + 1} value={i + 1}>{i + 1}日</option>
                                                         ))}
                                                     </select>
                                                 </div>

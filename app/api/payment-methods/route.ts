@@ -57,6 +57,21 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        // 重複チェック（名前で判定）
+        const { data: existingPayment } = await supabase
+            .from('payment_methods')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('name', body.name)
+            .maybeSingle();
+
+        if (existingPayment) {
+            return NextResponse.json(
+                { error: 'この名前の支払い方法は既に登録されています' },
+                { status: 400 }
+            );
+        }
+
         const { data, error } = await supabase
             .from('payment_methods')
             .insert({

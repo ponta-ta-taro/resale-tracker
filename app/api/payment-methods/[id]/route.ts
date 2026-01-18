@@ -44,6 +44,30 @@ export async function PUT(
         const supabase = await createClient();
         const body: Partial<PaymentMethodInput> = await request.json();
 
+        // Get user ID
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // 重複チェック（名前で判定、自分以外）
+        if (body.name) {
+            const { data: existingPayment } = await supabase
+                .from('payment_methods')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('name', body.name)
+                .neq('id', id)
+                .maybeSingle();
+
+            if (existingPayment) {
+                return NextResponse.json(
+                    { error: 'この名前の支払い方法は既に登録されています' },
+                    { status: 400 }
+                );
+            }
+        }
+
         // 現金の場合は締め日・支払日をnullに
         const updateData: Record<string, unknown> = { ...body };
         if (body.type === 'cash') {

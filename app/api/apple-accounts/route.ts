@@ -45,6 +45,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // 重複チェック（emailがある場合のみ）
+        if (body.email) {
+            const { data: existingAccount } = await supabase
+                .from('apple_accounts')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('email', body.email)
+                .maybeSingle();
+
+            if (existingAccount) {
+                return NextResponse.json(
+                    { error: 'このApple IDは既に登録されています' },
+                    { status: 400 }
+                );
+            }
+        }
+
         const { data, error } = await supabase
             .from('apple_accounts')
             .insert({
