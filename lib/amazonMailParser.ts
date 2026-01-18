@@ -136,11 +136,14 @@ export function parseAmazonOrderEmail(emailText: string): ParsedAmazonOrder | nu
         console.log('💰 Price (amount param):', price);
     }
 
-    // Try formatted price with comma
+    // Try formatted price - handle both comma-separated and non-comma formats
     if (!price) {
-        const priceMatch = emailText.match(/(\d{1,3}(?:,\d{3})*)\s*(?:円|JPY)/);
-        if (priceMatch) {
-            price = parseInt(priceMatch[1].replace(/,/g, ''));
+        // Match both "179,800 円" and "179800 JPY" formats
+        const priceMatches = Array.from(emailText.matchAll(/(\d{1,3}(?:,\d{3})+|\d{5,})\s*(?:円|JPY)/g));
+        if (priceMatches.length > 0) {
+            // If multiple matches, take the largest value (likely the actual price)
+            const prices = priceMatches.map(m => parseInt(m[1].replace(/,/g, '')));
+            price = Math.max(...prices);
             console.log('💰 Price (formatted):', price);
         }
     }
