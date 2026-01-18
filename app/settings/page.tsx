@@ -298,7 +298,9 @@ export default function SettingsPage() {
         if (method.type === 'cash') return '即時';
         if (!method.closing_day || !method.payment_day) return '-';
         const offset = method.payment_month_offset === 0 ? '当月' : '翌月';
-        return `${method.closing_day}日締め → ${offset}${method.payment_day}日払い`;
+        const closingDay = method.closing_day === 31 ? '末日' : `${method.closing_day}日`;
+        const paymentDay = method.payment_day === 31 ? '末日' : `${method.payment_day}日`;
+        return `${closingDay}締め → ${offset}${paymentDay}払い`;
     };
 
     if (loading) {
@@ -512,7 +514,7 @@ export default function SettingsPage() {
                                                     >
                                                         <option value="">選択してください</option>
                                                         {[...Array(31)].map((_, i) => (
-                                                            <option key={i + 1} value={i + 1}>{i + 1}日</option>
+                                                            <option key={i + 1} value={i + 1}>{i + 1 === 31 ? '末日' : `${i + 1}日`}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -540,7 +542,7 @@ export default function SettingsPage() {
                                                     >
                                                         <option value="">選択してください</option>
                                                         {[...Array(31)].map((_, i) => (
-                                                            <option key={i + 1} value={i + 1}>{i + 1}日</option>
+                                                            <option key={i + 1} value={i + 1}>{i + 1 === 31 ? '末日' : `${i + 1}日`}</option>
                                                         ))}
                                                     </select>
                                                 </div>
