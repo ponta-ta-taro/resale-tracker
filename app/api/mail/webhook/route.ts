@@ -399,7 +399,7 @@ export async function POST(request: NextRequest) {
         console.log('📨 Raw email length:', rawEmail?.length || 0);
 
         // Determine email type from subject
-        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'invoice' | 'survey' | 'unknown' = 'unknown';
+        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'unknown' = 'unknown';
 
         if (subject.includes('ご注文の確認')) {
             emailType = 'order_confirmation';
@@ -410,6 +410,9 @@ export async function POST(request: NextRequest) {
         } else if (subject.includes('配送中') || subject.includes('お客様の商品は配送中です')) {
             emailType = 'shipping_notification';
             console.log('  Type: Shipping notification');
+        } else if (subject.includes('ご注文に関するお知らせ')) {
+            emailType = 'delivery_update';
+            console.log('  Type: Delivery update');
         } else if (subject.includes('請求金額のお知らせ')) {
             emailType = 'invoice';
             console.log('  Type: Invoice');
@@ -485,6 +488,17 @@ export async function POST(request: NextRequest) {
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
+        } else if (emailType === 'delivery_update' && userId) {
+            const result = await processDeliveryUpdateEmail(rawEmail, userId, supabaseAdmin);
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
+            orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
         } else {
             console.log('  Skipping processing for this email type');
             processResult = 'skipped_unsupported';
@@ -498,6 +512,8 @@ export async function POST(request: NextRequest) {
             dbEmailType = 'order';
         } else if (emailType === 'shipping_notification') {
             dbEmailType = 'shipping';
+        } else if (emailType === 'delivery_update') {
+            dbEmailType = 'delivery';
         } else if (emailType === 'invoice') {
             dbEmailType = 'invoice';
         } else if (emailType === 'survey') {
@@ -859,6 +875,180 @@ async function processShippingNotificationEmail(
         }
     } catch (error) {
         console.error('  ❌ Error processing shipping notification email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+
+/**
+ * Parse delivery update email from HTML
+ * Extracts order number and updated delivery dates for each product
+ */
+function parseDeliveryUpdateEmail(htmlContent: string): {
+    orderNumber: string | null;
+    products: Array<{
+        modelName: string;
+        storage: string;
+        color: string;
+        deliveryStart: string;
+        deliveryEnd: string;
+    }>;
+} {
+    // Extract order number from HTML (e.g., W1528936835)
+    const orderMatch = htmlContent.match(/W\d{10}/);
+    const orderNumber = orderMatch ? orderMatch[0] : null;
+
+    const products: Array<any> = [];
+
+    // Find all product-body tables
+    const productMatches = Array.from(htmlContent.matchAll(/<table class="product-body"[\s\S]*?<\/table>/g));
+
+    for (const match of productMatches) {
+        const productHtml = match[0];
+
+        // Extract product name: iPhone 17 Pro 256GB コズミックオレンジ
+        const nameMatch = productHtml.match(/<strong>(.*?)<\/strong>/);
+        if (!nameMatch) continue;
+
+        const fullName = nameMatch[1];
+
+        // Parse model, storage, color
+        // Example: "iPhone 17 Pro 256GB コズミックオレンジ"
+        const parts = fullName.split(' ');
+        let modelName = '';
+        let storage = '';
+        let color = '';
+
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].match(/^\d+GB$/)) {
+                storage = parts[i];
+                modelName = parts.slice(0, i).join(' ');
+                color = parts.slice(i + 1).join(' ');
+                break;
+            }
+        }
+
+        // Extract delivery date: お届け日： 2026/01/27 - 2026/02/03
+        const dateMatch = productHtml.match(/お届け日：\s*(\d{4})\/(\d{2})\/(\d{2})\s*-\s*(\d{4})\/(\d{2})\/(\d{2})/);
+
+        if (dateMatch && modelName && storage) {
+            const deliveryStart = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+            const deliveryEnd = `${dateMatch[4]}-${dateMatch[5]}-${dateMatch[6]}`;
+
+            products.push({
+                modelName,
+                storage,
+                color,
+                deliveryStart,
+                deliveryEnd
+            });
+        }
+    }
+
+    return { orderNumber, products };
+}
+
+
+async function processDeliveryUpdateEmail(
+    rawEmail: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+    try {
+        console.log('  📦 Processing delivery update email...');
+
+        // Extract HTML body
+        const emailHtml = extractEmailHtmlBody(rawEmail);
+        if (!emailHtml) {
+            console.log('  ⚠️  No HTML body found');
+            return { success: false, notes: 'No HTML body found' };
+        }
+
+        const parsed = parseDeliveryUpdateEmail(emailHtml);
+
+        if (!parsed.orderNumber) {
+            console.log('  ⚠️  No order number found');
+            return { success: false, notes: 'No order number found' };
+        }
+
+        if (parsed.products.length === 0) {
+            console.log('  ⚠️  No products found');
+            return { success: false, notes: 'No products found in email' };
+        }
+
+        console.log(`  ✅ Found ${parsed.products.length} product(s) for order: ${parsed.orderNumber}`);
+
+        let updatedCount = 0;
+        let hasChanges = false;
+        let firstInventoryId: string | null = null;
+
+        for (const product of parsed.products) {
+            console.log(`  📝 Processing: ${product.modelName} ${product.storage} ${product.color}`);
+            console.log(`     New delivery: ${product.deliveryStart} - ${product.deliveryEnd}`);
+
+            // Find matching inventory by order_number + model + storage + color
+            const { data: inventoryItems, error: fetchError } = await supabaseAdmin
+                .from('inventory')
+                .select('id, expected_delivery_start, expected_delivery_end')
+                .eq('order_number', parsed.orderNumber)
+                .eq('user_id', userId)
+                .eq('model_name', product.modelName)
+                .eq('storage', product.storage)
+                .eq('color', product.color);
+
+            if (fetchError || !inventoryItems || inventoryItems.length === 0) {
+                console.log(`  ⚠️  No matching inventory found`);
+                continue;
+            }
+
+            // Update each matching item
+            for (const item of inventoryItems) {
+                if (!firstInventoryId) {
+                    firstInventoryId = item.id;
+                }
+
+                // Check if dates have changed
+                const dateChanged =
+                    item.expected_delivery_start !== product.deliveryStart ||
+                    item.expected_delivery_end !== product.deliveryEnd;
+
+                if (dateChanged) {
+                    const { error: updateError } = await supabaseAdmin
+                        .from('inventory')
+                        .update({
+                            expected_delivery_start: product.deliveryStart,
+                            expected_delivery_end: product.deliveryEnd
+                        })
+                        .eq('id', item.id);
+
+                    if (updateError) {
+                        console.error(`  ❌ Error updating inventory ${item.id}:`, updateError);
+                    } else {
+                        console.log(`  ✅ Updated inventory ${item.id}`);
+                        updatedCount++;
+                        hasChanges = true;
+                    }
+                } else {
+                    console.log(`  ℹ️  No date change for inventory ${item.id}`);
+                }
+            }
+        }
+
+        return {
+            success: true,
+            isDuplicate: !hasChanges,
+            inventoryId: firstInventoryId || undefined,
+            orderNumber: parsed.orderNumber,
+            notes: hasChanges ? `Updated ${updatedCount} item(s)` : `No changes needed`,
+            parsedData: {
+                order_number: parsed.orderNumber,
+                products: parsed.products,
+                updated_count: updatedCount
+            }
+        };
+
+    } catch (error) {
+        console.error('  ❌ Error processing delivery update email:', error);
         return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }

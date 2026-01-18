@@ -451,13 +451,14 @@ export interface RewardInput {
 }
 
 // Email log types - Based on DATABASE.md email_logs table
-export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'invoice' | 'survey' | 'unknown';
+export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'unknown';
 export type EmailLogStatus = 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error';
 
 export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
     order_confirmation: '注文確認',
     order_thanks: '注文ありがとう',
     shipping_notification: '出荷通知',
+    delivery_update: 'お届け日変更',
     invoice: '請求書',
     survey: 'アンケート',
     unknown: '不明',
