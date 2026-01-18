@@ -451,7 +451,7 @@ export interface RewardInput {
 }
 
 // Email log types - Based on DATABASE.md email_logs table
-export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'unknown';
+export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'unknown';
 export type EmailLogStatus = 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error';
 
 export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
@@ -461,6 +461,10 @@ export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
     delivery_update: 'お届け日変更',
     invoice: '請求書',
     survey: 'アンケート',
+    amazon_order_confirmation: 'Amazon注文確認',
+    amazon_shipping_notification: 'Amazon発送済み',
+    amazon_out_for_delivery: 'Amazon配達中',
+    amazon_delivered: 'Amazon配達済み',
     unknown: '不明',
 };
 

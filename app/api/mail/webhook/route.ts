@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { detectEmailType, parseAppleOrderEmail, parseAppleShippingEmail, formatDateForInput } from '@/lib/appleMailParser';
+import { detectAmazonEmailType, parseAmazonOrderEmail, parseAmazonShippingEmail, parseAmazonDeliveryEmail } from '@/lib/amazonMailParser';
 import { fetchOrderTokenViaRedirect } from '@/lib/appleOrderToken';
 
 export const dynamic = 'force-dynamic';
@@ -427,10 +428,28 @@ export async function POST(request: NextRequest) {
         console.log('  Subject:', subject);
         console.log('📨 Raw email length:', rawEmail?.length || 0);
 
-        // Determine email type from subject
-        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'unknown' = 'unknown';
+        // Determine email type from sender and subject
+        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'unknown' = 'unknown';
 
-        if (subject.includes('ご注文の確認')) {
+        // Check for Amazon emails first (by sender address)
+        const amazonType = detectAmazonEmailType(from, subject);
+        if (amazonType !== 'unknown') {
+            if (amazonType === 'amazon_order') {
+                emailType = 'amazon_order_confirmation';
+                console.log('  Type: Amazon order confirmation');
+            } else if (amazonType === 'amazon_shipped') {
+                emailType = 'amazon_shipping_notification';
+                console.log('  Type: Amazon shipping notification');
+            } else if (amazonType === 'amazon_out_for_delivery') {
+                emailType = 'amazon_out_for_delivery';
+                console.log('  Type: Amazon out for delivery');
+            } else if (amazonType === 'amazon_delivered') {
+                emailType = 'amazon_delivered';
+                console.log('  Type: Amazon delivered');
+            }
+        }
+        // Check for Apple emails (by subject patterns)
+        else if (subject.includes('ご注文の確認')) {
             emailType = 'order_confirmation';
             console.log('  Type: Order confirmation');
         } else if (subject.includes('ご注文ありがとうございます')) {
@@ -506,8 +525,30 @@ export async function POST(request: NextRequest) {
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
+        } else if (emailType === 'amazon_order_confirmation' && userId && contactEmail) {
+            const result = await processAmazonOrderEmail(contactEmailAddress, contactEmail.id, rawEmail, userId, supabaseAdmin);
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
+            orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
         } else if (emailType === 'shipping_notification' && userId) {
             const result = await processShippingNotificationEmail(rawEmail, userId, supabaseAdmin);
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
+            orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
+        } else if (emailType === 'amazon_shipping_notification' && userId) {
+            const result = await processAmazonShippingEmail(rawEmail, userId, supabaseAdmin);
             if (result.success) {
                 processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
             } else {
@@ -528,6 +569,17 @@ export async function POST(request: NextRequest) {
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
+        } else if ((emailType === 'amazon_out_for_delivery' || emailType === 'amazon_delivered') && userId) {
+            const result = await processAmazonDeliveryEmail(rawEmail, subject, userId, supabaseAdmin);
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
+            inventoryId = result.inventoryId || null;
+            logNotes = result.notes || null;
+            orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
         } else {
             console.log('  Skipping processing for this email type');
             processResult = 'skipped_unsupported';
@@ -537,11 +589,11 @@ export async function POST(request: NextRequest) {
 
         // Map email type to database schema values
         let dbEmailType: 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown' = 'unknown';
-        if (emailType === 'order_confirmation' || emailType === 'order_thanks') {
+        if (emailType === 'order_confirmation' || emailType === 'order_thanks' || emailType === 'amazon_order_confirmation') {
             dbEmailType = 'order';
-        } else if (emailType === 'shipping_notification') {
+        } else if (emailType === 'shipping_notification' || emailType === 'amazon_shipping_notification' || emailType === 'amazon_out_for_delivery') {
             dbEmailType = 'shipping';
-        } else if (emailType === 'delivery_update') {
+        } else if (emailType === 'delivery_update' || emailType === 'amazon_delivered') {
             dbEmailType = 'delivery';
         } else if (emailType === 'invoice') {
             dbEmailType = 'invoice';
@@ -1088,6 +1140,398 @@ async function processDeliveryUpdateEmail(
 
     } catch (error) {
         console.error('  ❌ Error processing delivery update email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+/**
+ * Process Amazon order confirmation email
+ */
+async function processAmazonOrderEmail(
+    contactEmail: string,
+    contactEmailId: string,
+    rawEmail: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+    try {
+        console.log('  📦 Processing Amazon order confirmation email...');
+
+        // Extract email body from MIME format
+        const emailText = extractEmailBody(rawEmail);
+        console.log('  📄 Extracted body (first 500 chars):', emailText.substring(0, 500));
+
+        const order = parseAmazonOrderEmail(emailText);
+
+        if (!order) {
+            console.log('  ⚠️  No order found in email');
+            return { success: false, notes: 'No order found in email' };
+        }
+
+        console.log(`  ✅ Found order: ${order.orderNumber}`);
+
+        const orderNumber = order.orderNumber;
+        const itemIndex = 1; // Amazon emails typically contain one product per email
+        const inventoryCode = `A${orderNumber}-${itemIndex}`;
+
+        console.log(`  📝 Processing item: ${inventoryCode}`);
+        console.log(`     Model: ${order.modelName} ${order.storage} ${order.color}`);
+        console.log(`     Price: ¥${order.price.toLocaleString()}`);
+
+        // Check if inventory already exists (by order_number + item_index)
+        const { data: existing } = await supabaseAdmin
+            .from('inventory')
+            .select('id, model_name, storage, color, purchase_price, original_delivery_start, original_delivery_end')
+            .eq('order_number', order.orderNumber)
+            .eq('item_index', itemIndex)
+            .single();
+
+        const inventoryData = {
+            user_id: userId,
+            inventory_code: inventoryCode,
+            order_number: order.orderNumber,
+            item_index: itemIndex,
+            model_name: order.modelName,
+            storage: order.storage,
+            color: order.color,
+            status: 'ordered',
+            purchase_price: order.price,
+            expected_price: order.price,
+            expected_delivery_start: order.deliveryStart,
+            expected_delivery_end: order.deliveryEnd,
+            original_delivery_start: order.deliveryStart,
+            original_delivery_end: order.deliveryEnd,
+            purchase_source: 'Amazon',
+            source: 'amazon',
+            contact_email_id: contactEmailId,
+        };
+
+        if (existing) {
+            // Check if data has changed
+            const dataChanged =
+                existing.model_name !== inventoryData.model_name ||
+                existing.storage !== inventoryData.storage ||
+                existing.color !== inventoryData.color ||
+                existing.purchase_price !== inventoryData.purchase_price ||
+                existing.original_delivery_start !== inventoryData.original_delivery_start ||
+                existing.original_delivery_end !== inventoryData.original_delivery_end;
+
+            if (dataChanged) {
+                console.log(`  ℹ️  Updating existing inventory: ${existing.id}`);
+
+                const updateData: any = {
+                    model_name: inventoryData.model_name,
+                    storage: inventoryData.storage,
+                    color: inventoryData.color,
+                    purchase_price: inventoryData.purchase_price,
+                    purchase_source: inventoryData.purchase_source,
+                    source: inventoryData.source,
+                    contact_email_id: inventoryData.contact_email_id,
+                };
+
+                // Only update original_expected_delivery if not already set
+                if (!existing.original_delivery_start) {
+                    updateData.original_delivery_start = inventoryData.original_delivery_start;
+                }
+                if (!existing.original_delivery_end) {
+                    updateData.original_delivery_end = inventoryData.original_delivery_end;
+                }
+
+                const { error } = await supabaseAdmin
+                    .from('inventory')
+                    .update(updateData)
+                    .eq('id', existing.id);
+
+                if (error) {
+                    console.error(`  ❌ Error updating inventory:`, error);
+                    return { success: false, orderNumber, notes: `Error updating inventory: ${error.message}` };
+                } else {
+                    console.log(`  ✅ Inventory updated successfully`);
+                    return {
+                        success: true,
+                        isDuplicate: false,
+                        inventoryId: existing.id,
+                        orderNumber,
+                        notes: `Updated item for order ${orderNumber}`,
+                        parsedData: {
+                            inventory_id: existing.id,
+                            order_number: orderNumber,
+                            model_name: order.modelName,
+                            storage: order.storage,
+                            color: order.color,
+                            purchase_price: order.price,
+                            expected_delivery_start: order.deliveryStart,
+                            expected_delivery_end: order.deliveryEnd,
+                        }
+                    };
+                }
+            } else {
+                console.log(`  ⏭️  Skipping duplicate: ${inventoryCode} (no changes)`);
+                return {
+                    success: true,
+                    isDuplicate: true,
+                    inventoryId: existing.id,
+                    orderNumber,
+                    notes: `Skipped duplicate item for order ${orderNumber}`,
+                    parsedData: {
+                        inventory_id: existing.id,
+                        order_number: orderNumber,
+                    }
+                };
+            }
+        } else {
+            // Insert new record
+            const { data: newInventory, error } = await supabaseAdmin
+                .from('inventory')
+                .insert(inventoryData)
+                .select('id')
+                .single();
+
+            if (error) {
+                console.error(`  ❌ Error inserting inventory:`, error);
+                return { success: false, orderNumber, notes: `Error inserting inventory: ${error.message}` };
+            } else {
+                console.log(`  ✅ Inventory created successfully: ${newInventory.id}`);
+                return {
+                    success: true,
+                    isDuplicate: false,
+                    inventoryId: newInventory.id,
+                    orderNumber,
+                    notes: `Created item for order ${orderNumber}`,
+                    parsedData: {
+                        inventory_id: newInventory.id,
+                        order_number: orderNumber,
+                        model_name: order.modelName,
+                        storage: order.storage,
+                        color: order.color,
+                        purchase_price: order.price,
+                        expected_delivery_start: order.deliveryStart,
+                        expected_delivery_end: order.deliveryEnd,
+                    }
+                };
+            }
+        }
+    } catch (error) {
+        console.error('  ❌ Error processing Amazon order confirmation email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+/**
+ * Process Amazon shipping notification email
+ */
+async function processAmazonShippingEmail(
+    rawEmail: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+    try {
+        console.log('  📦 Processing Amazon shipping notification email...');
+
+        const emailText = extractEmailBody(rawEmail);
+        const shippingInfo = parseAmazonShippingEmail(emailText);
+
+        if (!shippingInfo) {
+            console.log('  ⚠️  No shipping info found in email');
+            return { success: false, notes: 'No shipping info found in email' };
+        }
+
+        console.log(`  ✅ Found shipping info for order: ${shippingInfo.orderNumber}`);
+        console.log(`     Carrier: ${shippingInfo.carrier}`);
+        if (shippingInfo.trackingNumber) {
+            console.log(`     Tracking: ${shippingInfo.trackingNumber}`);
+        }
+
+        // Find all inventory items with this order number
+        const { data: inventoryItems, error: fetchError } = await supabaseAdmin
+            .from('inventory')
+            .select('id, status, carrier, tracking_number')
+            .eq('order_number', shippingInfo.orderNumber)
+            .eq('user_id', userId);
+
+        if (fetchError || !inventoryItems || inventoryItems.length === 0) {
+            console.log(`  ⚠️  No inventory found for order: ${shippingInfo.orderNumber}`);
+            return { success: false, orderNumber: shippingInfo.orderNumber, notes: `Order not found: ${shippingInfo.orderNumber}` };
+        }
+
+        console.log(`  📦 Found ${inventoryItems.length} inventory item(s) for this order`);
+
+        // Check if data has changed
+        const hasChanges = inventoryItems.some((item: any) =>
+            item.status !== 'shipped' ||
+            item.carrier !== shippingInfo.carrier ||
+            (shippingInfo.trackingNumber && item.tracking_number !== shippingInfo.trackingNumber)
+        );
+
+        if (!hasChanges) {
+            console.log(`  ℹ️  No changes detected for shipping info`);
+            return {
+                success: true,
+                isDuplicate: true,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `No changes for order ${shippingInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: shippingInfo.orderNumber,
+                    carrier: shippingInfo.carrier,
+                    tracking_number: shippingInfo.trackingNumber,
+                    items_updated: 0
+                }
+            };
+        }
+
+        // Update all items with shipping information
+        const updateData: any = {
+            status: 'shipped',
+            carrier: shippingInfo.carrier,
+        };
+
+        if (shippingInfo.trackingNumber) {
+            updateData.tracking_number = shippingInfo.trackingNumber;
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('inventory')
+            .update(updateData)
+            .eq('order_number', shippingInfo.orderNumber)
+            .eq('user_id', userId);
+
+        if (updateError) {
+            console.error(`  ❌ Error updating shipping info:`, updateError);
+            return {
+                success: false,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `Error updating: ${updateError.message}`
+            };
+        } else {
+            console.log(`  ✅ Updated ${inventoryItems.length} item(s) with shipping info`);
+            return {
+                success: true,
+                isDuplicate: false,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `Updated ${inventoryItems.length} item(s) for order ${shippingInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: shippingInfo.orderNumber,
+                    carrier: shippingInfo.carrier,
+                    tracking_number: shippingInfo.trackingNumber,
+                    items_updated: inventoryItems.length
+                }
+            };
+        }
+    } catch (error) {
+        console.error('  ❌ Error processing Amazon shipping notification email:', error);
+        return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+/**
+ * Process Amazon delivery status email (out for delivery or delivered)
+ */
+async function processAmazonDeliveryEmail(
+    rawEmail: string,
+    subject: string,
+    userId: string,
+    supabaseAdmin: any
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+    try {
+        console.log('  📦 Processing Amazon delivery status email...');
+
+        const emailText = extractEmailBody(rawEmail);
+        const deliveryInfo = parseAmazonDeliveryEmail(emailText, subject);
+
+        if (!deliveryInfo) {
+            console.log('  ⚠️  No delivery info found in email');
+            return { success: false, notes: 'No delivery info found in email' };
+        }
+
+        console.log(`  ✅ Found delivery info for order: ${deliveryInfo.orderNumber}`);
+        console.log(`     Status: ${deliveryInfo.status}`);
+
+        // Find all inventory items with this order number
+        const { data: inventoryItems, error: fetchError } = await supabaseAdmin
+            .from('inventory')
+            .select('id, status, arrived_at')
+            .eq('order_number', deliveryInfo.orderNumber)
+            .eq('user_id', userId);
+
+        if (fetchError || !inventoryItems || inventoryItems.length === 0) {
+            console.log(`  ⚠️  No inventory found for order: ${deliveryInfo.orderNumber}`);
+            return { success: false, orderNumber: deliveryInfo.orderNumber, notes: `Order not found: ${deliveryInfo.orderNumber}` };
+        }
+
+        console.log(`  📦 Found ${inventoryItems.length} inventory item(s) for this order`);
+
+        // Determine target status based on delivery info
+        const targetStatus = deliveryInfo.status === 'arrived' ? 'arrived' : 'shipped';
+        const now = new Date().toISOString();
+
+        // Check if data has changed
+        const hasChanges = inventoryItems.some((item: any) =>
+            item.status !== targetStatus ||
+            (deliveryInfo.status === 'arrived' && !item.arrived_at)
+        );
+
+        if (!hasChanges) {
+            console.log(`  ℹ️  No changes detected for delivery status`);
+            return {
+                success: true,
+                isDuplicate: true,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: deliveryInfo.orderNumber,
+                notes: `No changes for order ${deliveryInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: deliveryInfo.orderNumber,
+                    status: targetStatus,
+                    items_updated: 0
+                }
+            };
+        }
+
+        // Update all items with delivery status
+        const updateData: any = {
+            status: targetStatus,
+        };
+
+        if (deliveryInfo.status === 'arrived') {
+            updateData.arrived_at = now;
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('inventory')
+            .update(updateData)
+            .eq('order_number', deliveryInfo.orderNumber)
+            .eq('user_id', userId);
+
+        if (updateError) {
+            console.error(`  ❌ Error updating delivery status:`, updateError);
+            return {
+                success: false,
+                orderNumber: deliveryInfo.orderNumber,
+                notes: `Error updating: ${updateError.message}`
+            };
+        } else {
+            console.log(`  ✅ Updated ${inventoryItems.length} item(s) with delivery status`);
+            return {
+                success: true,
+                isDuplicate: false,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: deliveryInfo.orderNumber,
+                notes: `Updated ${inventoryItems.length} item(s) for order ${deliveryInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: deliveryInfo.orderNumber,
+                    status: targetStatus,
+                    arrived_at: deliveryInfo.status === 'arrived' ? now : null,
+                    items_updated: inventoryItems.length
+                }
+            };
+        }
+    } catch (error) {
+        console.error('  ❌ Error processing Amazon delivery status email:', error);
         return { success: false, notes: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
