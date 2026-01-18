@@ -384,14 +384,14 @@ export const SHIPPED_TO_OPTIONS = [
     'イオシス',
     'じゃんぱら',
     'ゲオ',
-] as const;
+];
 
 // Carrier options
 export const CARRIER_OPTIONS = [
     'ヤマト運輸',
     '佐川急便',
     '日本郵便',
-] as const;
+];
 
 // Buyer carrier types (for tracking shipments to buyback companies)
 export type BuyerCarrierCode = 'japan_post' | 'yamato' | 'sagawa';
