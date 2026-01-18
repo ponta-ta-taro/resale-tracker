@@ -46,9 +46,9 @@ export async function PUT(
         const body = await request.json();
 
         // バリデーション
-        if (!body.name || !body.email) {
+        if (!body.name) {
             return NextResponse.json(
-                { error: '名前とメールアドレスは必須です' },
+                { error: '名前は必須です' },
                 { status: 400 }
             );
         }
