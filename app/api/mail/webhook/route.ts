@@ -460,18 +460,21 @@ export async function POST(request: NextRequest) {
         }
 
         // Process based on email type
+        let parsedData: Record<string, any> | null = null;
         if (emailType === 'order_confirmation' && userId && contactEmail) {
             const result = await processOrderConfirmationEmail(contactEmailAddress, contactEmail.id, rawEmail, userId, supabaseAdmin);
             processResult = result.success ? 'success' : 'error';
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
         } else if (emailType === 'shipping_notification' && userId) {
             const result = await processShippingNotificationEmail(rawEmail, userId, supabaseAdmin);
             processResult = result.success ? 'success' : 'error';
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
+            parsedData = result.parsedData || null;
         } else {
             console.log('  Skipping processing for this email type');
             logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${contactEmailAddress}`;
@@ -494,20 +497,29 @@ export async function POST(request: NextRequest) {
         if (userId) {
             try {
                 const now = new Date().toISOString();
+
+                // Build parsed_data - include partial data even on error/skip
+                let finalParsedData = parsedData;
+                if (!finalParsedData && orderNumber) {
+                    // If no parsed data but we have order number, save at least that
+                    finalParsedData = { order_number: orderNumber };
+                }
+
                 const logData = {
                     user_id: userId,
                     email_type: dbEmailType,
                     subject: subject,
                     sender: contactEmailAddress,
                     order_number: orderNumber,
+                    raw_content: rawEmail,  // Save full raw email
                     status: processResult,
-                    error_message: logNotes,
-                    parsed_data: inventoryId ? { inventory_id: inventoryId } : null,
+                    error_message: processResult === 'error' ? logNotes : null,
+                    parsed_data: finalParsedData,  // Save detailed parsed data
                     received_at: now,
                     processed_at: now,
                 };
 
-                console.log('  📝 Logging email to database:', logData);
+                console.log('  📝 Logging email to database (raw_content length:', rawEmail?.length || 0, ')');
 
                 const { error: logError } = await supabaseAdmin
                     .from('email_logs')
@@ -546,7 +558,7 @@ async function processOrderConfirmationEmail(
     rawEmail: string,
     userId: string,
     supabaseAdmin: any
-): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string }> {
+): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
     try {
         console.log('  📦 Processing order confirmation email...');
 
@@ -693,7 +705,20 @@ async function processOrderConfirmationEmail(
             success: true,
             inventoryId: lastInventoryId || undefined,
             orderNumber,
-            notes: `Processed ${orders.length} item(s) for order ${orderNumber}`
+            notes: `Processed ${orders.length} item(s) for order ${orderNumber}`,
+            parsedData: {
+                inventory_id: lastInventoryId,
+                order_number: orderNumber,
+                model_name: orders[0].modelName,
+                storage: orders[0].storage,
+                color: orders[0].color,
+                purchase_price: orders[0].price,
+                expected_delivery_start: formatDateForInput(orders[0].deliveryStart),
+                expected_delivery_end: formatDateForInput(orders[0].deliveryEnd),
+                item_index: 1,
+                items_count: orders.length,
+                order_token: orderToken || null
+            }
         };
     } catch (error) {
         console.error('  ❌ Error processing order confirmation email:', error);
@@ -706,7 +731,7 @@ async function processShippingNotificationEmail(
     rawEmail: string,
     userId: string,
     supabaseAdmin: any
-): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string }> {
+): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
     try {
         console.log('  📦 Processing shipping notification email...');
 
@@ -765,7 +790,14 @@ async function processShippingNotificationEmail(
                 success: true,
                 inventoryId: inventoryItems[0].id,
                 orderNumber: shippingInfo.orderNumber,
-                notes: `Updated ${inventoryItems.length} item(s) for order ${shippingInfo.orderNumber}`
+                notes: `Updated ${inventoryItems.length} item(s) for order ${shippingInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: shippingInfo.orderNumber,
+                    carrier: shippingInfo.carrier,
+                    tracking_number: shippingInfo.trackingNumber,
+                    items_updated: inventoryItems.length
+                }
             };
         }
     } catch (error) {
