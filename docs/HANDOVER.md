@@ -66,27 +66,24 @@
 - [x] **お届け日変更メール対応**: delivery_updateメール種別追加、パーサー実装、在庫更新
 - [x] **Gmail転送対応**: quoted-printableデコードのUTF-8対応、class属性に依存しないパーサー
 - [x] **お届け予定日上書き問題修正**: UPDATE時にexpected_deliveryは保護（上書きしない）
-- [x] **重複検出ロジック**: expected_delivery除外、変更なしならskipped_duplicate
+- [x] **重複検出ロジック実装**: 同じメール再転送時に「スキップ（重複）」表示、カウント追跡
+- [x] **order_token関連コード削除**: 毎回変わるセッショントークンで不要と判明、51行削減
+- [x] **DB整理**: inventory.order_tokenカラム削除、inventory_v1_backupテーブル削除
 
 ---
 
 ## 次にやること
 
-1. **修正の確認テスト**
-   - お届け日変更メール転送 → 日付更新確認
-   - 注文確認メール再転送 → 日付が保護されてるか確認
-   - 同じメール再転送 → 「スキップ（重複）」表示確認
-
-2. **Gmailからの過去メール一括転送**
+1. **Gmailからの過去メール一括転送**
    - テスト成功済み、過去のApple注文確認メールをまとめて転送して在庫登録
 
-3. **iCloud転送形式対応**（後回し）
+2. **iCloud転送形式対応**（後回し）
    - 「iCloudから送信」ラッパーを剥がす前処理が必要
 
-4. **未登録メールアドレス警告機能**
+3. **未登録メールアドレス警告機能**
    - contact_emailsに未登録のアドレスからの転送時にアラート表示
 
-5. **買取販売情報の記入・テスト**
+4. **買取販売情報の記入・テスト**
 
 ---
 
@@ -102,12 +99,6 @@
 ---
 
 ## 技術メモ
-
-### order_token取得方法
-- メール内URL: `https://store.apple.com/xc/jp/vieworder/{注文番号}/{メールアドレス}/`
-- ↓ リダイレクト
-- 実URL: `https://secure9.store.apple.com/jp/shop/order/guest/{注文番号}/{token}`
-- fetch with `redirect: 'manual'` → Locationヘッダーからtoken抽出
 
 ### Apple注文ステータスページURL
 - 正しいURL: `https://secure8.store.apple.com/jp/shop/order/guest/{order_number}/{contact_email}`
