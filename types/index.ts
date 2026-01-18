@@ -379,7 +379,7 @@ export const SOLD_TO_OPTIONS = [
 ] as const;
 
 // Shipment destination options
-export const SHIPPED_TO_OPTIONS = [
+export const SHIPPED_TO_OPTIONS: string[] = [
     'モバイルミックス',
     'イオシス',
     'じゃんぱら',
@@ -387,7 +387,7 @@ export const SHIPPED_TO_OPTIONS = [
 ];
 
 // Carrier options
-export const CARRIER_OPTIONS = [
+export const CARRIER_OPTIONS: string[] = [
     'ヤマト運輸',
     '佐川急便',
     '日本郵便',
