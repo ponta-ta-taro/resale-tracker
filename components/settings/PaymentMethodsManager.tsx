@@ -175,10 +175,10 @@ export default function PaymentMethodsManager() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                     >
                                         <option value="">選択</option>
-                                        {[...Array(31)].map((_, i) => (
+                                        {[...Array(30)].map((_, i) => (
                                             <option key={i + 1} value={i + 1}>{i + 1}日</option>
                                         ))}
-                                        <option value="99">末日</option>
+                                        <option value="31">末日</option>
                                     </select>
                                 </div>
                                 <div>
@@ -201,9 +201,10 @@ export default function PaymentMethodsManager() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                     >
                                         <option value="">選択</option>
-                                        {[...Array(31)].map((_, i) => (
+                                        {[...Array(30)].map((_, i) => (
                                             <option key={i + 1} value={i + 1}>{i + 1}日</option>
                                         ))}
+                                        <option value="31">末日</option>
                                     </select>
                                 </div>
                                 <div>
@@ -268,7 +269,7 @@ export default function PaymentMethodsManager() {
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {item.type === 'cash' ? '即時' :
                                             item.closing_day && item.payment_day ?
-                                                `${item.closing_day === 99 ? '末日' : item.closing_day + '日'}締め → ${item.payment_month_offset === 0 ? '当月' : '翌月'}${item.payment_day}日払い` : '-'}
+                                                `${item.closing_day === 31 ? '末日' : item.closing_day + '日'}締め → ${item.payment_month_offset === 0 ? '当月' : '翌月'}${item.payment_day === 31 ? '末日' : item.payment_day + '日'}払い` : '-'}
                                     </td>
                                     <td className="px-6 py-4 text-right">{item.credit_limit ? `¥${item.credit_limit.toLocaleString()}` : '-'}</td>
                                     <td className="px-6 py-4 text-right">
