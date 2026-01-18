@@ -1202,7 +1202,6 @@ async function processAmazonOrderEmail(
             original_delivery_start: order.deliveryStart,
             original_delivery_end: order.deliveryEnd,
             purchase_source: 'Amazon',
-            source: 'amazon',
             contact_email_id: contactEmailId,
         };
 
@@ -1225,7 +1224,6 @@ async function processAmazonOrderEmail(
                     color: inventoryData.color,
                     purchase_price: inventoryData.purchase_price,
                     purchase_source: inventoryData.purchase_source,
-                    source: inventoryData.source,
                     contact_email_id: inventoryData.contact_email_id,
                 };
 
