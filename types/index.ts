@@ -448,7 +448,61 @@ export interface RewardInput {
     notes?: string | null;
 }
 
-// Email log types
+// Email log types - Based on DATABASE.md email_logs table
+export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'invoice' | 'survey' | 'unknown';
+export type EmailLogStatus = 'success' | 'skipped' | 'error';
+
+export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
+    order_confirmation: '注文確認',
+    order_thanks: '注文ありがとう',
+    shipping_notification: '出荷通知',
+    invoice: '請求書',
+    survey: 'アンケート',
+    unknown: '不明',
+};
+
+export const EMAIL_LOG_STATUSES: Record<EmailLogStatus, string> = {
+    success: '✅ 成功',
+    skipped: '⏭️ スキップ',
+    error: '❌ エラー',
+};
+
+export const EMAIL_LOG_STATUS_COLORS: Record<EmailLogStatus, string> = {
+    success: 'bg-green-100 text-green-800',
+    skipped: 'bg-gray-100 text-gray-800',
+    error: 'bg-red-100 text-red-800',
+};
+
+export interface EmailLog {
+    id: string;
+    user_id: string;
+    email_type: EmailLogType;
+    subject: string | null;
+    sender: string | null;
+    order_number: string | null;
+    raw_content: string | null;
+    parsed_data: Record<string, any> | null;
+    status: EmailLogStatus;
+    error_message: string | null;
+    received_at: string;
+    processed_at: string;
+    created_at: string;
+}
+
+export interface EmailLogInput {
+    email_type: EmailLogType;
+    subject?: string | null;
+    sender?: string | null;
+    order_number?: string | null;
+    raw_content?: string | null;
+    parsed_data?: Record<string, any> | null;
+    status: EmailLogStatus;
+    error_message?: string | null;
+    received_at: string;
+    processed_at: string;
+}
+
+// Legacy email types (kept for backward compatibility)
 export type EmailType = 'order' | 'shipping' | 'delivery' | 'invoice' | 'unknown';
 export type ProcessResult = 'success' | 'skipped' | 'error';
 
@@ -465,30 +519,6 @@ export const PROCESS_RESULTS: Record<ProcessResult, string> = {
     skipped: 'スキップ',
     error: 'エラー',
 };
-
-export interface EmailLog {
-    id: string;
-    user_id: string;
-    inventory_id: string | null;
-    from_email: string;
-    to_email: string;
-    subject: string;
-    email_type: EmailType;
-    process_result: ProcessResult;
-    notes: string | null;
-    received_at: string;
-    created_at: string;
-}
-
-export interface EmailLogInput {
-    inventory_id?: string | null;
-    from_email: string;
-    to_email: string;
-    subject: string;
-    email_type: EmailType;
-    process_result: ProcessResult;
-    notes?: string | null;
-}
 
 // Parsed Apple order data
 export interface ParsedAppleOrder {
