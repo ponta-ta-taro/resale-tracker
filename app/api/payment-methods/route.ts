@@ -30,6 +30,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
+
+        // 認証ユーザーを取得
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+        }
+
         const body: PaymentMethodInput = await request.json();
 
         // バリデーション
@@ -61,6 +68,7 @@ export async function POST(request: NextRequest) {
                 credit_limit: body.type === 'cash' ? null : body.credit_limit,
                 is_active: body.is_active ?? true,
                 notes: body.notes,
+                user_id: user.id,  // ← RLS対策で追加
             })
             .select()
             .single();
