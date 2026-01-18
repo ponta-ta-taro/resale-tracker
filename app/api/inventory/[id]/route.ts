@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import type { InventoryV2Input } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/inventory/[id] - 在庫詳細取得
 export async function GET(
     request: NextRequest,

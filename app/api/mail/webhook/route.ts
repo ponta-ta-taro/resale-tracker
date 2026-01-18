@@ -4,6 +4,8 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { detectEmailType, parseAppleOrderEmail, parseAppleShippingEmail, formatDateForInput } from '@/lib/appleMailParser';
 import { fetchOrderTokenViaRedirect } from '@/lib/appleOrderToken';
 
+export const dynamic = 'force-dynamic';
+
 interface WebhookPayload {
     from: string;
     to: string;

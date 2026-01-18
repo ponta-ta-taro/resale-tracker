@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET: 単一の連絡先メールを取得
 export async function GET(
     request: NextRequest,

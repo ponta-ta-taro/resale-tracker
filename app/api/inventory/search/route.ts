@@ -1,6 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Search inventory by order number
 export async function GET(request: Request) {
     try {

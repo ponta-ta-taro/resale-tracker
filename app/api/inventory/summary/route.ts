@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import { calculateProfit, Inventory } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const supabase = await createServerSupabaseClient();
