@@ -196,6 +196,9 @@ export default function EmailsPage() {
                                             受信日時
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">
+                                            受信アドレス
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">
                                             件名
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">
@@ -223,6 +226,9 @@ export default function EmailsPage() {
                                                     </span>
                                                     {formatDateTime(email.received_at)}
                                                 </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                    {email.sender || '-'}
+                                                </td>
                                                 <td className="px-6 py-4 text-sm text-gray-900">
                                                     <div className="max-w-md truncate" title={email.subject || ''}>
                                                         {email.subject || '-'}
@@ -242,7 +248,7 @@ export default function EmailsPage() {
                                             </tr>
                                             {expandedRows.has(email.id) && (
                                                 <tr key={`${email.id}-details`}>
-                                                    <td colSpan={5} className="px-6 py-4 bg-gray-50">
+                                                    <td colSpan={6} className="px-6 py-4 bg-gray-50">
                                                         <div className="space-y-3">
                                                             {/* Error message or processing info */}
                                                             {email.status === 'error' && email.error_message && (
