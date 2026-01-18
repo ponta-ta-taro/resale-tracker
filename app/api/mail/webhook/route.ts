@@ -1449,14 +1449,23 @@ async function processAmazonDeliveryEmail(
         console.log(`     Status: ${deliveryInfo.status}`);
 
         // Find all inventory items with this order number
+        console.log('  🔍 Searching inventory - order_number:', deliveryInfo.orderNumber, 'user_id:', userId);
         const { data: inventoryItems, error: fetchError } = await supabaseAdmin
             .from('inventory')
             .select('id, status, arrived_at')
             .eq('order_number', deliveryInfo.orderNumber)
             .eq('user_id', userId);
 
+        console.log('  📊 Search result - error:', fetchError, 'items found:', inventoryItems?.length || 0);
+        if (inventoryItems && inventoryItems.length > 0) {
+            console.log('  📦 Inventory items:', JSON.stringify(inventoryItems, null, 2));
+        }
+
         if (fetchError || !inventoryItems || inventoryItems.length === 0) {
             console.log(`  ⚠️  No inventory found for order: ${deliveryInfo.orderNumber}`);
+            if (fetchError) {
+                console.error('  ❌ Database fetch error:', JSON.stringify(fetchError, null, 2));
+            }
             return { success: false, orderNumber: deliveryInfo.orderNumber, notes: `Order not found: ${deliveryInfo.orderNumber}` };
         }
 
