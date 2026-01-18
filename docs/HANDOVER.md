@@ -39,6 +39,8 @@
 - [x] **在庫詳細ページ**: Reactエラー修正（データサニタイゼーション）
 - [x] **React error #438修正**: Client Componentで use(params) → useParams() に変更、API側で明示的カラム選択
 - [x] **お届け日変更メールサンプル追加**: 02a_delivery_date_update（email-samples/README.md更新）
+- [x] **order_token HTML抽出修正**: text/html部分からもorder_token抽出可能に（フォールバック処理追加）
+- [x] **スキーマキャッシュ問題解決**: `NOTIFY pgrst, 'reload schema'` で対応
 
 ---
 
