@@ -69,6 +69,7 @@ export default function InventoryDetailPage() {
                     sold_to: json.data.sold_to || null,
                     notes: json.data.notes || null,
                     order_token: json.data.order_token || null,
+                    contact_email: json.data.contact_emails?.email || null,
                     // Foreign keys (IDs only, not objects)
                     apple_account_id: json.data.apple_account_id || null,
                     contact_email_id: json.data.contact_email_id || null,
@@ -205,10 +206,10 @@ export default function InventoryDetailPage() {
                         <StatusProgressBar currentStatus={formData.status || 'ordered'} />
 
                         {/* Apple Order Status Button */}
-                        {inventory.order_number && inventory.order_token && (
+                        {inventory.order_number && inventory.contact_email && (
                             <div className="mt-4">
                                 <a
-                                    href={`https://secure9.store.apple.com/jp/shop/order/guest/${inventory.order_number}/${inventory.order_token}`}
+                                    href={`https://secure8.store.apple.com/jp/shop/order/guest/${inventory.order_number}/${inventory.contact_email}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"

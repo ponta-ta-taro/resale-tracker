@@ -58,7 +58,8 @@ export async function GET(
                 payment_method_id,
                 shipment_id,
                 created_at,
-                updated_at
+                updated_at,
+                contact_emails!contact_email_id(email)
             `)
             .eq('id', id)
             .eq('user_id', user.id)
@@ -178,7 +179,8 @@ export async function PUT(
                 payment_method_id,
                 shipment_id,
                 created_at,
-                updated_at
+                updated_at,
+                contact_emails!contact_email_id(email)
             `)
             .single();
 
