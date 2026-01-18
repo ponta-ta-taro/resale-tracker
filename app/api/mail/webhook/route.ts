@@ -421,7 +421,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Variables for logging
-        let processResult: 'success' | 'skipped' | 'error' = 'skipped';
+        let processResult: 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error' = 'skipped_unsupported';
         let inventoryId: string | null = null;
         let logNotes: string | null = null;
         let userId: string | null = null;
@@ -465,20 +465,29 @@ export async function POST(request: NextRequest) {
         let parsedData: Record<string, any> | null = null;
         if (emailType === 'order_confirmation' && userId && contactEmail) {
             const result = await processOrderConfirmationEmail(contactEmailAddress, contactEmail.id, rawEmail, userId, supabaseAdmin);
-            processResult = result.success ? 'success' : 'error';
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
         } else if (emailType === 'shipping_notification' && userId) {
             const result = await processShippingNotificationEmail(rawEmail, userId, supabaseAdmin);
-            processResult = result.success ? 'success' : 'error';
+            if (result.success) {
+                processResult = result.isDuplicate ? 'skipped_duplicate' : 'success';
+            } else {
+                processResult = 'error';
+            }
             inventoryId = result.inventoryId || null;
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
         } else {
             console.log('  Skipping processing for this email type');
+            processResult = 'skipped_unsupported';
             logNotes = userId ? `Email type ${emailType} - no processing` : `User not found for ${contactEmailAddress}`;
         }
 
@@ -560,7 +569,7 @@ async function processOrderConfirmationEmail(
     rawEmail: string,
     userId: string,
     supabaseAdmin: any
-): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
     try {
         console.log('  📦 Processing order confirmation email...');
 
@@ -632,6 +641,7 @@ async function processOrderConfirmationEmail(
 
 
         // Process each product in the order
+        let hasChanges = false;
         for (let i = 0; i < orders.length; i++) {
             const order = orders[i];
             const itemIndex = i + 1;
@@ -644,7 +654,7 @@ async function processOrderConfirmationEmail(
             // Check if inventory already exists (by order_number + item_index)
             const { data: existing } = await supabaseAdmin
                 .from('inventory')
-                .select('id')
+                .select('*')
                 .eq('order_number', order.orderNumber)
                 .eq('item_index', itemIndex)
                 .single();
@@ -671,18 +681,35 @@ async function processOrderConfirmationEmail(
             };
 
             if (existing) {
-                // Update existing record
-                console.log(`  ℹ️  Updating existing inventory: ${existing.id}`);
-                const { error } = await supabaseAdmin
-                    .from('inventory')
-                    .update(inventoryData)
-                    .eq('id', existing.id);
+                // Check if data has changed
+                const dataChanged =
+                    existing.model_name !== inventoryData.model_name ||
+                    existing.storage !== inventoryData.storage ||
+                    existing.color !== inventoryData.color ||
+                    existing.purchase_price !== inventoryData.purchase_price ||
+                    existing.order_date !== inventoryData.order_date ||
+                    existing.expected_delivery_start !== inventoryData.expected_delivery_start ||
+                    existing.expected_delivery_end !== inventoryData.expected_delivery_end ||
+                    existing.order_token !== inventoryData.order_token;
 
-                if (error) {
-                    console.error(`  ❌ Error updating inventory:`, error);
-                    return { success: false, orderNumber, notes: `Error updating inventory: ${error.message}` };
+                if (dataChanged) {
+                    // Update existing record
+                    console.log(`  ℹ️  Updating existing inventory: ${existing.id}`);
+                    const { error } = await supabaseAdmin
+                        .from('inventory')
+                        .update(inventoryData)
+                        .eq('id', existing.id);
+
+                    if (error) {
+                        console.error(`  ❌ Error updating inventory:`, error);
+                        return { success: false, orderNumber, notes: `Error updating inventory: ${error.message}` };
+                    } else {
+                        console.log(`  ✅ Inventory updated successfully`);
+                        lastInventoryId = existing.id;
+                        hasChanges = true;
+                    }
                 } else {
-                    console.log(`  ✅ Inventory updated successfully`);
+                    console.log(`  ℹ️  No changes detected for inventory: ${existing.id}`);
                     lastInventoryId = existing.id;
                 }
             } else {
@@ -699,15 +726,17 @@ async function processOrderConfirmationEmail(
                 } else {
                     console.log(`  ✅ Inventory created successfully: ${newInventory.id}`);
                     lastInventoryId = newInventory.id;
+                    hasChanges = true;
                 }
             }
         }
 
         return {
             success: true,
+            isDuplicate: !hasChanges,
             inventoryId: lastInventoryId || undefined,
             orderNumber,
-            notes: `Processed ${orders.length} item(s) for order ${orderNumber}`,
+            notes: hasChanges ? `Processed ${orders.length} item(s) for order ${orderNumber}` : `No changes for order ${orderNumber}`,
             parsedData: {
                 inventory_id: lastInventoryId,
                 order_number: orderNumber,
@@ -733,7 +762,7 @@ async function processShippingNotificationEmail(
     rawEmail: string,
     userId: string,
     supabaseAdmin: any
-): Promise<{ success: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
+): Promise<{ success: boolean; isDuplicate?: boolean; inventoryId?: string; orderNumber?: string; notes?: string; parsedData?: Record<string, any> }> {
     try {
         console.log('  📦 Processing shipping notification email...');
 
@@ -755,7 +784,7 @@ async function processShippingNotificationEmail(
         // Find all inventory items with this order number (can be multiple)
         const { data: inventoryItems, error: fetchError } = await supabaseAdmin
             .from('inventory')
-            .select('id, status, item_index')
+            .select('id, status, item_index, carrier, tracking_number')
             .eq('order_number', shippingInfo.orderNumber)
             .eq('user_id', userId);
 
@@ -765,6 +794,31 @@ async function processShippingNotificationEmail(
         }
 
         console.log(`  📦 Found ${inventoryItems.length} inventory item(s) for this order`);
+
+        // Check if data has changed
+        const hasChanges = inventoryItems.some((item: any) =>
+            item.status !== 'shipped' ||
+            item.carrier !== shippingInfo.carrier ||
+            item.tracking_number !== shippingInfo.trackingNumber
+        );
+
+        if (!hasChanges) {
+            console.log(`  ℹ️  No changes detected for shipping info`);
+            return {
+                success: true,
+                isDuplicate: true,
+                inventoryId: inventoryItems[0].id,
+                orderNumber: shippingInfo.orderNumber,
+                notes: `No changes for order ${shippingInfo.orderNumber}`,
+                parsedData: {
+                    inventory_id: inventoryItems[0].id,
+                    order_number: shippingInfo.orderNumber,
+                    carrier: shippingInfo.carrier,
+                    tracking_number: shippingInfo.trackingNumber,
+                    items_updated: 0
+                }
+            };
+        }
 
         // Update all items with shipping information
         const updateData = {
@@ -790,6 +844,7 @@ async function processShippingNotificationEmail(
             console.log(`  ✅ Updated ${inventoryItems.length} item(s) with shipping info`);
             return {
                 success: true,
+                isDuplicate: false,
                 inventoryId: inventoryItems[0].id,
                 orderNumber: shippingInfo.orderNumber,
                 notes: `Updated ${inventoryItems.length} item(s) for order ${shippingInfo.orderNumber}`,

@@ -452,7 +452,7 @@ export interface RewardInput {
 
 // Email log types - Based on DATABASE.md email_logs table
 export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'invoice' | 'survey' | 'unknown';
-export type EmailLogStatus = 'success' | 'skipped' | 'error';
+export type EmailLogStatus = 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error';
 
 export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
     order_confirmation: '注文確認',
@@ -465,13 +465,15 @@ export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
 
 export const EMAIL_LOG_STATUSES: Record<EmailLogStatus, string> = {
     success: '✅ 成功',
-    skipped: '⏭️ スキップ',
+    skipped_unsupported: '⏭️ スキップ（未対応）',
+    skipped_duplicate: '⏭️ スキップ（重複）',
     error: '❌ エラー',
 };
 
 export const EMAIL_LOG_STATUS_COLORS: Record<EmailLogStatus, string> = {
     success: 'bg-green-100 text-green-800',
-    skipped: 'bg-gray-100 text-gray-800',
+    skipped_unsupported: 'bg-yellow-100 text-yellow-800',
+    skipped_duplicate: 'bg-blue-100 text-blue-800',
     error: 'bg-red-100 text-red-800',
 };
 

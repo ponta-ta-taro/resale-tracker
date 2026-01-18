@@ -261,9 +261,14 @@ export default function EmailsPage() {
                                                                     <span className="font-medium">処理内容:</span> メールを正常に処理しました
                                                                 </div>
                                                             )}
-                                                            {email.status === 'skipped' && (
-                                                                <div className="text-sm text-gray-600">
-                                                                    <span className="font-medium">処理内容:</span> このメールはスキップされました
+                                                            {email.status === 'skipped_unsupported' && (
+                                                                <div className="text-sm text-yellow-600">
+                                                                    <span className="font-medium">処理内容:</span> このメール種別は未対応です
+                                                                </div>
+                                                            )}
+                                                            {email.status === 'skipped_duplicate' && (
+                                                                <div className="text-sm text-blue-600">
+                                                                    <span className="font-medium">処理内容:</span> 既に同じ内容で登録済みです
                                                                 </div>
                                                             )}
 
