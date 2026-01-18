@@ -1452,7 +1452,7 @@ async function processAmazonDeliveryEmail(
         console.log('  🔍 Searching inventory - order_number:', deliveryInfo.orderNumber, 'user_id:', userId);
         const { data: inventoryItems, error: fetchError } = await supabaseAdmin
             .from('inventory')
-            .select('id, status, arrived_at')
+            .select('id, status, delivered_at')
             .eq('order_number', deliveryInfo.orderNumber)
             .eq('user_id', userId);
 
@@ -1478,7 +1478,7 @@ async function processAmazonDeliveryEmail(
         // Check if data has changed
         const hasChanges = inventoryItems.some((item: any) =>
             item.status !== targetStatus ||
-            (deliveryInfo.status === 'arrived' && !item.arrived_at)
+            (deliveryInfo.status === 'arrived' && !item.delivered_at)
         );
 
         if (!hasChanges) {
@@ -1504,7 +1504,7 @@ async function processAmazonDeliveryEmail(
         };
 
         if (deliveryInfo.status === 'arrived') {
-            updateData.arrived_at = now;
+            updateData.delivered_at = now;
         }
 
         const { error: updateError } = await supabaseAdmin
@@ -1532,7 +1532,7 @@ async function processAmazonDeliveryEmail(
                     inventory_id: inventoryItems[0].id,
                     order_number: deliveryInfo.orderNumber,
                     status: targetStatus,
-                    arrived_at: deliveryInfo.status === 'arrived' ? now : null,
+                    delivered_at: deliveryInfo.status === 'arrived' ? now : null,
                     items_updated: inventoryItems.length
                 }
             };
