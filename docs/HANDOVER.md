@@ -43,15 +43,22 @@
 - [x] **order_token HTML抽出修正**: text/html部分からもorder_token抽出可能に（フォールバック処理追加）
 - [x] **スキーマキャッシュ問題解決**: `NOTIFY pgrst, 'reload schema'` で対応
 - [x] **order_token自動取得機能**: リダイレクト経由でtoken取得するヘルパー関数追加、メール本文に無い場合のフォールバック動作実装
+- [x] **email_logs確認UI**: 期間/種類/結果フィルター、行展開、生メール・パース結果モーダル、受信アドレス列
+- [x] **email_logs保存充実化**: raw_content保存、parsed_data詳細化（機種名、価格、日付等）
+- [x] **「Appleで確認」ボタン**: 在庫詳細ページにApple注文ステータスへのリンクボタン追加（contact_email使用）
 
 ---
 
 ## 次にやること
 
-1. **email_logs確認UIの作成** ← 今ここ
-2. **出荷通知メールのテスト**（Gmailに届き次第）
-3. **請求書PDF対応**（シリアル番号登録）
-4. **Apple注文ステータス自動取得**（Puppeteer必要、将来タスク）
+1. **ステータス進捗バーの上揃え**（UIの段差修正） ← 今ここ
+2. **設定画面のバグ修正**（4件）
+   - Apple ID「ゲストID」で登録できない
+   - クレジットカード登録できない
+   - 連絡先メールアドレス重複登録可能
+   - 電話番号登録できない
+3. **出荷通知メールのテスト**（Gmailに届き次第）
+4. **請求書PDF対応**（シリアル番号登録）
 
 ---
 
@@ -73,6 +80,10 @@
 - ↓ リダイレクト
 - 実URL: `https://secure9.store.apple.com/jp/shop/order/guest/{注文番号}/{token}`
 - fetch with `redirect: 'manual'` → Locationヘッダーからtoken抽出
+
+### Apple注文ステータスページURL
+- 正しいURL: `https://secure8.store.apple.com/jp/shop/order/guest/{order_number}/{contact_email}`
+- order_tokenは不要（一時的なセッショントークンで使えない）
 
 ### Apple注文ページのスクレイピング
 - ページはJavaScript SPA（`<div id="portal">` のみ）
