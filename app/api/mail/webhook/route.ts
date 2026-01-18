@@ -452,6 +452,17 @@ async function processOrderConfirmationEmail(
         const orderNumber = orders[0].orderNumber;
         let lastInventoryId: string | null = null;
 
+        // Extract order token from guest order URL
+        // Example: https://secure8.store.apple.com/jp/shop/order/guest/W1528936835/d5bd9f4c1e7d2c409086923e2bddbfc216cf689dcfd86ba0b59f9182c4aecae926838df27f3f72c7d3629e9e3e8d46b69ee81b2600fc3e49d074b294f1eaa4734a5eedbafd8dab1affd60f1ed8c8848f706519a8091d795aa4be8b26b8a75c19?e=true
+        let orderToken: string | null = null;
+        const tokenMatch = emailText.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
+        if (tokenMatch) {
+            orderToken = tokenMatch[1];
+            console.log(`  🔑 Extracted order token: ${orderToken.substring(0, 20)}...`);
+        } else {
+            console.log('  ⚠️  No order token found in email');
+        }
+
         // Process each product in the order
         for (let i = 0; i < orders.length; i++) {
             const order = orders[i];
@@ -488,6 +499,7 @@ async function processOrderConfirmationEmail(
                 original_delivery_end: formatDateForInput(order.deliveryEnd),
                 purchase_source: 'Apple Store',
                 contact_email_id: contactEmailId,
+                order_token: orderToken, // Add extracted token
             };
 
             if (existing) {

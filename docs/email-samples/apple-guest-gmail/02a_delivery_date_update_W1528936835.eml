@@ -1,0 +1,425 @@
+Delivered-To: ponta10sakura@gmail.com
+Received: by 2002:a05:6214:262f:b0:88a:344b:85a3 with SMTP id gv15csp2325921qvb;
+        Sat, 17 Jan 2026 07:02:39 -0800 (PST)
+X-Received: by 2002:a05:7022:f8b:b0:11c:b3ad:1fe1 with SMTP id a92af1059eb24-1244a6e9b6cmr5747755c88.11.1768662158814;
+        Sat, 17 Jan 2026 07:02:38 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1768662158; cv=none;
+        d=google.com; s=arc-20240605;
+        b=EOQOHNNfFwso02S+7WSNsumgM2FBC5nbdc8Xa9PtrCJKsc93JQoh8JgHhsSoN+KXHl
+         1qHurM6Epik4LhnbugkVHrb7TvMhXv9T9HosdNVnsTAg243WN7qqJJd6iIvocsfiH9NL
+         1Jz5txQIssPkfbd18TV9ebAWlQ8fuAJZByRitb8f9STk0mW+VBtM3RnZPlKCoVyPheok
+         npOX0rTBCxkGwZd//A+qIHsPN0AwDua2ctY9OchDGD3VBLWoQD5U6IH0TB1HqhdSvfel
+         Wfk8NguZO5/AW/MoeRfqSKsFDglUO3lE2JzWsuZB6iIVJ3B79KGNporeERpAImVddhOd
+         GqVA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=mime-version:subject:to:from:message-id:date:dkim-signature;
+        bh=pfJPM1EJAvqjxc9jqdj7ve/uxlJUXOVlT4PuI/dUeRY=;
+        fh=RdkxYKVh+kTXqXy5q0NkJyBhiCu820Vg+HWt9HT4EHg=;
+        b=WnCQ5z+cz4LuC0kqaCm9gFfnGW4l1HnQhVCfIU+xCAoG2iI/O/jheVjWYgua0v94PN
+         jfvNpxK2RJVauvb/A8dvjEOCc6WdlG6AeY0QRaiQZbwckpdjSyx+lEiX7N3hLh7004LF
+         PT3Eu46bKI8sNm2r4CzO8ptf/KCRxRowYADQZgXX0b1JXmqUEj3zdxG3skbIm1Cr2N1F
+         7TZFPhgdODo4tcJuMuVLJj58RI4hPU2NdA99Y04UwCg88quCeR8oPcvVfAdzyQxY2oJ4
+         CWuoXjbkVpvfG2QbrRpP8HmQ0ys+IQQ2IhBVsYx08MJyT1QoBt2l59Wp+SMe/SDWFE0U
+         KtSA==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@email.apple.com header.s=email0517 header.b=Fl52w2ep;
+       spf=pass (google.com: domain of noreply@email.apple.com designates 17.111.110.64 as permitted sender) smtp.mailfrom=noreply@email.apple.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=email.apple.com
+Return-Path: <noreply@email.apple.com>
+Received: from rn2-txn-msbadger03102.apple.com (rn2-txn-msbadger03102.apple.com. [17.111.110.64])
+        by mx.google.com with ESMTPS id a92af1059eb24-1244ac67485si21673524c88.26.2026.01.17.07.02.38
+        for <ponta10sakura@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sat, 17 Jan 2026 07:02:38 -0800 (PST)
+Received-SPF: pass (google.com: domain of noreply@email.apple.com designates 17.111.110.64 as permitted sender) client-ip=17.111.110.64;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@email.apple.com header.s=email0517 header.b=Fl52w2ep;
+       spf=pass (google.com: domain of noreply@email.apple.com designates 17.111.110.64 as permitted sender) smtp.mailfrom=noreply@email.apple.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=email.apple.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=email.apple.com;
+	s=email0517; t=1768662158;
+	bh=pfJPM1EJAvqjxc9jqdj7ve/uxlJUXOVlT4PuI/dUeRY=;
+	h=Date:Message-ID:From:To:Subject:Content-Type;
+	b=Fl52w2ep91WjlBZeM/mwvZWJ2oxXi2PYqxs2DKtzhJFEWDOUmvJUeAqe9U96ZvYkX
+	 Esp0sSyjn3RQHDQfq8gtQLUi1cj8a8aNEU0Dzdlpt8lOB5dONJOF8s/u4T2pN3VVj1
+	 4YzsUaBtcp99jy9aLQopSnLITWvOKfLdJtawwJ9/N6AlUKYhvBdVi2aEA6fJKZKcax
+	 vYWFSb8gBoUFLUObY5F7aVBDVeRv6jWwxkcJT2IRfCB5lET6/8mHwZyUsh6HgtdioC
+	 uTBcY4uOD/HG8HisYEBMlOmLZSemdFQjkKlfMhu8208K4hVYDp5rnnqIT9QF3DlOyV
+	 B/x2EYs2+yPAg==
+Date: Sat, 17 Jan 2026 15:02:38 +0000
+Message-ID: <F5.A0.55616.E84AB696@mr29p01nt-txnmsbadger003.ise.apple.com>
+From: Apple <noreply@email.apple.com>
+To: ponta10sakura@gmail.com
+Subject: =?UTF-8?Q?Apple=E3=82=88=E3=82=8A?=
+ =?UTF-8?Q?=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AB?=
+ =?UTF-8?Q?=E9=96=A2=E3=81=99=E3=82=8B=E3=81=8A?=
+ =?UTF-8?Q?=E7=9F=A5=E3=82=89=E3=81=9B=EF=BC=9AW1528936835?=
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_8665299_1071460230.1768662158615"
+X-EmailType-Id: 1020788991
+X-Sent-To: ponta10sakura@gmail.com,2,Cs3t%2FFOjypAynXnxaePScjy4RPokEwydpXaB3En6Bg5fp8TzeKYfTYG09FhIp%2F%2Bcjz9TMseq4aUJlG50ppWhJ3pLuPhZD5IyLgpxmFLy2N%2BVWV8bNonwVNagDHXmq1Z4I96BuSROi0qiocfZckDyo3%2BiDltlJiwkX1g3ncIvYOEIlJJotTEwRar9TkgC09j3KvW8dJn3rAqUKB6EQeXu2d%2FULGhKIhoAOWWMTffhlikOQCwahd%2BiMkdkcKlhveHqrMgZugniuUI%2BRrDu9S3JwS1QOByR5cvIv0qCLrWHhVeBqLiKnQMXZfD%2ByedKl%2BFDOqKYWHHUnfxZ%2FZQtHurkMvpDrWOyMXopSBWhd8e8zAz%2BZu%2B35gh3IIruQZOIYAmvFg7L3DUM86bYFCT6%2F8PrmFJAXJOOaTNxpqW8gxIWQS7UKh4rcoWkuc4sXCh9QSJDKKiLnMnf74PEuU17%2F9K%2FD3Med0VI2gvB1NSzinj0kRs%3D
+X-EMAIL-ARCHIVE: Yao3K0%2Fl9lTW5Q%2BKyVv%2BRw%3D%3D
+X-Business-Group: AOS Community
+X-Attach-Flag: N
+X-Txn-Id: 5FD65400-3E9B-4C53-9F75-F33368471282
+
+------=_Part_8665299_1071460230.1768662158615
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Disposition: inline
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+=09<head>
+=09=09<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DUTF=
+-8">
+=09=09<!--[if !mso]><!--><meta http-equiv=3D"X-UA-Compatible" content=3D"IE=
+=3Dedge"><!--<![endif]-->
+=09=09<meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scal=
+e=3D1.0">
+=09=09<meta content=3D"telephone=3Dno" name=3D"format-detection">
+=09=09<title>Apple=E3=82=88=E3=82=8A=E3=81=94=E6=B3=A8=E6=96=87=E3=81=AB=E9=
+=96=A2=E3=81=99=E3=82=8B=E3=81=8A=E7=9F=A5=E3=82=89=E3=81=9B=EF=BC=9AW15289=
+36835</title>
+=09=09<style>body,ol,p,ul{Margin:0}body{background-color:{};}img{outline:0;=
+text-decoration:none}a img{border:none}p{font-size:17px;line-height:26px;fo=
+nt-weight:400;padding:0 0 10px}.footer p,br{line-height:12px}h1,h2,h3,h4,h5=
+,h6{color:#333!important}a,a:link,a:visited{color:#0070c9!important;text-de=
+coration:none}a:hover{text-decoration:underline}.asteriskcontent a{color:#5=
+55!important}a[href^=3Dtel]{color:inherit;text-decoration:none}ol,ul{list-s=
+tyle-position:outside}ul{padding:0 0 9px 22px}ol{padding:0 0 9px 22px;margi=
+n:0 0 0 3px}li{line-height:32px;margin:0 0 0 3px;font-size:17px;font-weight=
+:400}.footer-legal a{color:#555!important}.footer-ribbon a{color:#888!impor=
+tant}.footer p{font-size:11px!important;line-height:153%;Margin:0!important=
+}.footer-legal-entity{line-height:153%!important}.footer-legal-entity[dir=
+=3Dltr]{text-align:right} a,table{padding:0}.footer-legal a:hover,.footer-l=
+egal a:visited{color:#888!important;text-decoration:none}table td{border-co=
+llapse:collapse}.ExternalClass{width:100%}.ExternalClass,.ExternalClass div=
+,.ExternalClass font,.ExternalClass p,.ExternalClass span,.ExternalClass td=
+{line-height:100%}.ExternalClass img[class^=3DEmoji]{width:10px!important;h=
+eight:10px!important;display:inline!important}table{Margin:0}h1,h2{-webkit-=
+text-size-adjust:100%!important;line-height:110%!important}@media only scre=
+en and (max-width:760px){.logo{padding:0 25px!important}.body,.footer{paddi=
+ng:0 25px 32px!important}table.main-table{width:100%!important}.column-head=
+line,.column-product,.column-tile{max-width:100%!important}.tile1{padding:0=
+ 0 32px 0!important}}@media only screen and (max-width:540px){.body{text-al=
+ign:left!important}.header{padding:15px 0 60px 0!important}td.footer-ribbon=
+{padding:17px 0 16px!important;text-align:left;line-height:60%}.footer-ribb=
+on a{padding:0!important}span.mobile-only-padding{padding:0 0 16px!importan=
+t;display:block!important;width:100%!important}span.mobile-only-element{dis=
+play:block!important;width:100%!important;border-top:1px solid #d6d6d6!impo=
+rtant;padding:16px 0 0}.asa-style-phone{color:#888!important;padding:0!impo=
+rtant}.asa-style-app{padding:0 0 14px!important}.td[class=3Dspace],span.spa=
+ce{width:0!important;height:0!important;display:none!important;line-height:=
+0!important;font-size:0!important}}</style>
+=09</head>
+=09<body style=3D"background-color:#f2f2f2;font-family:'SF UI Text', -apple=
+-system, -webkit-system-font, 'SFNSText', 'Segoe UI', 'Helvetica Neue', Hel=
+vetica, Arial, sans-serif !important; Margin: 0;padding: 0;table-layout: fi=
+xed;-webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -m=
+s-text-size-adjust: 100%;width: 100% !important;" bgcolor=3D"#f2f2f2">
+=09=09=09=09=09=09=09=09=09<table  style=3D"line-height: 160% !important;ma=
+rgin: 0;padding: 0;" width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" bor=
+der=3D"0" role=3D"presentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td width=3D"100%" style=3D"background-color:#ffffff!important;=
+border-collapse: collapse;">
+=09=09=09=09=09<div class=3D"webkit" style=3D"max-width: 660px; margin: 0 a=
+uto;">
+=09=09=09=09=09=09<!--[if (gte mso 9)|(IE)]><table width=3D"700" align=3D"c=
+enter" cellpadding=3D"0" cellspacing=3D"0" border=3D"0"><tr><td><![endif]--=
+>
+=09=09=09=09=09=09=09<table class=3D"header" cellspacing=3D"0" cellpadding=
+=3D"0" border=3D"0" style=3D"Margin: 0; padding: 29px 0 84px 0; width: 100%=
+; line-height: 160% !important; max-width: 660px; width: 100%;" role=3D"pre=
+sentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td valign=3D"middle" class=3D"logo" style=3D"text-decoration: =
+none;border-collapse: collapse;padding: 5px 0 0px 0px;height: 30px;vertical=
+-align: middle;text-align: left;outline: none;margin: 0;padding: 0;">
+=09=09=09=09=09<img class=3D"apple-logo" src=3D"https://email.images.apple.=
+com/rover/aos/moe/apple_icon.png" alt=3D"" style=3D"display: block !importa=
+nt;height: 30px !important; padding: 0px !important;">
+=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+
+=09=09=09=09=09=09<table  class=3D"main-table" style=3D"line-height: 160% !=
+important;max-width: 660px;width: 100%;margin: 0 auto 0;padding: 0;" align=
+=3D"left" cellpadding=3D"0" cellspacing=3D"0" border=3D"0" role=3D"presenta=
+tion">
+=09=09=09=09=09=09=09<tbody>
+=09=09=09=09=09=09=09=09<tr>
+=09=09=09=09=09=09=09=09=09<td>
+=09=09=09=09=09=09=09=09=09=09<table  style=3D"width: 100%;" border=3D"0" c=
+ellspacing=3D"0" cellpadding=3D"0" role=3D"presentation">
+=09=09=09=09=09=09=09=09=09=09=09<tbody>
+=09=09=09=09=09=09=09=09=09=09=09=09<tr style=3D"width: 100%;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+<td class=3D"body" style=3D"font-family:'SF UI Text', -apple-system, -webki=
+t-system-font, 'SFNSText', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, =
+sans-serif !important;font-size: 17px;font-weight: 400;line-height: 153% !i=
+mportant;color: #333333; padding:0 0 48px 0;max-width: 660px;width: 100%;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table style=3D"width: 100%;" =
+border=3D"0" cellspacing=3D"0" cellpadding=3D"0" role=3D"presentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td class=3D"info" style=3D"padding-bottom:20px; border-bottom:=
+ 1px solid #d6d6d6;">
+=09=09=09=09=09<h1 class=3D"headline" style=3D"font-family:'SF UI Display',=
+ -apple-system, -webkit-system-font, 'SFNSText', 'Segoe UI', 'Helvetica Neu=
+e', Helvetica, Arial, sans-serif !important;font-size: 34px !important;font=
+-weight: 400;Margin: 0;line-height: 110% !important;padding: 0px 0 20px;-we=
+bkit-text-size-adjust: 100% !important;">
+=09=09=09=09=09=09=E3=81=94=E6=B3=A8=E6=96=87=E3=81=8C=E5=A4=89=E6=9B=B4=E3=
+=81=95=E3=82=8C=E3=81=BE=E3=81=97=E3=81=9F=E3=80=82
+=09=09=09=09=09</h1>
+=09=09=09=09=09<p style=3D"font-size: 14px;line-height: 21px;padding: 22px =
+0 0;Margin: 0">
+=09=09=09=09=09=09<span style=3D"font-weight:500">=E6=B3=A8=E6=96=87=E7=95=
+=AA=E5=8F=B7=EF=BC=9A</span>
+=09=09=09=09=09=09<a href=3D"https://secure.store.apple.com/jp/shop/order/l=
+ist/" style=3D"color:#0070c9;">W1528936835</a>
+=09=09=09=09=09=09=09=09=09=09=09</p>
+=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table  role=3D"presentation">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tbody>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<td style=3D"padding:30p=
+x 0 0 0;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<p>=E6=9C=80=E6=96=B0=
+=E3=81=AE=E6=83=85=E5=A0=B1=E3=81=AF=E4=BB=A5=E4=B8=8B=E3=81=AE=E9=80=9A=E3=
+=82=8A=E3=81=A7=E3=81=99=E3=80=82</p>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"pr=
+oduct-body" width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0"=
+ style=3D"padding-bottom:20px;">
+=09=09<tr>
+=09=09=09=09=09=09=09<td align=3D"left" width=3D"100" valign=3D"middle">
+=09=09=09=09=09<img class=3D"product-image" src=3D"https://store.storeimage=
+s.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-cosmic=
+orange-202509?wid=3D420&hei=3D338&fmt=3Djpeg&qlt=3D90&.v=3D1757586870879" w=
+idth=3D"100%" style=3D"width: 100%;" alt=3D"">
+=09=09=09=09</td>
+=09=09=09=09=09=09<td valign=3D"middle" align=3D"left" width"100%;">
+=09=09=09=09<table align=3D"left" border=3D"0" cellspacing=3D"0" cellpaddin=
+g=3D"0">
+=09=09=09=09=09<tr>
+=09=09=09=09=09=09<td width=3D"100%" style=3D"font-weight:400; letter-spaci=
+ng:0px; color:#333333; font-size:17px; line-height:26px;padding:0 0 0 20px;=
+">
+=09=09=09=09=09=09=09<p style=3D"padding:0;">
+=09=09=09=09=09=09=09=09<strong>iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=
+=83=9F=E3=83=83=E3=82=AF=E3=82=AA=E3=83=AC=E3=83=B3=E3=82=B8</strong><br>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=E3=81=8A=E5=B1=8A=E3=81=
+=91=E6=97=A5=EF=BC=9A 2026/01/27 - 2026/02/03
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</p>
+=09=09=09=09=09=09</td>
+=09=09=09=09=09</tr>
+=09=09=09=09</table>
+=09=09=09</td>
+=09=09</tr>
+=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table class=3D"pr=
+oduct-body" width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0"=
+ style=3D"padding-bottom:20px;">
+=09=09<tr>
+=09=09=09=09=09=09=09<td align=3D"left" width=3D"100" valign=3D"middle">
+=09=09=09=09=09<img class=3D"product-image" src=3D"https://store.storeimage=
+s.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-cosmic=
+orange-202509?wid=3D420&hei=3D338&fmt=3Djpeg&qlt=3D90&.v=3D1757586870879" w=
+idth=3D"100%" style=3D"width: 100%;" alt=3D"">
+=09=09=09=09</td>
+=09=09=09=09=09=09<td valign=3D"middle" align=3D"left" width"100%;">
+=09=09=09=09<table align=3D"left" border=3D"0" cellspacing=3D"0" cellpaddin=
+g=3D"0">
+=09=09=09=09=09<tr>
+=09=09=09=09=09=09<td width=3D"100%" style=3D"font-weight:400; letter-spaci=
+ng:0px; color:#333333; font-size:17px; line-height:26px;padding:0 0 0 20px;=
+">
+=09=09=09=09=09=09=09<p style=3D"padding:0;">
+=09=09=09=09=09=09=09=09<strong>iPhone 17 Pro 256GB =E3=82=B3=E3=82=BA=E3=
+=83=9F=E3=83=83=E3=82=AF=E3=82=AA=E3=83=AC=E3=83=B3=E3=82=B8</strong><br>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=E3=81=8A=E5=B1=8A=E3=81=
+=91=E6=97=A5=EF=BC=9A 2026/01/27 - 2026/02/03
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</p>
+=09=09=09=09=09=09</td>
+=09=09=09=09=09</tr>
+=09=09=09=09</table>
+=09=09=09</td>
+=09=09</tr>
+=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<p>=E8=A9=B3=E7=B4=B0=
+=E3=81=AB=E3=81=A4=E3=81=84=E3=81=A6=E3=81=AF=E3=80=81<a href=3D"https://se=
+cure.store.apple.com/jp/shop/order/list/">=E3=81=94=E6=B3=A8=E6=96=87=E7=8A=
+=B6=E6=B3=81</a>=E3=82=92=E3=81=94=E8=A6=A7=E3=81=8F=E3=81=A0=E3=81=95=E3=
+=81=84=E3=80=82 =E3=81=94=E4=B8=8D=E6=98=8E=E3=81=AA=E7=82=B9=E3=81=8C=E3=
+=81=82=E3=82=8A=E3=81=BE=E3=81=97=E3=81=9F=E3=82=89=E3=80=81<span style=3D"=
+white-space: nowrap;">0120-993-993</span>=E3=81=BE=E3=81=A7=E3=81=8A=E9=9B=
+=BB=E8=A9=B1=E3=81=AB=E3=81=A6=E3=81=8A=E5=95=8F=E3=81=84=E5=90=88=E3=82=8F=
+=E3=81=9B=E3=81=8F=E3=81=A0=E3=81=95=E3=81=84=E3=80=82</p>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</td>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09</tr>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=
+=09=09=09=09=09=09</tbody>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09</td>
+=09=09=09=09=09=09=09=09=09=09=09=09</tr>
+=09=09=09=09=09=09=09=09=09=09=09</tbody>
+=09=09=09=09=09=09=09=09=09=09</table>
+=09=09=09=09=09=09=09=09=09</td>
+=09=09=09=09=09=09=09=09</tr>
+=09=09=09=09=09=09=09</tbody>
+=09=09=09=09=09=09</table>
+=09=09=09=09=09=09<!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+=09=09=09=09=09</div>
+=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+=09<table  class=3D"main-table" style=3D"width: 100% !important;table-layou=
+t: fixed;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;backgrou=
+nd-color: #f2f2f2;margin: 0;" bgcolor=3D"#f2f2f2" width=3D"100%" cellpaddin=
+g=3D"0" cellspacing=3D"0" border=3D"0" role=3D"presentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td width=3D"100%" style=3D"border-collapse: collapse;">
+=09=09=09=09=09<div class=3D"webkit" style=3D"max-width: 660px; margin: 0 a=
+uto;">
+=09=09=09=09=09=09<!--[if (gte mso 9)|(IE)]><table width=3D"700" align=3D"c=
+enter" cellpadding=3D"0" cellspacing=3D"0" border=3D"0"><tr><td><![endif]--=
+>
+=09=09=09=09=09=09<table  class=3D"main-table" width=3D"100%" align=3D"left=
+" cellpadding=3D"0" cellspacing=3D"0" border=3D"0" role=3D"presentation">
+=09=09=09=09=09=09=09<tbody>
+=09=09=09=09=09=09=09=09<tr>
+=09=09=09=09=09=09=09=09=09<td style=3D"border-collapse: collapse; padding:=
+ 0;">
+=09=09=09=09=09=09=09=09=09=09<table  style=3D"width: 100%; line-height: 16=
+0% !important;margin: 0 auto;" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" role=3D"presentation">
+=09=09=09=09=09=09=09=09=09=09=09<tbody>
+=09=09=09=09=09=09=09=09=09=09=09=09<tr style=3D"width: 100%;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<td class=3D"footer" style=3D"font-s=
+ize: 11px;color: #f2f2f2; padding: 0 0 32px;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table style=3D"text-align: ce=
+nter;color: #888888;font-size: 12px;border-bottom: 1px solid #d6d6d6;paddin=
+g: 0;" width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" border=3D"0" role=
+=3D"presentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td class=3D"footer-ribbon" style=3D"border-collapse: collapse;=
+ padding: 23px 0px 23px 0px;line-height:153%;" align=3D"center">
+=09=09=09=09=09<a href=3D"https://www.apple.com/jp/" style=3D"color:#888888=
+!important;text-decoration: none;padding:0 10px 0 0;">=E3=82=AA=E3=83=B3=E3=
+=83=A9=E3=82=A4=E3=83=B3=E3=82=B7=E3=83=A7=E3=83=83=E3=83=94=E3=83=B3=E3=82=
+=B0</a>
+=09=09=09=09=09=09=09=09=09=09=09=09<span class=3D"mobile-only-padding" sty=
+le=3D"width:0; height:0;font-size:0;line-height:0;mso-hide:all;display:none=
+;">&nbsp;</span>
+=09<span class=3D"mobile-only-element" style=3D"width:0; height:0;font-size=
+:0;line-height:0;mso-hide:all;display:none;">&nbsp;</span>
+=09<span class=3D"space" style=3D"color:#d6d6d6!important" aria-hidden=3D"t=
+rue">|</span>
+
+=09=09=09=09=09=09<a href=3D"https://www.apple.com/jp/retail/" style=3D"col=
+or:#888888!important;text-decoration: none;padding:0 12px 0 12px;">=E3=81=
+=8A=E8=BF=91=E3=81=8F=E3=81=AEApple Store</a>
+=09=09=09=09=09=09=09=09=09=09=09<span class=3D"mobile-only-padding" style=
+=3D"width:0; height:0;font-size:0;line-height:0;mso-hide:all;display:none;"=
+>&nbsp;</span>
+=09<span class=3D"mobile-only-element" style=3D"width:0; height:0;font-size=
+:0;line-height:0;mso-hide:all;display:none;">&nbsp;</span>
+=09<span class=3D"space" style=3D"color:#d6d6d6!important" aria-hidden=3D"t=
+rue">|</span>
+
+=09=09=09=09=09<span class=3D"asa-style-phone" style=3D"color:#888888!impor=
+tant;text-decoration: none;padding:0 12px 0 12px;">
+=09=09=09=09=09=09<a href=3D"tel:0120-993-993" style=3D"color:#888888;white=
+-space: nowrap;">0120-993-993</a>
+=09=09=09=09=09</span>
+=09=09=09=09=09=09=09=09=09=09=09=09<span class=3D"mobile-only-padding" sty=
+le=3D"width:0; height:0;font-size:0;line-height:0;mso-hide:all;display:none=
+;">&nbsp;</span>
+=09<span class=3D"mobile-only-element" style=3D"width:0; height:0;font-size=
+:0;line-height:0;mso-hide:all;display:none;">&nbsp;</span>
+=09<span class=3D"space" style=3D"color:#d6d6d6!important" aria-hidden=3D"t=
+rue">|</span>
+
+=09=09=09=09=09=09<a href=3D"https://itunes.apple.com/jp/app/apple-store/id=
+375380948?mt=3D8" class=3D"asa-style-app" style=3D"color:#888888!important;=
+text-decoration: none;padding:0 0 0 12px;">Apple Store App</a>
+=09=09=09=09=09=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<table style=3D"font-size: 11p=
+x;padding: 0;" width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" border=3D=
+"0" role=3D"presentation">
+=09=09<tbody>
+=09=09=09<tr>
+=09=09=09=09<td style=3D"color: #888888!important;border-collapse: collapse=
+; padding: 20px 0 0; line-height:153%;">
+=09=09=09=09=09
+=09=09=09=09=09=09=09=09=09=09 <p style=3D"padding: 0 0 6px 0;Margin:0">Cop=
+yright =C2=A9 2026 Apple Inc. All rights reserved.</p> <p style=3D"color:#5=
+55555!important;padding: 0;Margin:0; line-height: 2.2em;">
+=09=09=09=09=09=09=09=09=09=09=09=09=09<a class=3D"footer-legal" href=3D"ht=
+tps://www.apple.com/jp/privacy/privacy-policy/" style=3D"color:#555555!impo=
+rtant;text-decoration: none;white-space: nowrap;">=E3=83=97=E3=83=A9=E3=82=
+=A4=E3=83=90=E3=82=B7=E3=83=BC=E3=83=9D=E3=83=AA=E3=82=B7=E3=83=BC</a>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<span style=3D"col=
+or:#d6d6d6!important" aria-hidden=3D"true">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+=09=09=09=09=09=09=09<a class=3D"footer-legal" href=3D"https://www.apple.co=
+m/jp/legal/terms/site.html" style=3D"color:#555555!important;text-decoratio=
+n: none;white-space: nowrap;">=E5=88=A9=E7=94=A8=E8=A6=8F=E7=B4=84</a>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<span style=3D"col=
+or:#d6d6d6!important" aria-hidden=3D"true">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+=09=09=09=09=09=09=09<a class=3D"footer-legal" href=3D"https://www.apple.co=
+m/jp/shop/goto/help/sales_refunds/" style=3D"color:#555555!important;text-d=
+ecoration: none;white-space: nowrap;">=E8=B2=A9=E5=A3=B2=E6=9D=A1=E4=BB=B6<=
+/a>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09<span style=3D"col=
+or:#d6d6d6!important" aria-hidden=3D"true">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+=09=09=09=09=09=09=09<a class=3D"footer-legal" href=3D"https://www.apple.co=
+m/jp/legal/" style=3D"color:#555555!important;text-decoration: none;white-s=
+pace: nowrap;">Legal Information</a>
+=09=09=09=09=09=09=09=09=09=09=09</p>
+=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+=09=09=09=09=09=09=09=09=09=09=09=09=09</td>
+=09=09=09=09=09=09=09=09=09=09=09=09</tr>
+=09=09=09=09=09=09=09=09=09=09=09</tbody>
+=09=09=09=09=09=09=09=09=09=09</table>
+=09=09=09=09=09=09=09=09=09</td>
+=09=09=09=09=09=09=09=09</tr>
+=09=09=09=09=09=09=09</tbody>
+=09=09=09=09=09=09</table>
+=09=09=09=09=09=09<!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+=09=09=09=09=09</div>
+=09=09=09=09</td>
+=09=09=09</tr>
+=09=09</tbody>
+=09</table>
+=09=09=09</body>
+
+</html>
+------=_Part_8665299_1071460230.1768662158615--
+
