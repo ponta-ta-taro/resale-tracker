@@ -686,7 +686,9 @@ async function processOrderConfirmationEmail(
 
 
         // Process each product in the order
-        let hasChanges = false;
+        let createdCount = 0;
+        let updatedCount = 0;
+        let skippedCount = 0;
         for (let i = 0; i < orders.length; i++) {
             const order = orders[i];
             const itemIndex = i + 1;
@@ -699,7 +701,7 @@ async function processOrderConfirmationEmail(
             // Check if inventory already exists (by order_number + item_index)
             const { data: existing } = await supabaseAdmin
                 .from('inventory')
-                .select('*')
+                .select('id, model_name, storage, color, purchase_price, order_date, original_delivery_start, original_delivery_end, order_token')
                 .eq('order_number', order.orderNumber)
                 .eq('item_index', itemIndex)
                 .single();
@@ -726,13 +728,15 @@ async function processOrderConfirmationEmail(
             };
 
             if (existing) {
-                // Check if data has changed (exclude expected_delivery from comparison)
+                // Check if data has changed (compare with original_delivery, not expected_delivery)
                 const dataChanged =
                     existing.model_name !== inventoryData.model_name ||
                     existing.storage !== inventoryData.storage ||
                     existing.color !== inventoryData.color ||
                     existing.purchase_price !== inventoryData.purchase_price ||
                     existing.order_date !== inventoryData.order_date ||
+                    existing.original_delivery_start !== inventoryData.original_delivery_start ||
+                    existing.original_delivery_end !== inventoryData.original_delivery_end ||
                     existing.order_token !== inventoryData.order_token;
 
                 if (dataChanged) {
@@ -773,11 +777,12 @@ async function processOrderConfirmationEmail(
                     } else {
                         console.log(`  ✅ Inventory updated successfully (preserved expected_delivery dates)`);
                         lastInventoryId = existing.id;
-                        hasChanges = true;
+                        updatedCount++;
                     }
                 } else {
-                    console.log(`  ℹ️  No changes detected for inventory: ${existing.id}`);
+                    console.log(`  ⏭️  Skipping duplicate: ${inventoryCode} (no changes)`);
                     lastInventoryId = existing.id;
+                    skippedCount++;
                 }
             } else {
                 // Insert new record
@@ -793,17 +798,22 @@ async function processOrderConfirmationEmail(
                 } else {
                     console.log(`  ✅ Inventory created successfully: ${newInventory.id}`);
                     lastInventoryId = newInventory.id;
-                    hasChanges = true;
+                    createdCount++;
                 }
             }
         }
 
+        // Determine if this was a duplicate (all items skipped)
+        const isDuplicate = createdCount === 0 && updatedCount === 0 && skippedCount > 0;
+
         return {
             success: true,
-            isDuplicate: !hasChanges,
+            isDuplicate,
             inventoryId: lastInventoryId || undefined,
             orderNumber,
-            notes: hasChanges ? `Processed ${orders.length} item(s) for order ${orderNumber}` : `No changes for order ${orderNumber}`,
+            notes: isDuplicate
+                ? `Skipped ${skippedCount} duplicate item(s) for order ${orderNumber}`
+                : `Created ${createdCount}, updated ${updatedCount}, skipped ${skippedCount} for order ${orderNumber}`,
             parsedData: {
                 inventory_id: lastInventoryId,
                 order_number: orderNumber,
@@ -815,6 +825,9 @@ async function processOrderConfirmationEmail(
                 expected_delivery_end: formatDateForInput(orders[0].deliveryEnd),
                 item_index: 1,
                 items_count: orders.length,
+                created_count: createdCount,
+                updated_count: updatedCount,
+                skipped_count: skippedCount,
                 order_token: orderToken || null
             }
         };
