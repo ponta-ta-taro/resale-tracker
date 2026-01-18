@@ -360,18 +360,30 @@ function extractEmailHtmlBody(rawEmail: string): string {
                     const bodyLines = partLines.slice(bodyStartIndex);
                     let body = bodyLines.join('\n').trim();
 
-                    // Decode if needed
-                    if (partEncoding === 'base64') {
+                    console.log('  📧 HTML part encoding:', partEncoding);
+                    console.log('  📏 HTML body length before decoding:', body.length);
+
+                    // Decode if needed (case-insensitive check)
+                    const encoding = partEncoding.toLowerCase();
+                    if (encoding === 'base64') {
                         try {
                             body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+                            console.log('  ✅ Decoded base64, new length:', body.length);
                         } catch (e) {
-                            console.error('Error decoding HTML base64:', e);
+                            console.error('  ❌ Error decoding HTML base64:', e);
                         }
-                    } else if (partEncoding === 'quoted-printable') {
+                    } else if (encoding === 'quoted-printable') {
+                        const beforeLength = body.length;
                         body = decodeQuotedPrintable(body);
+                        console.log('  ✅ Decoded quoted-printable, before:', beforeLength, 'after:', body.length);
+                        // Log a sample of decoded content for debugging
+                        const sample = body.substring(0, 200).replace(/\s+/g, ' ');
+                        console.log('  📝 Decoded sample:', sample);
+                    } else if (encoding) {
+                        console.log('  ℹ️  Encoding not decoded:', encoding);
                     }
 
-                    console.log('  ✅ Found HTML part, length:', body.length);
+                    console.log('  ✅ Found HTML part, final length:', body.length);
                     return body;
                 }
             }
@@ -895,19 +907,28 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
         deliveryEnd: string;
     }>;
 } {
+    console.log('  🔍 Parsing delivery update email, HTML length:', htmlContent.length);
+
+    // Log a sample of the HTML for debugging
+    const htmlSample = htmlContent.substring(0, 500).replace(/\s+/g, ' ');
+    console.log('  📝 HTML sample:', htmlSample);
+
     // Extract order number from HTML (e.g., W1528936835)
     const orderMatch = htmlContent.match(/W\d{10}/);
     const orderNumber = orderMatch ? orderMatch[0] : null;
+    console.log('  📦 Order number:', orderNumber);
 
     const products: Array<any> = [];
 
     // Find all product names (iPhone models in <strong> tags)
     // Pattern: <strong>iPhone ... </strong>
     const productNameMatches = Array.from(htmlContent.matchAll(/<strong>(iPhone[^<]+)<\/strong>/g));
+    console.log('  📱 Found', productNameMatches.length, 'product name(s)');
 
     // Find all delivery dates
     // Pattern: お届け日： or お届け日: followed by dates
     const deliveryDateMatches = Array.from(htmlContent.matchAll(/お届け日[：:]\s*(\d{4})\/(\d{2})\/(\d{2})\s*-\s*(\d{4})\/(\d{2})\/(\d{2})/g));
+    console.log('  📅 Found', deliveryDateMatches.length, 'delivery date(s)');
 
     // Match products with their delivery dates
     // Assumption: products and dates appear in the same order in the HTML
@@ -916,6 +937,8 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
     for (let i = 0; i < matchCount; i++) {
         const fullName = productNameMatches[i][1].trim();
         const dateMatch = deliveryDateMatches[i];
+
+        console.log(`  🔧 Processing product ${i + 1}: "${fullName}"`);
 
         // Parse model, storage, color
         // Example: "iPhone 17 Pro 256GB コズミックオレンジ"
@@ -937,6 +960,8 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
             const deliveryStart = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
             const deliveryEnd = `${dateMatch[4]}-${dateMatch[5]}-${dateMatch[6]}`;
 
+            console.log(`  ✅ Extracted: ${modelName} ${storage} ${color}, ${deliveryStart} - ${deliveryEnd}`);
+
             products.push({
                 modelName,
                 storage,
@@ -944,9 +969,12 @@ function parseDeliveryUpdateEmail(htmlContent: string): {
                 deliveryStart,
                 deliveryEnd
             });
+        } else {
+            console.log(`  ⚠️  Failed to parse: modelName="${modelName}", storage="${storage}"`);
         }
     }
 
+    console.log('  📊 Total products extracted:', products.length);
     return { orderNumber, products };
 }
 
