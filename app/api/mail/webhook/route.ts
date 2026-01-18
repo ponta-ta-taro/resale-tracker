@@ -1472,7 +1472,8 @@ async function processAmazonDeliveryEmail(
         console.log(`  📦 Found ${inventoryItems.length} inventory item(s) for this order`);
 
         // Determine target status based on delivery info
-        const targetStatus = deliveryInfo.status === 'arrived' ? 'arrived' : 'shipped';
+        // Note: Parser returns 'arrived' but DB uses 'delivered'
+        const targetStatus = deliveryInfo.status === 'arrived' ? 'delivered' : 'shipped';
         const now = new Date().toISOString();
 
         // Check if data has changed
