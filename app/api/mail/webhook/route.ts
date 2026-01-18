@@ -726,30 +726,52 @@ async function processOrderConfirmationEmail(
             };
 
             if (existing) {
-                // Check if data has changed
+                // Check if data has changed (exclude expected_delivery from comparison)
                 const dataChanged =
                     existing.model_name !== inventoryData.model_name ||
                     existing.storage !== inventoryData.storage ||
                     existing.color !== inventoryData.color ||
                     existing.purchase_price !== inventoryData.purchase_price ||
                     existing.order_date !== inventoryData.order_date ||
-                    existing.expected_delivery_start !== inventoryData.expected_delivery_start ||
-                    existing.expected_delivery_end !== inventoryData.expected_delivery_end ||
                     existing.order_token !== inventoryData.order_token;
 
                 if (dataChanged) {
                     // Update existing record
+                    // Preserve expected_delivery_start/end (may have been updated by delivery update email)
+                    // Only update original_expected_delivery if not already set
                     console.log(`  ℹ️  Updating existing inventory: ${existing.id}`);
+
+                    const updateData: any = {
+                        model_name: inventoryData.model_name,
+                        storage: inventoryData.storage,
+                        color: inventoryData.color,
+                        purchase_price: inventoryData.purchase_price,
+                        order_date: inventoryData.order_date,
+                        purchase_source: inventoryData.purchase_source,
+                        contact_email_id: inventoryData.contact_email_id,
+                        order_token: inventoryData.order_token,
+                    };
+
+                    // Only update original_expected_delivery if not already set
+                    if (!existing.original_delivery_start) {
+                        updateData.original_delivery_start = inventoryData.original_delivery_start;
+                    }
+                    if (!existing.original_delivery_end) {
+                        updateData.original_delivery_end = inventoryData.original_delivery_end;
+                    }
+
+                    // DO NOT update expected_delivery_start/end - preserve values from delivery update emails
+
                     const { error } = await supabaseAdmin
                         .from('inventory')
-                        .update(inventoryData)
+                        .update(updateData)
                         .eq('id', existing.id);
 
                     if (error) {
                         console.error(`  ❌ Error updating inventory:`, error);
                         return { success: false, orderNumber, notes: `Error updating inventory: ${error.message}` };
                     } else {
-                        console.log(`  ✅ Inventory updated successfully`);
+                        console.log(`  ✅ Inventory updated successfully (preserved expected_delivery dates)`);
                         lastInventoryId = existing.id;
                         hasChanges = true;
                     }
