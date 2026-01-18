@@ -634,57 +634,6 @@ async function processOrderConfirmationEmail(
         const orderNumber = orders[0].orderNumber;
         let lastInventoryId: string | null = null;
 
-        // Extract order token from guest order URL
-        // Example: https://secure8.store.apple.com/jp/shop/order/guest/W1528936835/d5bd9f4c1e7d2c409086923e2bddbfc216cf689dcfd86ba0b59f9182c4aecae926838df27f3f72c7d3629e9e3e8d46b69ee81b2600fc3e49d074b294f1eaa4734a5eedbafd8dab1affd60f1ed8c8848f706519a8091d795aa4be8b26b8a75c19?e=true
-        let orderToken: string | null = null;
-
-        // Try to find token in plain text first
-        let tokenMatch = emailText.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
-        if (tokenMatch) {
-            orderToken = tokenMatch[1];
-            console.log(`  🔑 Extracted order token from plain text: ${orderToken.substring(0, 20)}...`);
-        } else {
-            // If not found in plain text, try HTML part
-            console.log('  ⚠️  No order token found in plain text, trying HTML part...');
-            const emailHtml = extractEmailHtmlBody(rawEmail);
-            if (emailHtml) {
-                tokenMatch = emailHtml.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
-                if (tokenMatch) {
-                    orderToken = tokenMatch[1];
-                    console.log(`  🔑 Extracted order token from HTML: ${orderToken.substring(0, 20)}...`);
-                } else {
-                    console.log('  ⚠️  No order token found in HTML either');
-                }
-            } else {
-                console.log('  ⚠️  No HTML part available');
-            }
-        }
-
-        // If token still not found, try fetching via redirect
-        if (!orderToken) {
-            console.log('  🔄 Attempting to fetch order token via redirect...');
-
-            // Get the contact email address from contact_emails table
-            const { data: contactEmailData } = await supabaseAdmin
-                .from('contact_emails')
-                .select('email')
-                .eq('id', contactEmailId)
-                .single();
-
-            if (contactEmailData?.email) {
-                const fetchedToken = await fetchOrderTokenViaRedirect(orderNumber, contactEmailData.email);
-                if (fetchedToken) {
-                    orderToken = fetchedToken;
-                    console.log(`  ✅ Got order token from redirect: ${orderToken.substring(0, 20)}...`);
-                } else {
-                    console.log('  ⚠️  Failed to get order token from redirect');
-                }
-            } else {
-                console.log('  ⚠️  Could not retrieve contact email for redirect fetch');
-            }
-        }
-
-
         // Process each product in the order
         let createdCount = 0;
         let updatedCount = 0;
@@ -701,7 +650,7 @@ async function processOrderConfirmationEmail(
             // Check if inventory already exists (by order_number + item_index)
             const { data: existing } = await supabaseAdmin
                 .from('inventory')
-                .select('id, model_name, storage, color, purchase_price, order_date, original_delivery_start, original_delivery_end, order_token')
+                .select('id, model_name, storage, color, purchase_price, order_date, original_delivery_start, original_delivery_end')
                 .eq('order_number', order.orderNumber)
                 .eq('item_index', itemIndex)
                 .single();
@@ -724,7 +673,6 @@ async function processOrderConfirmationEmail(
                 original_delivery_end: formatDateForInput(order.deliveryEnd),
                 purchase_source: 'Apple Store',
                 contact_email_id: contactEmailId,
-                order_token: orderToken, // Add extracted token
             };
 
             if (existing) {
@@ -737,7 +685,6 @@ async function processOrderConfirmationEmail(
                 console.log('    order_date:', existing.order_date, 'vs', inventoryData.order_date);
                 console.log('    original_delivery_start:', existing.original_delivery_start, 'vs', inventoryData.original_delivery_start);
                 console.log('    original_delivery_end:', existing.original_delivery_end, 'vs', inventoryData.original_delivery_end);
-                console.log('    order_token:', existing.order_token, 'vs', inventoryData.order_token);
 
                 // Check if data has changed (compare with original_delivery, not expected_delivery)
                 const dataChanged =
@@ -747,8 +694,7 @@ async function processOrderConfirmationEmail(
                     existing.purchase_price !== inventoryData.purchase_price ||
                     existing.order_date !== inventoryData.order_date ||
                     existing.original_delivery_start !== inventoryData.original_delivery_start ||
-                    existing.original_delivery_end !== inventoryData.original_delivery_end ||
-                    existing.order_token !== inventoryData.order_token;
+                    existing.original_delivery_end !== inventoryData.original_delivery_end;
 
                 console.log('    dataChanged:', dataChanged);
 
@@ -766,7 +712,6 @@ async function processOrderConfirmationEmail(
                         order_date: inventoryData.order_date,
                         purchase_source: inventoryData.purchase_source,
                         contact_email_id: inventoryData.contact_email_id,
-                        order_token: inventoryData.order_token,
                     };
 
                     // Only update original_expected_delivery if not already set
@@ -841,7 +786,6 @@ async function processOrderConfirmationEmail(
                 created_count: createdCount,
                 updated_count: updatedCount,
                 skipped_count: skippedCount,
-                order_token: orderToken || null
             }
         };
     } catch (error) {
