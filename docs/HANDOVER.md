@@ -146,6 +146,14 @@
 | ご注文の確認 | order | 在庫登録（upsert） |
 | ご注文に関するお知らせ | delivery_update | お届け日更新 |
 
+### メール取り込み実装状況
+
+| タイプ | 実装 | 本番テスト | 備考 |
+|--------|:----:|:----------:|------|
+| Apple → iCloud | ✅ | ✅ | ラッパー除去対応済み、colorフィールド抽出OK |
+| Apple → Gmail | ✅ | ✅ | 注文確認・お届け日変更・配送通知すべてOK |
+| Amazon → Gmail | ✅ | ❌ | パーサー実装済み、サンプルemlでテスト済み。本番メールは未テスト |
+
 ### お届け予定日の保護ルール
 - 注文確認メール再処理時、`expected_delivery_start/end`は更新しない
 - `original_expected_delivery_start/end`のみ設定（未設定の場合）
