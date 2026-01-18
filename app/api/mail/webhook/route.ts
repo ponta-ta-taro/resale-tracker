@@ -260,16 +260,129 @@ function decodeQuotedPrintable(text: string): string {
  */
 function stripHtmlTags(html: string): string {
     return html
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
+        .replace(/\u003cstyle[^\u003e]*\u003e[\s\S]*?\u003c\/style\u003e/gi, '')
+        .replace(/\u003cscript[^\u003e]*\u003e[\s\S]*?\u003c\/script\u003e/gi, '')
+        .replace(/\u003c[^\u003e]+\u003e/g, ' ')
         .replace(/&nbsp;/g, ' ')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
+        .replace(/&lt;/g, '\u003c')
+        .replace(/&gt;/g, '\u003e')
         .replace(/&amp;/g, '&')
         .replace(/\s+/g, ' ')
         .trim();
 }
+
+/**
+ * Extract HTML body from MIME format email (for order_token extraction)
+ * Returns the raw HTML content without stripping tags
+ */
+function extractEmailHtmlBody(rawEmail: string): string {
+    try {
+        console.log('🔍 Extracting HTML body for order_token...');
+
+        const lines = rawEmail.split(/\r?\n/);
+
+        // Find Content-Type header
+        let contentType = '';
+        let boundary = '';
+        let inHeaders = true;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            if (line.trim() === '' && inHeaders) {
+                inHeaders = false;
+                continue;
+            }
+
+            if (inHeaders) {
+                if (line.toLowerCase().startsWith('content-type:')) {
+                    contentType = line.substring(13).trim();
+                    const boundaryMatch = contentType.match(/boundary=["']?([^"';]+)["']?/i);
+                    if (boundaryMatch) {
+                        boundary = boundaryMatch[1];
+                    }
+                }
+            }
+        }
+
+        // If multipart, extract HTML part
+        if (boundary) {
+            const parts = rawEmail.split(`--${boundary}`);
+
+            for (const part of parts) {
+                if (part.trim() === '' || part.trim() === '--') continue;
+
+                const partLines = part.split(/\r?\n/);
+                let partContentType = '';
+                let partEncoding = '';
+                let bodyStartIndex = 0;
+                let inPartHeaders = true;
+                let headerStarted = false;
+
+                // Skip leading empty lines
+                let startLine = 0;
+                for (let i = 0; i < partLines.length; i++) {
+                    if (partLines[i].trim() !== '') {
+                        startLine = i;
+                        break;
+                    }
+                }
+
+                // Parse part headers
+                for (let i = startLine; i < partLines.length; i++) {
+                    const line = partLines[i];
+
+                    if (line.trim() === '' && headerStarted) {
+                        bodyStartIndex = i + 1;
+                        inPartHeaders = false;
+                        break;
+                    }
+
+                    if (inPartHeaders && line.trim() !== '') {
+                        headerStarted = true;
+                        const lowerLine = line.toLowerCase();
+
+                        if (lowerLine.startsWith('content-type:')) {
+                            partContentType = line.substring(13).trim();
+                        }
+
+                        if (lowerLine.startsWith('content-transfer-encoding:')) {
+                            partEncoding = line.substring(26).trim().toLowerCase();
+                        }
+                    }
+                }
+
+                // Check if this is HTML part
+                if (partContentType.toLowerCase().includes('text/html')) {
+                    const bodyLines = partLines.slice(bodyStartIndex);
+                    let body = bodyLines.join('\n').trim();
+
+                    // Decode if needed
+                    if (partEncoding === 'base64') {
+                        try {
+                            body = Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf-8');
+                        } catch (e) {
+                            console.error('Error decoding HTML base64:', e);
+                        }
+                    } else if (partEncoding === 'quoted-printable') {
+                        body = decodeQuotedPrintable(body);
+                    }
+
+                    console.log('  ✅ Found HTML part, length:', body.length);
+                    return body;
+                }
+            }
+        }
+
+        console.log('  ⚠️ No HTML part found');
+        return '';
+
+    } catch (error) {
+        console.error('Error extracting HTML body:', error);
+        return '';
+    }
+}
+
 
 export async function POST(request: NextRequest) {
     try {
@@ -455,13 +568,29 @@ async function processOrderConfirmationEmail(
         // Extract order token from guest order URL
         // Example: https://secure8.store.apple.com/jp/shop/order/guest/W1528936835/d5bd9f4c1e7d2c409086923e2bddbfc216cf689dcfd86ba0b59f9182c4aecae926838df27f3f72c7d3629e9e3e8d46b69ee81b2600fc3e49d074b294f1eaa4734a5eedbafd8dab1affd60f1ed8c8848f706519a8091d795aa4be8b26b8a75c19?e=true
         let orderToken: string | null = null;
-        const tokenMatch = emailText.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
+
+        // Try to find token in plain text first
+        let tokenMatch = emailText.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
         if (tokenMatch) {
             orderToken = tokenMatch[1];
-            console.log(`  🔑 Extracted order token: ${orderToken.substring(0, 20)}...`);
+            console.log(`  🔑 Extracted order token from plain text: ${orderToken.substring(0, 20)}...`);
         } else {
-            console.log('  ⚠️  No order token found in email');
+            // If not found in plain text, try HTML part
+            console.log('  ⚠️  No order token found in plain text, trying HTML part...');
+            const emailHtml = extractEmailHtmlBody(rawEmail);
+            if (emailHtml) {
+                tokenMatch = emailHtml.match(/\/shop\/order\/guest\/W\d+\/([a-f0-9]+)\?/i);
+                if (tokenMatch) {
+                    orderToken = tokenMatch[1];
+                    console.log(`  🔑 Extracted order token from HTML: ${orderToken.substring(0, 20)}...`);
+                } else {
+                    console.log('  ⚠️  No order token found in HTML either');
+                }
+            } else {
+                console.log('  ⚠️  No HTML part available');
+            }
         }
+
 
         // Process each product in the order
         for (let i = 0; i < orders.length; i++) {
