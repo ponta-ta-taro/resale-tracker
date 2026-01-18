@@ -68,6 +68,7 @@ export default function InventoryDetailPage() {
                     purchase_source: json.data.purchase_source || null,
                     sold_to: json.data.sold_to || null,
                     notes: json.data.notes || null,
+                    order_token: json.data.order_token || null,
                     // Foreign keys (IDs only, not objects)
                     apple_account_id: json.data.apple_account_id || null,
                     contact_email_id: json.data.contact_email_id || null,
@@ -202,6 +203,24 @@ export default function InventoryDetailPage() {
                         </div>
 
                         <StatusProgressBar currentStatus={formData.status || 'ordered'} />
+
+                        {/* Apple Order Status Button */}
+                        {inventory.order_number && inventory.order_token && (
+                            <div className="mt-4">
+                                <a
+                                    href={`https://secure9.store.apple.com/jp/shop/order/guest/${inventory.order_number}/${inventory.order_token}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                                >
+                                    <span className="text-lg">🍎</span>
+                                    <span>Appleで確認</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
+                        )}
                     </div>
 
                     {/* 基本情報 */}

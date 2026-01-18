@@ -141,6 +141,7 @@ export interface InventoryV2 {
     delivered_at: string | null;
     carrier: string | null;
     tracking_number: string | null;
+    order_token: string | null;
     purchase_source: string | null;
     apple_account_id: string | null;
     contact_email_id: string | null;
