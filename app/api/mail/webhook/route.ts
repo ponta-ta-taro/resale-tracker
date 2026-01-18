@@ -1177,6 +1177,7 @@ async function processAmazonOrderEmail(
         console.log(`  📝 Processing item: ${inventoryCode}`);
         console.log(`     Model: ${order.modelName} ${order.storage} ${order.color}`);
         console.log(`     Price: ¥${order.price.toLocaleString()}`);
+        console.log(`     Order Date: ${order.orderDate}`);
 
         // Check if inventory already exists (by order_number + item_index)
         const { data: existing } = await supabaseAdmin
@@ -1197,6 +1198,7 @@ async function processAmazonOrderEmail(
             status: 'ordered',
             purchase_price: order.price,
             expected_price: order.price,
+            order_date: order.orderDate,
             expected_delivery_start: order.deliveryStart,
             expected_delivery_end: order.deliveryEnd,
             original_delivery_start: order.deliveryStart,
@@ -1223,6 +1225,7 @@ async function processAmazonOrderEmail(
                     storage: inventoryData.storage,
                     color: inventoryData.color,
                     purchase_price: inventoryData.purchase_price,
+                    order_date: inventoryData.order_date,
                     purchase_source: inventoryData.purchase_source,
                     contact_email_id: inventoryData.contact_email_id,
                 };

@@ -4,8 +4,9 @@ export interface ParsedAmazonOrder {
     storage: string;
     color: string;
     price: number;
-    deliveryStart: string; // ISO datetime with time
-    deliveryEnd: string;   // ISO datetime with time
+    orderDate: string;        // ISO date (YYYY-MM-DD)
+    deliveryStart: string;    // ISO datetime with time
+    deliveryEnd: string;      // ISO datetime with time
 }
 
 export interface ParsedAmazonShipping {
@@ -145,8 +146,14 @@ export function parseAmazonOrderEmail(emailText: string): ParsedAmazonOrder | nu
             const prices = priceMatches.map(m => parseInt(m[1].replace(/,/g, '')));
             price = Math.max(...prices);
             console.log('💰 Price (formatted):', price);
+            console.log('💰 All price matches:', prices);
         }
     }
+
+    // Extract order date (use current date as Amazon emails are sent immediately)
+    const now = new Date();
+    const orderDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    console.log('📅 Order date:', orderDate);
 
     // Extract delivery date and time
     // Pattern: "明日5:00 午前～11:59 午前に到着予定" or "本日..."
@@ -158,7 +165,6 @@ export function parseAmazonOrderEmail(emailText: string): ParsedAmazonOrder | nu
     const deliveryMatch = emailText.match(deliveryPattern);
 
     if (deliveryMatch) {
-        const now = new Date();
         let year = now.getFullYear();
         let month = now.getMonth() + 1;
         let day = now.getDate();
@@ -221,6 +227,7 @@ export function parseAmazonOrderEmail(emailText: string): ParsedAmazonOrder | nu
         storage,
         color,
         price,
+        orderDate,
         deliveryStart,
         deliveryEnd,
     };
