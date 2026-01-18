@@ -138,7 +138,46 @@ export async function PUT(
             .update(updateData)
             .eq('id', id)
             .eq('user_id', user.id)
-            .select()
+            .select(`
+                id,
+                user_id,
+                inventory_code,
+                order_number,
+                item_index,
+                status,
+                model_name,
+                storage,
+                color,
+                serial_number,
+                imei,
+                purchase_price,
+                expected_price,
+                actual_price,
+                order_date,
+                expected_delivery_start,
+                expected_delivery_end,
+                original_delivery_start,
+                original_delivery_end,
+                delivered_at,
+                shipped_to_buyer_at,
+                sold_at,
+                paid_at,
+                receipt_received_at,
+                carrier,
+                tracking_number,
+                buyer_carrier,
+                buyer_tracking_number,
+                purchase_source,
+                sold_to,
+                notes,
+                apple_account_id,
+                contact_email_id,
+                contact_phone_id,
+                payment_method_id,
+                shipment_id,
+                created_at,
+                updated_at
+            `)
             .single();
 
         if (error) {
