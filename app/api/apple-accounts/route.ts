@@ -25,10 +25,16 @@ export async function GET() {
     }
 }
 
-// POST: 新しいApple IDを作成
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
+
+        // 認証ユーザーを取得
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+        }
+
         const body = await request.json();
 
         // バリデーション - 名前のみ必須、メールアドレスは任意
@@ -45,6 +51,7 @@ export async function POST(request: NextRequest) {
                 name: body.name,
                 email: body.email || null,
                 notes: body.notes || null,
+                user_id: user.id,
             })
             .select()
             .single();
