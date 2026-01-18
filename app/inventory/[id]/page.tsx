@@ -22,10 +22,33 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
             const json = await res.json();
 
             if (json.data) {
-                // Sanitize data to ensure all fields are properly typed
+                console.log('Raw inventory data:', json.data);
+                console.log('Data types:', Object.keys(json.data).map(key => ({
+                    key,
+                    type: typeof json.data[key],
+                    value: json.data[key]
+                })));
+
+                // Sanitize data - only include primitive fields, exclude any objects/arrays
                 const sanitizedData = {
-                    ...json.data,
-                    // Ensure all date fields are strings (YYYY-MM-DD format)
+                    // IDs and basic info
+                    id: json.data.id,
+                    user_id: json.data.user_id,
+                    inventory_code: json.data.inventory_code || null,
+                    order_number: json.data.order_number || null,
+                    item_index: json.data.item_index || 1,
+                    status: json.data.status || 'ordered',
+                    // Product info
+                    model_name: json.data.model_name || '',
+                    storage: json.data.storage || '',
+                    color: json.data.color || null,
+                    serial_number: json.data.serial_number || null,
+                    imei: json.data.imei || null,
+                    // Prices
+                    purchase_price: json.data.purchase_price || null,
+                    expected_price: json.data.expected_price || null,
+                    actual_price: json.data.actual_price || null,
+                    // Dates
                     order_date: json.data.order_date || null,
                     expected_delivery_start: json.data.expected_delivery_start || null,
                     expected_delivery_end: json.data.expected_delivery_end || null,
@@ -36,28 +59,27 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                     sold_at: json.data.sold_at || null,
                     paid_at: json.data.paid_at || null,
                     receipt_received_at: json.data.receipt_received_at || null,
-                    // Ensure string fields are strings
-                    inventory_code: json.data.inventory_code || null,
-                    order_number: json.data.order_number || null,
-                    model_name: json.data.model_name || '',
-                    storage: json.data.storage || '',
-                    color: json.data.color || null,
-                    serial_number: json.data.serial_number || null,
-                    imei: json.data.imei || null,
+                    // Shipping
                     carrier: json.data.carrier || null,
                     tracking_number: json.data.tracking_number || null,
-                    purchase_source: json.data.purchase_source || null,
-                    sold_to: json.data.sold_to || null,
                     buyer_carrier: json.data.buyer_carrier || null,
                     buyer_tracking_number: json.data.buyer_tracking_number || null,
+                    // Other
+                    purchase_source: json.data.purchase_source || null,
+                    sold_to: json.data.sold_to || null,
                     notes: json.data.notes || null,
-                    // Ensure numeric fields are numbers or null
-                    item_index: json.data.item_index || 1,
-                    purchase_price: json.data.purchase_price || null,
-                    expected_price: json.data.expected_price || null,
-                    actual_price: json.data.actual_price || null,
+                    // Foreign keys (IDs only, not objects)
+                    apple_account_id: json.data.apple_account_id || null,
+                    contact_email_id: json.data.contact_email_id || null,
+                    contact_phone_id: json.data.contact_phone_id || null,
+                    payment_method_id: json.data.payment_method_id || null,
+                    shipment_id: json.data.shipment_id || null,
+                    // Timestamps
+                    created_at: json.data.created_at,
+                    updated_at: json.data.updated_at,
                 };
 
+                console.log('Sanitized data:', sanitizedData);
                 setInventory(sanitizedData);
                 setFormData(sanitizedData);
             }
