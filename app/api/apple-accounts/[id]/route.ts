@@ -34,6 +34,13 @@ export async function PUT(
 ) {
     try {
         const supabase = await createClient();
+
+        // 認証ユーザーを取得
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+        }
+
         const body = await request.json();
 
         // バリデーション
@@ -75,6 +82,12 @@ export async function DELETE(
 ) {
     try {
         const supabase = await createClient();
+
+        // 認証ユーザーを取得
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+        }
 
         const { error } = await supabase
             .from('apple_accounts')
