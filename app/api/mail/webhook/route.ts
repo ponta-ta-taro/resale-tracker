@@ -728,6 +728,17 @@ async function processOrderConfirmationEmail(
             };
 
             if (existing) {
+                // Debug: Output comparison values
+                console.log('  🔍 Comparing existing vs new:');
+                console.log('    model_name:', existing.model_name, 'vs', inventoryData.model_name);
+                console.log('    storage:', existing.storage, 'vs', inventoryData.storage);
+                console.log('    color:', existing.color, 'vs', inventoryData.color);
+                console.log('    purchase_price:', existing.purchase_price, '(type:', typeof existing.purchase_price, ') vs', inventoryData.purchase_price, '(type:', typeof inventoryData.purchase_price, ')');
+                console.log('    order_date:', existing.order_date, 'vs', inventoryData.order_date);
+                console.log('    original_delivery_start:', existing.original_delivery_start, 'vs', inventoryData.original_delivery_start);
+                console.log('    original_delivery_end:', existing.original_delivery_end, 'vs', inventoryData.original_delivery_end);
+                console.log('    order_token:', existing.order_token, 'vs', inventoryData.order_token);
+
                 // Check if data has changed (compare with original_delivery, not expected_delivery)
                 const dataChanged =
                     existing.model_name !== inventoryData.model_name ||
@@ -738,6 +749,8 @@ async function processOrderConfirmationEmail(
                     existing.original_delivery_start !== inventoryData.original_delivery_start ||
                     existing.original_delivery_end !== inventoryData.original_delivery_end ||
                     existing.order_token !== inventoryData.order_token;
+
+                console.log('    dataChanged:', dataChanged);
 
                 if (dataChanged) {
                     // Update existing record
