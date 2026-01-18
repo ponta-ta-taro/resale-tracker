@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import StatusProgressBar from '@/components/StatusProgressBar';
-import type { InventoryV2, InventoryV2Input, InventoryV2Status } from '@/types';
-import { INVENTORY_STATUSES, STATUS_V2_LABELS } from '@/types';
+import type { InventoryV2, InventoryV2Input, InventoryV2Status, BuyerCarrierCode } from '@/types';
+import { INVENTORY_STATUSES, STATUS_V2_LABELS, BUYER_CARRIERS, getTrackingUrl } from '@/types';
 
 export default function InventoryDetailPage() {
     const params = useParams();
@@ -146,6 +146,55 @@ export default function InventoryDetailPage() {
 
     const updateField = (field: keyof InventoryV2Input, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    // Date-to-status mapping for auto-update feature
+    const DATE_STATUS_MAP: Record<string, InventoryV2Status> = {
+        order_date: 'ordered',
+        delivered_at: 'delivered',
+        shipped_to_buyer_at: 'sent_to_buyer',
+        sold_at: 'buyer_completed',
+        paid_at: 'paid',
+        receipt_received_at: 'receipt_received'
+    };
+
+    // Handle date field blur with status auto-update
+    const handleDateBlur = (field: keyof InventoryV2Input, value: string) => {
+        // Check if this date field has a corresponding status
+        const targetStatus = DATE_STATUS_MAP[field];
+        if (!targetStatus) return;
+
+        // Only suggest if date was newly filled (previous value was empty)
+        const previousValue = inventory?.[field as keyof InventoryV2];
+        if (previousValue || !value) return;
+
+        // Check if current status is before target status
+        const currentStatusIndex = INVENTORY_STATUSES.indexOf(formData.status || 'ordered');
+        const targetStatusIndex = INVENTORY_STATUSES.indexOf(targetStatus);
+
+        if (currentStatusIndex < targetStatusIndex) {
+            const statusLabel = STATUS_V2_LABELS[targetStatus];
+            const confirmed = window.confirm(
+                `${getDateFieldLabel(field)}が入力されました。ステータスを「${statusLabel}」に変更しますか？`
+            );
+
+            if (confirmed) {
+                updateField('status', targetStatus);
+            }
+        }
+    };
+
+    // Get user-friendly label for date fields
+    const getDateFieldLabel = (field: string): string => {
+        const labels: Record<string, string> = {
+            order_date: '注文日',
+            delivered_at: '納品日',
+            shipped_to_buyer_at: '買取発送日',
+            sold_at: '売却日',
+            paid_at: '入金日',
+            receipt_received_at: '領収書受領日'
+        };
+        return labels[field] || field;
     };
 
     if (loading) {
@@ -308,6 +357,7 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.order_date || ''}
                                     onChange={(e) => updateField('order_date', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('order_date', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -318,6 +368,7 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.delivered_at || ''}
                                     onChange={(e) => updateField('delivered_at', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('delivered_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -453,18 +504,23 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.shipped_to_buyer_at || ''}
                                     onChange={(e) => updateField('shipped_to_buyer_at', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('shipped_to_buyer_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">買取配送業者</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={formData.buyer_carrier || ''}
                                     onChange={(e) => updateField('buyer_carrier', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
+                                >
+                                    <option value="">未選択</option>
+                                    <option value="japan_post">日本郵便</option>
+                                    <option value="yamato">ヤマト運輸</option>
+                                    <option value="sagawa">佐川急便</option>
+                                </select>
                             </div>
 
                             <div>
@@ -475,6 +531,21 @@ export default function InventoryDetailPage() {
                                     onChange={(e) => updateField('buyer_tracking_number', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
+                                {/* Tracking link */}
+                                {formData.buyer_carrier && formData.buyer_tracking_number && (
+                                    <a
+                                        href={getTrackingUrl(formData.buyer_carrier, formData.buyer_tracking_number) || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-800"
+                                    >
+                                        <span>📦</span>
+                                        <span>追跡ページを開く</span>
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                )}
                             </div>
 
                             <div>
@@ -483,6 +554,7 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.sold_at || ''}
                                     onChange={(e) => updateField('sold_at', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('sold_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -493,6 +565,7 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.paid_at || ''}
                                     onChange={(e) => updateField('paid_at', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('paid_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -503,6 +576,7 @@ export default function InventoryDetailPage() {
                                     type="date"
                                     value={formData.receipt_received_at || ''}
                                     onChange={(e) => updateField('receipt_received_at', e.target.value)}
+                                    onBlur={(e) => handleDateBlur('receipt_received_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>

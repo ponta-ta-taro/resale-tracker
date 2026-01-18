@@ -393,6 +393,40 @@ export const CARRIER_OPTIONS = [
     '日本郵便',
 ] as const;
 
+// Buyer carrier types (for tracking shipments to buyback companies)
+export type BuyerCarrierCode = 'japan_post' | 'yamato' | 'sagawa';
+
+export interface CarrierConfig {
+    code: BuyerCarrierCode;
+    name: string;
+    trackingUrl: string;
+}
+
+export const BUYER_CARRIERS: Record<BuyerCarrierCode, CarrierConfig> = {
+    japan_post: {
+        code: 'japan_post',
+        name: '日本郵便',
+        trackingUrl: 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1='
+    },
+    yamato: {
+        code: 'yamato',
+        name: 'ヤマト運輸',
+        trackingUrl: 'https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01='
+    },
+    sagawa: {
+        code: 'sagawa',
+        name: '佐川急便',
+        trackingUrl: 'https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo='
+    }
+};
+
+export function getTrackingUrl(carrier: BuyerCarrierCode | string | null, trackingNumber: string | null): string | null {
+    if (!carrier || !trackingNumber) return null;
+    const carrierConfig = BUYER_CARRIERS[carrier as BuyerCarrierCode];
+    if (!carrierConfig) return null;
+    return carrierConfig.trackingUrl + encodeURIComponent(trackingNumber);
+}
+
 // Shipment types
 export interface Shipment {
     id: string;
