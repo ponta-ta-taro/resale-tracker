@@ -406,7 +406,7 @@ export const BUYER_CARRIERS: Record<BuyerCarrierCode, CarrierConfig> = {
     japan_post: {
         code: 'japan_post',
         name: '日本郵便',
-        trackingUrl: 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1='
+        trackingUrl: 'https://trackings.post.japanpost.jp/services/srv/search/input'
     },
     yamato: {
         code: 'yamato',
@@ -424,6 +424,13 @@ export function getTrackingUrl(carrier: BuyerCarrierCode | string | null, tracki
     if (!carrier || !trackingNumber) return null;
     const carrierConfig = BUYER_CARRIERS[carrier as BuyerCarrierCode];
     if (!carrierConfig) return null;
+
+    // Japan Post uses input form page without tracking number parameter
+    if (carrier === 'japan_post') {
+        return carrierConfig.trackingUrl;
+    }
+
+    // Other carriers append tracking number to URL
     return carrierConfig.trackingUrl + encodeURIComponent(trackingNumber);
 }
 
