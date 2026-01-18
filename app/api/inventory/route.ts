@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         // クエリパラメータ
         const searchParams = request.nextUrl.searchParams;
         const status = searchParams.get('status');
+        const shipment_id = searchParams.get('shipment_id');
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -71,6 +72,17 @@ export async function GET(request: NextRequest) {
         // ステータスフィルター
         if (status) {
             query = query.eq('status', status);
+        }
+
+        // shipment_idフィルター
+        if (shipment_id !== null) {
+            if (shipment_id === 'null') {
+                // shipment_id=null の場合、未割り当ての在庫を取得
+                query = query.is('shipment_id', null);
+            } else {
+                // 特定のshipment_idでフィルター
+                query = query.eq('shipment_id', shipment_id);
+            }
         }
 
         const { data, error, count } = await query;

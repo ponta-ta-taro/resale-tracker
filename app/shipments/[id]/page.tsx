@@ -55,8 +55,9 @@ export default function EditShipmentPage() {
         try {
             const response = await fetch('/api/inventory?shipment_id=null');
             if (response.ok) {
-                const data = await response.json();
-                setAvailableInventory(data);
+                const json = await response.json();
+                // API returns { data, count }, extract the data array
+                setAvailableInventory(json.data || []);
             }
         } catch (error) {
             console.error('Error fetching inventory:', error);
