@@ -54,16 +54,29 @@
   - クレジットカード登録（POST）: user_id追加でRLS違反解消
   - 締め日・支払日に「末日」選択肢追加（値: 31）
 - [x] **Next.js 14 Dynamic Server Usage修正**: 全19 APIルートに`export const dynamic = 'force-dynamic'`追加
+- [x] **設定画面バグ修正完了**:
+  - 連絡先メールアドレス重複登録防止（POST/PUT両方、maybeSingle使用）
+  - 電話番号登録修正（DBカラム: phone→phone_number, notes→label, is_active追加）
+  - エラーメッセージ改善（APIからの具体的なメッセージを表示）
+  - 全マスタの重複チェック追加（電話番号、Apple ID、支払い方法）
+  - 締め日・支払日「末日」→「31日」表示に変更
 
 ---
 
 ## 次にやること
 
-1. **設定画面の残りバグ修正**（2件）
-   - 連絡先メールアドレス重複登録可能
-   - 電話番号登録できない
-2. **出荷通知メールのテスト**（Gmailに届き次第）
-3. **請求書PDF対応**（シリアル番号登録）
+1. **過去メールの転送・登録**（運用作業）
+   - Gmailから過去のApple注文確認メールをimport@rt-mail.ukに転送
+   - 在庫データを一括登録
+2. **買取販売情報の記入・テスト**
+   - 買取伝票番号（buyer_tracking_number）
+   - 配送業者（buyer_carrier）
+   - 発送日、売却日、入金日 など
+3. **買取伝票の追跡リンク機能**
+   - buyer_carrier + buyer_tracking_number から追跡URLを生成
+   - ヤマト / 佐川 / 日本郵便 対応
+4. **出荷通知メールのテスト**（Gmailに届き次第）
+5. **請求書PDF対応**（シリアル番号登録）
 
 ---
 
