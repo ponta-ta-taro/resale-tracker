@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { detectEmailType, parseAppleOrderEmail, parseAppleShippingEmail, formatDateForInput } from '@/lib/appleMailParser';
+import { fetchOrderTokenViaRedirect } from '@/lib/appleOrderToken';
 
 interface WebhookPayload {
     from: string;
@@ -588,6 +589,30 @@ async function processOrderConfirmationEmail(
                 }
             } else {
                 console.log('  ⚠️  No HTML part available');
+            }
+        }
+
+        // If token still not found, try fetching via redirect
+        if (!orderToken) {
+            console.log('  🔄 Attempting to fetch order token via redirect...');
+
+            // Get the contact email address from contact_emails table
+            const { data: contactEmailData } = await supabaseAdmin
+                .from('contact_emails')
+                .select('email')
+                .eq('id', contactEmailId)
+                .single();
+
+            if (contactEmailData?.email) {
+                const fetchedToken = await fetchOrderTokenViaRedirect(orderNumber, contactEmailData.email);
+                if (fetchedToken) {
+                    orderToken = fetchedToken;
+                    console.log(`  ✅ Got order token from redirect: ${orderToken.substring(0, 20)}...`);
+                } else {
+                    console.log('  ⚠️  Failed to get order token from redirect');
+                }
+            } else {
+                console.log('  ⚠️  Could not retrieve contact email for redirect fetch');
             }
         }
 
