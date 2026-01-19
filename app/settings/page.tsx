@@ -11,6 +11,26 @@ import {
     ContactPhone
 } from '@/types';
 import Link from 'next/link';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { SortableRow } from '@/components/SortableRow';
+
+
 
 export default function SettingsPage() {
     // Apple Accounts state
@@ -73,6 +93,88 @@ export default function SettingsPage() {
             setLoading(false);
         }
     };
+
+    // Drag and drop sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // Reorder handlers
+    const handleReorderApple = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = appleAccounts.findIndex(item => item.id === active.id);
+        const newIndex = appleAccounts.findIndex(item => item.id === over.id);
+        const newItems = arrayMove(appleAccounts, oldIndex, newIndex);
+
+        setAppleAccounts(newItems);
+
+        const ids = newItems.map(item => item.id);
+        await fetch('/api/apple-accounts/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+        });
+    };
+
+    const handleReorderPayment = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = paymentMethods.findIndex(item => item.id === active.id);
+        const newIndex = paymentMethods.findIndex(item => item.id === over.id);
+        const newItems = arrayMove(paymentMethods, oldIndex, newIndex);
+
+        setPaymentMethods(newItems);
+
+        const ids = newItems.map(item => item.id);
+        await fetch('/api/payment-methods/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+        });
+    };
+
+    const handleReorderEmail = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = contactEmails.findIndex(item => item.id === active.id);
+        const newIndex = contactEmails.findIndex(item => item.id === over.id);
+        const newItems = arrayMove(contactEmails, oldIndex, newIndex);
+
+        setContactEmails(newItems);
+
+        const ids = newItems.map(item => item.id);
+        await fetch('/api/contact-emails/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+        });
+    };
+
+    const handleReorderPhone = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = contactPhones.findIndex(item => item.id === active.id);
+        const newIndex = contactPhones.findIndex(item => item.id === over.id);
+        const newItems = arrayMove(contactPhones, oldIndex, newIndex);
+
+        setContactPhones(newItems);
+
+        const ids = newItems.map(item => item.id);
+        await fetch('/api/contact-phones/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+        });
+    };
+
 
     // Apple Account handlers
     const resetAppleForm = () => {
@@ -408,49 +510,54 @@ export default function SettingsPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
+                                        <th className="px-6 py-3 w-12"></th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">名前</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メールアドレス</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メモ</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {appleAccounts.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                                Apple IDが登録されていません
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        appleAccounts.map((account) => (
-                                            <tr key={account.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{account.name}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                                    {account.email || '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {account.notes || '-'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <button
-                                                        onClick={() => handleEditApple(account)}
-                                                        className="text-blue-600 hover:text-blue-900 mr-4"
-                                                    >
-                                                        編集
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteApple(account.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        削除
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorderApple}>
+                                    <SortableContext items={appleAccounts.map(a => a.id)} strategy={verticalListSortingStrategy}>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {appleAccounts.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                                        Apple IDが登録されていません
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                appleAccounts.map((account) => (
+                                                    <SortableRow key={account.id} id={account.id}>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="font-medium text-gray-900">{account.name}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                            {account.email || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                                            {account.notes || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                            <button
+                                                                onClick={() => handleEditApple(account)}
+                                                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                                            >
+                                                                編集
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteApple(account.id)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                削除
+                                                            </button>
+                                                        </td>
+                                                    </SortableRow>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </SortableContext>
+                                </DndContext>
                             </table>
                         </div>
                     </div>
@@ -598,6 +705,7 @@ export default function SettingsPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
+                                        <th className="px-6 py-3 w-12"></th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">名前</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">種別</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">スケジュール</th>
@@ -605,54 +713,58 @@ export default function SettingsPage() {
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {paymentMethods.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                                支払い方法が登録されていません
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paymentMethods.map((method) => (
-                                            <tr key={method.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{method.name}</div>
-                                                    {method.notes && (
-                                                        <div className="text-sm text-gray-500">{method.notes}</div>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${method.type === 'credit' ? 'bg-blue-100 text-blue-800' :
-                                                        method.type === 'debit' ? 'bg-green-100 text-green-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {PAYMENT_METHOD_TYPES[method.type]}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                                    {formatPaymentSchedule(method)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
-                                                    {method.credit_limit ? `¥${method.credit_limit.toLocaleString()}` : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <button
-                                                        onClick={() => handleEditPayment(method)}
-                                                        className="text-blue-600 hover:text-blue-900 mr-4"
-                                                    >
-                                                        編集
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeletePayment(method.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        削除
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorderPayment}>
+                                    <SortableContext items={paymentMethods.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {paymentMethods.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                                                        支払い方法が登録されていません
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                paymentMethods.map((method) => (
+                                                    <SortableRow key={method.id} id={method.id}>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="font-medium text-gray-900">{method.name}</div>
+                                                            {method.notes && (
+                                                                <div className="text-sm text-gray-500">{method.notes}</div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${method.type === 'credit' ? 'bg-blue-100 text-blue-800' :
+                                                                method.type === 'debit' ? 'bg-green-100 text-green-800' :
+                                                                    'bg-gray-100 text-gray-800'
+                                                                }`}>
+                                                                {PAYMENT_METHOD_TYPES[method.type]}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                            {formatPaymentSchedule(method)}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                                                            {method.credit_limit ? `¥${method.credit_limit.toLocaleString()}` : '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                            <button
+                                                                onClick={() => handleEditPayment(method)}
+                                                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                                            >
+                                                                編集
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeletePayment(method.id)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                削除
+                                                            </button>
+                                                        </td>
+                                                    </SortableRow>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </SortableContext>
+                                </DndContext>
                             </table>
                         </div>
                     </div>
@@ -723,45 +835,50 @@ export default function SettingsPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
+                                        <th className="px-6 py-3 w-12"></th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">メールアドレス</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ラベル</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {contactEmails.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                                                メールアドレスが登録されていません
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        contactEmails.map((email) => (
-                                            <tr key={email.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{email.email}</div>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {email.label || '-'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <button
-                                                        onClick={() => handleEditEmail(email)}
-                                                        className="text-blue-600 hover:text-blue-900 mr-4"
-                                                    >
-                                                        編集
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteEmail(email.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        削除
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorderEmail}>
+                                    <SortableContext items={contactEmails.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {contactEmails.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                        メールアドレスが登録されていません
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                contactEmails.map((email) => (
+                                                    <SortableRow key={email.id} id={email.id}>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="font-medium text-gray-900">{email.email}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                                            {email.label || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                            <button
+                                                                onClick={() => handleEditEmail(email)}
+                                                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                                            >
+                                                                編集
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteEmail(email.id)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                削除
+                                                            </button>
+                                                        </td>
+                                                    </SortableRow>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </SortableContext>
+                                </DndContext>
                             </table>
                         </div>
                     </div>
@@ -832,45 +949,50 @@ export default function SettingsPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
+                                        <th className="px-6 py-3 w-12"></th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">電話番号</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ラベル</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {contactPhones.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                                                電話番号が登録されていません
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        contactPhones.map((phone) => (
-                                            <tr key={phone.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{phone.phone_number}</div>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {phone.label || '-'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <button
-                                                        onClick={() => handleEditPhone(phone)}
-                                                        className="text-blue-600 hover:text-blue-900 mr-4"
-                                                    >
-                                                        編集
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeletePhone(phone.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        削除
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorderPhone}>
+                                    <SortableContext items={contactPhones.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {contactPhones.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                        電話番号が登録されていません
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                contactPhones.map((phone) => (
+                                                    <SortableRow key={phone.id} id={phone.id}>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="font-medium text-gray-900">{phone.phone_number}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                                            {phone.label || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                            <button
+                                                                onClick={() => handleEditPhone(phone)}
+                                                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                                            >
+                                                                編集
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeletePhone(phone.id)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                削除
+                                                            </button>
+                                                        </td>
+                                                    </SortableRow>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </SortableContext>
+                                </DndContext>
                             </table>
                         </div>
                     </div>
