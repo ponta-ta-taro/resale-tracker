@@ -16,6 +16,12 @@ export default function InventoryDetailPage() {
     const [inventory, setInventory] = useState<InventoryV2 | null>(null);
     const [formData, setFormData] = useState<Partial<InventoryV2Input>>({});
 
+    // Master data states
+    const [paymentMethods, setPaymentMethods] = useState<Array<{ id: string; name: string }>>([]);
+    const [contactEmails, setContactEmails] = useState<Array<{ id: string; email: string }>>([]);
+    const [contactPhones, setContactPhones] = useState<Array<{ id: string; phone_number: string }>>([]);
+    const [appleAccounts, setAppleAccounts] = useState<Array<{ id: string; name: string }>>([]);
+
     const fetchInventory = useCallback(async () => {
         try {
             const res = await fetch(`/api/inventory/${id}`);
@@ -94,7 +100,38 @@ export default function InventoryDetailPage() {
 
     useEffect(() => {
         fetchInventory();
+        fetchMasterData();
     }, [fetchInventory]);
+
+    const fetchMasterData = async () => {
+        try {
+            const [pmRes, ceRes, cpRes, aaRes] = await Promise.all([
+                fetch('/api/settings/payment-methods'),
+                fetch('/api/settings/contact-emails'),
+                fetch('/api/settings/contact-phones'),
+                fetch('/api/settings/apple-ids'),
+            ]);
+
+            if (pmRes.ok) {
+                const pmData = await pmRes.json();
+                setPaymentMethods(pmData.data || []);
+            }
+            if (ceRes.ok) {
+                const ceData = await ceRes.json();
+                setContactEmails(ceData.data || []);
+            }
+            if (cpRes.ok) {
+                const cpData = await cpRes.json();
+                setContactPhones(cpData.data || []);
+            }
+            if (aaRes.ok) {
+                const aaData = await aaRes.json();
+                setAppleAccounts(aaData.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching master data:', error);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -343,6 +380,62 @@ export default function InventoryDetailPage() {
                                     <option value="Amazon">Amazon</option>
                                 </select>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">支払い方法</label>
+                                <select
+                                    value={formData.payment_method_id || ''}
+                                    onChange={(e) => updateField('payment_method_id', e.target.value || null)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="">未選択</option>
+                                    {paymentMethods.map((pm) => (
+                                        <option key={pm.id} value={pm.id}>{pm.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">連絡先メール</label>
+                                <select
+                                    value={formData.contact_email_id || ''}
+                                    onChange={(e) => updateField('contact_email_id', e.target.value || null)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="">未選択</option>
+                                    {contactEmails.map((ce) => (
+                                        <option key={ce.id} value={ce.id}>{ce.email}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">連絡先電話番号</label>
+                                <select
+                                    value={formData.contact_phone_id || ''}
+                                    onChange={(e) => updateField('contact_phone_id', e.target.value || null)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="">未選択</option>
+                                    {contactPhones.map((cp) => (
+                                        <option key={cp.id} value={cp.id}>{cp.phone_number}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Apple ID</label>
+                                <select
+                                    value={formData.apple_account_id || ''}
+                                    onChange={(e) => updateField('apple_account_id', e.target.value || null)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="">未選択</option>
+                                    {appleAccounts.map((aa) => (
+                                        <option key={aa.id} value={aa.id}>{aa.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -415,9 +508,9 @@ export default function InventoryDetailPage() {
                         </div>
                     </div>
 
-                    {/* Apple配送情報 */}
+                    {/* Appleからの配送情報 */}
                     <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">📦 Apple配送情報</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">📦 Appleからの配送情報</h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>

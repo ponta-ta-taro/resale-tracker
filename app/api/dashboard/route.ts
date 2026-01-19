@@ -95,10 +95,14 @@ export async function GET() {
         // Calculate inventory status
         const statusBreakdown = {
             ordered: { count: 0, amount: 0 },
+            processing: { count: 0, amount: 0 },
+            preparing_shipment: { count: 0, amount: 0 },
             shipped: { count: 0, amount: 0 },
-            arrived: { count: 0, amount: 0 },
-            selling: { count: 0, amount: 0 },
-            sold: { count: 0, amount: 0 },
+            delivered: { count: 0, amount: 0 },
+            sent_to_buyer: { count: 0, amount: 0 },
+            buyer_completed: { count: 0, amount: 0 },
+            paid: { count: 0, amount: 0 },
+            receipt_received: { count: 0, amount: 0 },
         };
 
         inventory?.forEach(item => {

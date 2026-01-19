@@ -18,10 +18,14 @@ interface DashboardMetrics {
     };
     inventory: {
         ordered: { count: number; amount: number };
+        processing: { count: number; amount: number };
+        preparing_shipment: { count: number; amount: number };
         shipped: { count: number; amount: number };
-        arrived: { count: number; amount: number };
-        selling: { count: number; amount: number };
-        sold: { count: number; amount: number };
+        delivered: { count: number; amount: number };
+        sent_to_buyer: { count: number; amount: number };
+        buyer_completed: { count: number; amount: number };
+        paid: { count: number; amount: number };
+        receipt_received: { count: number; amount: number };
     };
     financial: {
         unrecoveredInvestment: number;
@@ -164,9 +168,13 @@ export default function Dashboard() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">発注中</h3>
-                                <p className="text-2xl font-bold text-blue-600">{metrics.inventory.ordered.count}台</p>
-                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.ordered.amount)}</p>
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">注文中</h3>
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {(metrics.inventory.ordered.count + metrics.inventory.processing.count + metrics.inventory.preparing_shipment.count)}台
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {formatCurrency(metrics.inventory.ordered.amount + metrics.inventory.processing.amount + metrics.inventory.preparing_shipment.amount)}
+                                </p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">出荷済み</h3>
@@ -174,19 +182,23 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.shipped.amount)}</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">納品済み</h3>
-                                <p className="text-2xl font-bold text-purple-600">{metrics.inventory.arrived.count}台</p>
-                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.arrived.amount)}</p>
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">配送済み</h3>
+                                <p className="text-2xl font-bold text-purple-600">{metrics.inventory.delivered.count}台</p>
+                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.delivered.amount)}</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">販売中</h3>
-                                <p className="text-2xl font-bold text-yellow-600">{metrics.inventory.selling.count}台</p>
-                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.selling.amount)}</p>
+                                <p className="text-2xl font-bold text-yellow-600">
+                                    {(metrics.inventory.sent_to_buyer.count + metrics.inventory.buyer_completed.count)}台
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {formatCurrency(metrics.inventory.sent_to_buyer.amount + metrics.inventory.buyer_completed.amount)}
+                                </p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">入金待ち</h3>
-                                <p className="text-2xl font-bold text-green-600">{metrics.inventory.sold.count}台</p>
-                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.sold.amount)}</p>
+                                <p className="text-2xl font-bold text-green-600">{metrics.inventory.receipt_received.count}台</p>
+                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.receipt_received.amount)}</p>
                             </div>
                         </div>
                     </div>
