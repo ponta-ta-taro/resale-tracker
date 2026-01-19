@@ -86,7 +86,7 @@ export async function GET() {
             .from('payment_methods')
             .select('*')
             .eq('is_active', true)
-            .order('created_at', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (pmError) {
             console.error('Error fetching payment methods:', pmError);

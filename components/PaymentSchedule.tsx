@@ -75,7 +75,7 @@ export default function PaymentSchedule() {
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-gray-900">支払いスケジュール</h2>
                     <Link
-                        href="/payment-methods"
+                        href="/settings"
                         className="text-sm text-blue-600 hover:underline"
                     >
                         支払い方法を管理
@@ -83,7 +83,7 @@ export default function PaymentSchedule() {
                 </div>
                 <div className="text-center text-gray-500 py-4">
                     <p>クレジットカードが登録されていません</p>
-                    <Link href="/payment-methods" className="text-blue-600 hover:underline mt-2 inline-block">
+                    <Link href="/settings" className="text-blue-600 hover:underline mt-2 inline-block">
                         支払い方法を登録する
                     </Link>
                 </div>
@@ -96,7 +96,7 @@ export default function PaymentSchedule() {
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-900">支払いスケジュール</h2>
                 <Link
-                    href="/payment-methods"
+                    href="/settings"
                     className="text-sm text-blue-600 hover:underline"
                 >
                     支払い方法を管理
@@ -142,10 +142,9 @@ export default function PaymentSchedule() {
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div
-                                            className={`h-2 rounded-full ${
-                                                usageRate && usageRate > 80 ? 'bg-red-500' :
-                                                usageRate && usageRate > 50 ? 'bg-yellow-500' : 'bg-green-500'
-                                            }`}
+                                            className={`h-2 rounded-full ${usageRate && usageRate > 80 ? 'bg-red-500' :
+                                                    usageRate && usageRate > 50 ? 'bg-yellow-500' : 'bg-green-500'
+                                                }`}
                                             style={{ width: `${Math.min(usageRate || 0, 100)}%` }}
                                         />
                                     </div>
