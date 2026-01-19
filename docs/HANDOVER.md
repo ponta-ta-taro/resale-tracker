@@ -93,14 +93,29 @@
 - [x] **order_tokenカラム参照削除**: /api/inventory/[id] から削除
 - [x] **Amazonパーサー修正**: orderDate追加、purchase_price/order_dateが正しく保存されるように修正
 - [x] **買取販売フローテスト完了**: 配送済み → 買取発送済み → 買取手続完了 → 入金済み → 領収書受領の全ステータス遷移確認
+- [x] **ステータス自動連動**: 日付入力時に確認ダイアログでステータス変更を提案（6フィールド対応）
+- [x] **配送追跡リンク機能**: carrierカラム追加、日本郵便/ヤマト/佐川対応、詳細・編集画面にリンク表示
+- [x] **日本郵便URL修正**: 入力ページに変更（パラメータ非対応のため）
+- [x] **/shipments編集バグ修正**: availableInventoryが{data,count}形式だった問題を修正
+- [x] **発送管理→在庫の自動同期**: 紐づけ時に4フィールド同期（shipped_to_buyer_at, buyer_carrier, buyer_tracking_number, sold_to）
+- [x] **在庫編集画面グレーアウト**: 発送管理紐づき時は4フィールド編集不可＋「※ 発送管理と紐付いています」表示
+- [x] **配送業者コード統一**: shipments.carrierを日本語→コード形式に変更（japan_post/yamato/sagawa）
 
 ---
 
 ## 次にやること
 
-1. **未対応メール整理**（優先度低）
-   - 「ご注文ありがとうございます」- 注文確認と重複？要検討
-   - 「請求金額のお知らせ」- 請求書対応するか検討
+**運用フェーズ** - 実際に使いながら改善点を洗い出す
+
+### 優先度低（必要に応じて）
+- 未対応メール整理
+  - 「ご注文ありがとうございます」- 注文確認と重複？要検討
+  - 「請求金額のお知らせ」- 請求書対応するか検討
+
+### 将来の拡張候補
+- ダッシュボード強化（月別利益サマリー、在庫状況可視化）
+- 価格履歴との連携（モバイルミックスデータ活用）
+- 複数ユーザー対応
 
 ---
 
@@ -238,6 +253,29 @@
 | 日本郵便 | https://trackings.post.japanpost.jp/services/srv/search/ |
 | ヤマト運輸 | https://toi.kuronekoyamato.co.jp/cgi-bin/tneko |
 | 佐川急便 | https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do |
+
+### 発送管理と在庫の連携
+
+| shipments | inventory | 同期タイミング |
+|-----------|-----------|---------------|
+| shipped_at | shipped_to_buyer_at | 紐づけ/解除/変更時 |
+| carrier | buyer_carrier | 紐づけ/解除/変更時 |
+| tracking_number | buyer_tracking_number | 紐づけ/解除/変更時 |
+| shipped_to | sold_to | 紐づけ/解除/変更時 |
+
+- 発送管理に紐づいた在庫は、編集画面で上記4フィールドがグレーアウト
+- 「※ 発送管理と紐付いています」の注意書き表示
+
+### 配送業者コード
+
+| コード | 表示名 |
+|--------|--------|
+| japan_post | 日本郵便 |
+| yamato | ヤマト運輸 |
+| sagawa | 佐川急便 |
+
+- shipments.carrier と inventory.buyer_carrier で統一
+- getCarrierName() でコード→日本語変換
 
 ---
 
