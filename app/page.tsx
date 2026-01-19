@@ -166,7 +166,7 @@ export default function Dashboard() {
                                 在庫管理へ
                             </Link>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">注文中</h3>
                                 <p className="text-2xl font-bold text-blue-600">
@@ -187,18 +187,13 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.delivered.amount)}</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">販売中</h3>
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">買取手続き中</h3>
                                 <p className="text-2xl font-bold text-yellow-600">
                                     {(metrics.inventory.sent_to_buyer.count + metrics.inventory.buyer_completed.count)}台
                                 </p>
                                 <p className="text-sm text-gray-600 mt-1">
                                     {formatCurrency(metrics.inventory.sent_to_buyer.amount + metrics.inventory.buyer_completed.amount)}
                                 </p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">入金待ち</h3>
-                                <p className="text-2xl font-bold text-green-600">{metrics.inventory.receipt_received.count}台</p>
-                                <p className="text-sm text-gray-600 mt-1">{formatCurrency(metrics.inventory.receipt_received.amount)}</p>
                             </div>
                         </div>
                     </div>
