@@ -98,6 +98,8 @@ export async function GET(request: Request) {
             sum + ((item.actual_price || 0) - (item.purchase_price || 0)), 0
         );
         const cumulativeSalesCount = allPaid.length;
+        const cumulativePurchaseTotal = allPaid.reduce((sum, item) => sum + (item.purchase_price || 0), 0);
+        const cumulativeProfitRate = cumulativePurchaseTotal > 0 ? (cumulativeProfit / cumulativePurchaseTotal) * 100 : 0;
 
         // Get all shipments for cumulative shipping cost
         const { data: allShipments } = await supabase
@@ -248,6 +250,7 @@ export async function GET(request: Request) {
             cumulative: {
                 revenue: cumulativeRevenue,
                 profit: cumulativeProfit,
+                profitRate: cumulativeProfitRate,
                 shippingCost: cumulativeShippingCost,
                 netProfit: cumulativeNetProfit,
                 salesCount: cumulativeSalesCount,

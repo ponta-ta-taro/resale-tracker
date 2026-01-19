@@ -46,6 +46,7 @@ interface DashboardMetrics {
     cumulative: {
         revenue: number;
         profit: number;
+        profitRate: number;
         shippingCost: number;
         netProfit: number;
         salesCount: number;
@@ -307,7 +308,7 @@ export default function Dashboard() {
                     {/* Cumulative Metrics */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">累計実績</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">総売上</h3>
                                 <p className="text-2xl font-bold text-blue-600">{formatCurrency(metrics.cumulative.revenue)}</p>
@@ -317,6 +318,11 @@ export default function Dashboard() {
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">総粗利益</h3>
                                 <p className="text-2xl font-bold text-green-600">{formatCurrency(metrics.cumulative.profit)}</p>
                                 <p className="text-sm text-gray-600 mt-1">全期間の粗利益合計</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総利益率</h3>
+                                <p className="text-2xl font-bold text-teal-600">{metrics.cumulative.profitRate.toFixed(1)}%</p>
+                                <p className="text-sm text-gray-600 mt-1">総粗利益 ÷ 総仕入額</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">総送料</h3>
