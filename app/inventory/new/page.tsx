@@ -59,10 +59,10 @@ export default function NewInventoryPage() {
     const fetchMasterData = async () => {
         try {
             const [pmRes, ceRes, cpRes, aaRes] = await Promise.all([
-                fetch('/api/settings/payment-methods'),
-                fetch('/api/settings/contact-emails'),
-                fetch('/api/settings/contact-phones'),
-                fetch('/api/settings/apple-ids'),
+                fetch('/api/payment-methods'),
+                fetch('/api/contact-emails'),
+                fetch('/api/contact-phones'),
+                fetch('/api/apple-accounts'),
             ]);
 
             if (pmRes.ok) {
