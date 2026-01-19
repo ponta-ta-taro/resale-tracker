@@ -43,20 +43,41 @@ interface DashboardMetrics {
         creditPointsValue: number;
         total: number;
     };
+    cumulative: {
+        revenue: number;
+        profit: number;
+        shippingCost: number;
+        netProfit: number;
+        salesCount: number;
+    };
     monthlyTrend: Array<{ month: string; profit: number }>;
 }
 
 export default function Dashboard() {
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [loading, setLoading] = useState(true);
+    const [periodType, setPeriodType] = useState<'current' | 'previous' | 'custom'>('current');
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
+    const [showCustomPicker, setShowCustomPicker] = useState(false);
 
     useEffect(() => {
         fetchMetrics();
-    }, []);
+    }, [periodType]);
 
-    const fetchMetrics = async () => {
+    const fetchMetrics = async (startDate?: string, endDate?: string) => {
         try {
-            const response = await fetch('/api/dashboard');
+            let url = '/api/dashboard';
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            } else if (periodType === 'previous') {
+                const now = new Date();
+                const firstDayPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const lastDayPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                url += `?start_date=${firstDayPrevMonth.toISOString().split('T')[0]}&end_date=${lastDayPrevMonth.toISOString().split('T')[0]}`;
+            }
+
+            const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
                 setMetrics(data);
@@ -66,6 +87,30 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePeriodChange = (type: 'current' | 'previous' | 'custom') => {
+        setPeriodType(type);
+        if (type === 'custom') {
+            setShowCustomPicker(true);
+        } else {
+            setShowCustomPicker(false);
+        }
+    };
+
+    const applyCustomPeriod = () => {
+        if (customStartDate && customEndDate) {
+            fetchMetrics(customStartDate, customEndDate);
+        }
+    };
+
+    const getSectionTitle = () => {
+        if (periodType === 'current') return '今月の実績';
+        if (periodType === 'previous') return '先月の実績';
+        if (customStartDate && customEndDate) {
+            return `${customStartDate} 〜 ${customEndDate} の実績`;
+        }
+        return 'カスタム期間の実績';
     };
 
     const formatCurrency = (amount: number) => {
@@ -118,7 +163,68 @@ export default function Dashboard() {
 
                     {/* Monthly Performance */}
                     <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">今月の実績</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold text-gray-900">{getSectionTitle()}</h2>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handlePeriodChange('current')}
+                                    className={`px-4 py-2 text-sm rounded-md transition-colors ${periodType === 'current'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    当月
+                                </button>
+                                <button
+                                    onClick={() => handlePeriodChange('previous')}
+                                    className={`px-4 py-2 text-sm rounded-md transition-colors ${periodType === 'previous'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    前月
+                                </button>
+                                <button
+                                    onClick={() => handlePeriodChange('custom')}
+                                    className={`px-4 py-2 text-sm rounded-md transition-colors ${periodType === 'custom'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    カスタム
+                                </button>
+                            </div>
+                        </div>
+
+                        {showCustomPicker && (
+                            <div className="bg-white p-4 rounded-lg shadow mb-4 flex gap-3 items-center">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">開始日</label>
+                                    <input
+                                        type="date"
+                                        value={customStartDate}
+                                        onChange={(e) => setCustomStartDate(e.target.value)}
+                                        className="px-3 py-2 border border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">終了日</label>
+                                    <input
+                                        type="date"
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        className="px-3 py-2 border border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <button
+                                    onClick={applyCustomPeriod}
+                                    className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    適用
+                                </button>
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">今月の売上</h3>
@@ -194,6 +300,38 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 mt-1">
                                     {formatCurrency(metrics.inventory.sent_to_buyer.amount + metrics.inventory.buyer_completed.amount)}
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cumulative Metrics */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">累計実績</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総売上</h3>
+                                <p className="text-2xl font-bold text-blue-600">{formatCurrency(metrics.cumulative.revenue)}</p>
+                                <p className="text-sm text-gray-600 mt-1">全期間の売上合計</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総粗利益</h3>
+                                <p className="text-2xl font-bold text-green-600">{formatCurrency(metrics.cumulative.profit)}</p>
+                                <p className="text-sm text-gray-600 mt-1">全期間の粗利益合計</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総送料</h3>
+                                <p className="text-2xl font-bold text-orange-600">{formatCurrency(metrics.cumulative.shippingCost)}</p>
+                                <p className="text-sm text-gray-600 mt-1">全期間の送料合計</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総純利益</h3>
+                                <p className="text-2xl font-bold text-indigo-600">{formatCurrency(metrics.cumulative.netProfit)}</p>
+                                <p className="text-sm text-gray-600 mt-1">粗利益 - 送料</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">総販売台数</h3>
+                                <p className="text-2xl font-bold text-purple-600">{metrics.cumulative.salesCount}台</p>
+                                <p className="text-sm text-gray-600 mt-1">全期間の販売台数</p>
                             </div>
                         </div>
                     </div>

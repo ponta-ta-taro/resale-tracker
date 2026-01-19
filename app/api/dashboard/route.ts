@@ -3,9 +3,14 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         const supabase = await createServerSupabaseClient();
+
+        // Parse query parameters for period selection
+        const { searchParams } = new URL(request.url);
+        const startDateParam = searchParams.get('start_date');
+        const endDateParam = searchParams.get('end_date');
 
         // Check authentication
         const { data: { user } } = await supabase.auth.getUser();
@@ -47,40 +52,67 @@ export async function GET() {
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
-        // Calculate monthly metrics
-        const thisMonthPaid = inventory?.filter(item => {
+        // Determine period for metrics calculation
+        let periodStart: Date;
+        let periodEnd: Date;
+
+        if (startDateParam && endDateParam) {
+            // Custom period
+            periodStart = new Date(startDateParam);
+            periodEnd = new Date(endDateParam);
+        } else {
+            // Default to current month
+            periodStart = new Date(currentYear, currentMonth, 1);
+            periodEnd = new Date(currentYear, currentMonth + 1, 0);
+        }
+
+        // Calculate period metrics (based on selected period)
+        const periodPaid = inventory?.filter(item => {
             if (item.status !== 'paid' || !item.paid_at) return false;
             const paidDate = new Date(item.paid_at);
-            return paidDate.getMonth() === currentMonth && paidDate.getFullYear() === currentYear;
+            return paidDate >= periodStart && paidDate <= periodEnd;
         }) || [];
 
-        const monthlyRevenue = thisMonthPaid.reduce((sum, item) => sum + (item.actual_price || 0), 0);
-        const monthlyProfit = thisMonthPaid.reduce((sum, item) =>
+        const periodRevenue = periodPaid.reduce((sum, item) => sum + (item.actual_price || 0), 0);
+        const periodProfit = periodPaid.reduce((sum, item) =>
             sum + ((item.actual_price || 0) - (item.purchase_price || 0)), 0
         );
-        const monthlyPurchaseTotal = thisMonthPaid.reduce((sum, item) => sum + (item.purchase_price || 0), 0);
-        const monthlyProfitRate = monthlyPurchaseTotal > 0 ? (monthlyProfit / monthlyPurchaseTotal) * 100 : 0;
-        const monthlySalesCount = thisMonthPaid.length;
+        const periodPurchaseTotal = periodPaid.reduce((sum, item) => sum + (item.purchase_price || 0), 0);
+        const periodProfitRate = periodPurchaseTotal > 0 ? (periodProfit / periodPurchaseTotal) * 100 : 0;
+        const periodSalesCount = periodPaid.length;
 
-        // Get current month's shipments for shipping cost
-        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-
-        const { data: shipments } = await supabase
+        // Get period shipments for shipping cost
+        const { data: periodShipments } = await supabase
             .from('shipments')
             .select('shipping_cost')
-            .gte('shipped_at', firstDayOfMonth.toISOString().split('T')[0])
-            .lte('shipped_at', lastDayOfMonth.toISOString().split('T')[0]);
+            .gte('shipped_at', periodStart.toISOString().split('T')[0])
+            .lte('shipped_at', periodEnd.toISOString().split('T')[0]);
 
-        const monthlyShippingCost = (shipments || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
-        const monthlyNetProfit = monthlyProfit - monthlyShippingCost;
+        const periodShippingCost = (periodShipments || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
+        const periodNetProfit = periodProfit - periodShippingCost;
 
-        // Get current month's rewards
+        // Calculate cumulative metrics (all-time)
+        const allPaid = inventory?.filter(item => item.status === 'paid') || [];
+        const cumulativeRevenue = allPaid.reduce((sum, item) => sum + (item.actual_price || 0), 0);
+        const cumulativeProfit = allPaid.reduce((sum, item) =>
+            sum + ((item.actual_price || 0) - (item.purchase_price || 0)), 0
+        );
+        const cumulativeSalesCount = allPaid.length;
+
+        // Get all shipments for cumulative shipping cost
+        const { data: allShipments } = await supabase
+            .from('shipments')
+            .select('shipping_cost');
+
+        const cumulativeShippingCost = (allShipments || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
+        const cumulativeNetProfit = cumulativeProfit - cumulativeShippingCost;
+
+        // Get period rewards
         const { data: rewards } = await supabase
             .from('rewards')
             .select('type, amount, points, point_rate')
-            .gte('earned_at', firstDayOfMonth.toISOString().split('T')[0])
-            .lte('earned_at', lastDayOfMonth.toISOString().split('T')[0]);
+            .gte('earned_at', periodStart.toISOString().split('T')[0])
+            .lte('earned_at', periodEnd.toISOString().split('T')[0]);
 
         const giftCardTotal = rewards?.filter(r => r.type === 'gift_card')
             .reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
@@ -206,12 +238,19 @@ export async function GET() {
 
         return NextResponse.json({
             monthly: {
-                revenue: monthlyRevenue,
-                profit: monthlyProfit,
-                profitRate: monthlyProfitRate,
-                salesCount: monthlySalesCount,
-                shippingCost: monthlyShippingCost,
-                netProfit: monthlyNetProfit,
+                revenue: periodRevenue,
+                profit: periodProfit,
+                profitRate: periodProfitRate,
+                salesCount: periodSalesCount,
+                shippingCost: periodShippingCost,
+                netProfit: periodNetProfit,
+            },
+            cumulative: {
+                revenue: cumulativeRevenue,
+                profit: cumulativeProfit,
+                shippingCost: cumulativeShippingCost,
+                netProfit: cumulativeNetProfit,
+                salesCount: cumulativeSalesCount,
             },
             inventory: statusBreakdown,
             financial: {
