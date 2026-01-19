@@ -64,23 +64,36 @@ export async function PUT(
 
         // Update inventory items
         if (inventory_ids !== undefined) {
-            // First, clear existing links
+            // First, clear existing links and reset shipped_to_buyer_at
             await supabase
                 .from('inventory')
-                .update({ shipment_id: null })
+                .update({
+                    shipment_id: null,
+                    shipped_to_buyer_at: null
+                })
                 .eq('shipment_id', id);
 
-            // Then, set new links
+            // Then, set new links with shipped_to_buyer_at
             if (inventory_ids.length > 0) {
                 const { error: updateError } = await supabase
                     .from('inventory')
-                    .update({ shipment_id: id })
+                    .update({
+                        shipment_id: id,
+                        shipped_to_buyer_at: shipmentData.shipped_at
+                    })
                     .in('id', inventory_ids);
 
                 if (updateError) {
                     console.error('Error updating inventory:', updateError);
                 }
             }
+        } else if (shipmentData.shipped_at !== undefined) {
+            // If only shipment date changed (no inventory_ids in request),
+            // update shipped_to_buyer_at for all linked inventory
+            await supabase
+                .from('inventory')
+                .update({ shipped_to_buyer_at: shipmentData.shipped_at })
+                .eq('shipment_id', id);
         }
 
         return NextResponse.json(shipment);
