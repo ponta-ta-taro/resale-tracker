@@ -64,13 +64,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: shipmentError.message }, { status: 500 });
         }
 
-        // Update inventory items with shipment_id and shipped_to_buyer_at
+        // Update inventory items with shipment data
         if (inventory_ids && inventory_ids.length > 0) {
             const { error: updateError } = await supabase
                 .from('inventory')
                 .update({
                     shipment_id: shipment.id,
-                    shipped_to_buyer_at: shipmentData.shipped_at
+                    shipped_to_buyer_at: shipmentData.shipped_at,
+                    buyer_carrier: shipmentData.carrier,
+                    buyer_tracking_number: shipmentData.tracking_number,
+                    sold_to: shipmentData.shipped_to
                 })
                 .in('id', inventory_ids);
 

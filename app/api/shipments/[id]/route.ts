@@ -64,22 +64,28 @@ export async function PUT(
 
         // Update inventory items
         if (inventory_ids !== undefined) {
-            // First, clear existing links and reset shipped_to_buyer_at
+            // First, clear existing links and reset all shipment-related fields
             await supabase
                 .from('inventory')
                 .update({
                     shipment_id: null,
-                    shipped_to_buyer_at: null
+                    shipped_to_buyer_at: null,
+                    buyer_carrier: null,
+                    buyer_tracking_number: null,
+                    sold_to: null
                 })
                 .eq('shipment_id', id);
 
-            // Then, set new links with shipped_to_buyer_at
+            // Then, set new links with all shipment data
             if (inventory_ids.length > 0) {
                 const { error: updateError } = await supabase
                     .from('inventory')
                     .update({
                         shipment_id: id,
-                        shipped_to_buyer_at: shipmentData.shipped_at
+                        shipped_to_buyer_at: shipmentData.shipped_at,
+                        buyer_carrier: shipmentData.carrier,
+                        buyer_tracking_number: shipmentData.tracking_number,
+                        sold_to: shipmentData.shipped_to
                     })
                     .in('id', inventory_ids);
 
@@ -87,13 +93,22 @@ export async function PUT(
                     console.error('Error updating inventory:', updateError);
                 }
             }
-        } else if (shipmentData.shipped_at !== undefined) {
-            // If only shipment date changed (no inventory_ids in request),
-            // update shipped_to_buyer_at for all linked inventory
-            await supabase
-                .from('inventory')
-                .update({ shipped_to_buyer_at: shipmentData.shipped_at })
-                .eq('shipment_id', id);
+        } else if (shipmentData.shipped_at !== undefined || shipmentData.carrier !== undefined ||
+            shipmentData.tracking_number !== undefined || shipmentData.shipped_to !== undefined) {
+            // If shipment data changed (no inventory_ids in request),
+            // update all corresponding fields for linked inventory
+            const updateData: any = {};
+            if (shipmentData.shipped_at !== undefined) updateData.shipped_to_buyer_at = shipmentData.shipped_at;
+            if (shipmentData.carrier !== undefined) updateData.buyer_carrier = shipmentData.carrier;
+            if (shipmentData.tracking_number !== undefined) updateData.buyer_tracking_number = shipmentData.tracking_number;
+            if (shipmentData.shipped_to !== undefined) updateData.sold_to = shipmentData.shipped_to;
+
+            if (Object.keys(updateData).length > 0) {
+                await supabase
+                    .from('inventory')
+                    .update(updateData)
+                    .eq('shipment_id', id);
+            }
         }
 
         return NextResponse.json(shipment);
