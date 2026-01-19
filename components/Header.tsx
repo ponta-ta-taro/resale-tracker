@@ -16,6 +16,7 @@ export default function Header() {
         { href: '/rewards', label: 'ポイント管理' },
         { href: '/emails', label: 'メール履歴' },
         { href: '/settings', label: '設定' },
+        { href: '/help', label: 'ヘルプ' },
     ];
 
     return (
@@ -35,7 +36,8 @@ export default function Header() {
                                 (link.href === '/shipments' && pathname?.startsWith('/shipments')) ||
                                 (link.href === '/rewards' && pathname?.startsWith('/rewards')) ||
                                 (link.href === '/emails' && pathname?.startsWith('/emails')) ||
-                                (link.href === '/settings' && pathname?.startsWith('/settings'));
+                                (link.href === '/settings' && pathname?.startsWith('/settings')) ||
+                                (link.href === '/help' && pathname?.startsWith('/help'));
 
                             return (
                                 <Link
