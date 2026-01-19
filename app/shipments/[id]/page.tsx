@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
-import { SHIPPED_TO_OPTIONS, CARRIER_OPTIONS, Inventory, Shipment } from '@/types';
+import { SHIPPED_TO_OPTIONS, BUYER_CARRIERS, Inventory, Shipment } from '@/types';
 
 export default function EditShipmentPage() {
     const router = useRouter();
@@ -156,9 +156,9 @@ export default function EditShipmentPage() {
                             className="w-full border border-gray-300 rounded-lg px-4 py-2"
                         >
                             <option value="">選択してください</option>
-                            {CARRIER_OPTIONS.map((option) => (
-                                <option key={option} value={option}>
-                                    {option}
+                            {Object.values(BUYER_CARRIERS).map((carrier) => (
+                                <option key={carrier.code} value={carrier.code}>
+                                    {carrier.name}
                                 </option>
                             ))}
                         </select>

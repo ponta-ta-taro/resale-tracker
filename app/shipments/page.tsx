@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
+import { getCarrierName } from '@/types';
 
 interface ShipmentWithCount {
     id: string;
@@ -122,7 +123,7 @@ export default function ShipmentsPage() {
                                             {shipment.shipped_to}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {shipment.carrier}
+                                            {getCarrierName(shipment.carrier)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {shipment.tracking_number || '-'}

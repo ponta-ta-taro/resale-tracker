@@ -386,7 +386,8 @@ export const SHIPPED_TO_OPTIONS: string[] = [
     'ゲオ',
 ];
 
-// Carrier options
+// Carrier options (DEPRECATED - use BUYER_CARRIERS instead)
+// @deprecated Use BUYER_CARRIERS for consistent code-based carrier handling
 export const CARRIER_OPTIONS: string[] = [
     'ヤマト運輸',
     '佐川急便',
@@ -419,6 +420,12 @@ export const BUYER_CARRIERS: Record<BuyerCarrierCode, CarrierConfig> = {
         trackingUrl: 'https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo='
     }
 };
+
+export function getCarrierName(code: BuyerCarrierCode | string | null): string {
+    if (!code) return '-';
+    const carrier = BUYER_CARRIERS[code as BuyerCarrierCode];
+    return carrier ? carrier.name : code;
+}
 
 export function getTrackingUrl(carrier: BuyerCarrierCode | string | null, trackingNumber: string | null): string | null {
     if (!carrier || !trackingNumber) return null;
