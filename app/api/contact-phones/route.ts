@@ -11,7 +11,7 @@ export async function GET() {
         const { data, error } = await supabase
             .from('contact_phones')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (error) {
             console.error('Error fetching contact phones:', error);

@@ -12,7 +12,7 @@ export async function GET() {
         const { data, error } = await supabase
             .from('payment_methods')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (error) {
             console.error('Error fetching payment methods:', error);

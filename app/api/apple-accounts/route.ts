@@ -11,7 +11,7 @@ export async function GET() {
         const { data, error } = await supabase
             .from('apple_accounts')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (error) {
             console.error('Error fetching apple accounts:', error);
