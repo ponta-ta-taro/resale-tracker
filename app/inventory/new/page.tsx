@@ -24,6 +24,13 @@ export default function NewInventoryPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate actual_price when sold_at or paid_at is filled
+        if ((formData.sold_at || formData.paid_at) && (!formData.actual_price || formData.actual_price === 0)) {
+            alert('実売価格を入力してください');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -383,6 +390,7 @@ export default function NewInventoryPage() {
                                     onChange={(e) => updateField('actual_price', e.target.value ? parseInt(e.target.value) : null)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
+                                <p className="text-xs text-red-600 mt-1">※売却日・入金日に日付を入れる時は実売価格を記入してください</p>
                             </div>
                         </div>
                     </div>
