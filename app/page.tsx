@@ -347,9 +347,8 @@ export default function Dashboard() {
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">資金状況</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-lg shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">仕入れ総額（未回収）</h3>
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">未回収の仕入れ総額</h3>
                                 <p className="text-3xl font-bold text-gray-900">{formatCurrency(metrics.financial.unrecoveredInvestment)}</p>
-                                <p className="text-sm text-gray-600 mt-1">入金待ち在庫の仕入価格</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">想定利益（現在相場）</h3>
