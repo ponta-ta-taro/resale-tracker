@@ -390,7 +390,9 @@ export default function NewInventoryPage() {
                                     onChange={(e) => updateField('actual_price', e.target.value ? parseInt(e.target.value) : null)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                                <p className="text-xs text-red-600 mt-1">※売却日・入金日に日付を入れる時は実売価格を記入してください</p>
+                                {(formData.sold_at || formData.paid_at) && (!formData.actual_price || formData.actual_price === 0) && (
+                                    <p className="text-xs text-red-600 mt-1">※売却日・入金日に日付を入れる時は実売価格を記入してください</p>
+                                )}
                             </div>
                         </div>
                     </div>
