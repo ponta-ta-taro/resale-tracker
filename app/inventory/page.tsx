@@ -58,8 +58,8 @@ export default function InventoryPage() {
                         <button
                             onClick={() => setStatusFilter('all')}
                             className={`px-3 py-1 text-sm rounded-md transition-colors ${statusFilter === 'all'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             すべて
@@ -69,8 +69,8 @@ export default function InventoryPage() {
                                 key={status}
                                 onClick={() => setStatusFilter(status)}
                                 className={`px-3 py-1 text-sm rounded-md transition-colors ${statusFilter === status
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                     }`}
                             >
                                 {STATUS_V2_LABELS[status]}
@@ -110,6 +110,12 @@ export default function InventoryPage() {
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">
                                             仕入価格
                                         </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">
+                                            予想売価
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">
+                                            実売価
+                                        </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">
                                             注文日
                                         </th>
@@ -141,6 +147,12 @@ export default function InventoryPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                                                 {item.purchase_price ? `¥${item.purchase_price.toLocaleString()}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                {item.expected_price ? `¥${item.expected_price.toLocaleString()}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                {item.actual_price ? `¥${item.actual_price.toLocaleString()}` : '-'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {item.order_date || '-'}
