@@ -286,7 +286,7 @@ export default function EmailsPage() {
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
-                                                                            window.open(email.parsed_data.confirmation_link, '_blank');
+                                                                            window.open(email.parsed_data?.confirmation_link, '_blank');
                                                                         }}
                                                                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                                                                     >
