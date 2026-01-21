@@ -61,11 +61,63 @@ export default function HelpPage() {
                                         </ol>
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-gray-900 mb-2">【対象メール】</h4>
-                                        <ul className="list-disc list-inside space-y-1 text-gray-700">
-                                            <li>Appleからの注文確認メール</li>
-                                            <li>Appleからの出荷通知メール</li>
-                                        </ul>
+                                        <h4 className="font-semibold text-gray-900 mb-2">【転送対象メール】</h4>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full border border-gray-300 text-sm">
+                                                <thead className="bg-gray-100">
+                                                    <tr>
+                                                        <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-900">メール種類</th>
+                                                        <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-900">差出人アドレス</th>
+                                                        <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-900">対応状況</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr className="bg-green-50">
+                                                        <td className="border border-gray-300 px-4 py-2 text-gray-900">注文確認</td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <code className="text-xs bg-white px-2 py-1 rounded">noreply_apac@orders.apple.com</code>
+                                                        </td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <span className="text-green-700 font-semibold">✅ 対応済み</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="bg-green-50">
+                                                        <td className="border border-gray-300 px-4 py-2 text-gray-900">出荷通知</td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <code className="text-xs bg-white px-2 py-1 rounded">shipping_notification_jp@orders.apple.com</code>
+                                                        </td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <span className="text-green-700 font-semibold">✅ 対応済み</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="bg-yellow-50">
+                                                        <td className="border border-gray-300 px-4 py-2 text-gray-900">注文完了</td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <code className="text-xs bg-white px-2 py-1 rounded">order_acknowledgment@orders.apple.com</code>
+                                                        </td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <span className="text-yellow-700 font-semibold">🚧 未実装</span>
+                                                            <span className="text-xs text-gray-600 block mt-1">（注文確認と内容が重複）</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="bg-yellow-50">
+                                                        <td className="border border-gray-300 px-4 py-2 text-gray-900">請求書</td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <code className="text-xs bg-white px-2 py-1 rounded">noreply@email.apple.com</code>
+                                                        </td>
+                                                        <td className="border border-gray-300 px-4 py-2">
+                                                            <span className="text-yellow-700 font-semibold">🚧 未実装</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="mt-3 bg-blue-50 p-3 rounded">
+                                            <p className="text-sm text-gray-700">
+                                                <strong>✅ 対応済み</strong>のメールのみ転送設定が必要です。<br />
+                                                <strong>🚧 未実装</strong>のメールは転送しても処理されません（今後対応予定）。
+                                            </p>
+                                        </div>
                                     </div>
                                     <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded">
                                         ※ Apple注文時に連絡先として使うGmailアカウントすべてに設定してください
