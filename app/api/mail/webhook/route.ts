@@ -608,12 +608,20 @@ export async function POST(request: NextRequest) {
                     userId = contactEmailData.user_id;
                     console.log('  ✅ Found user_id for forwarding confirmation:', userId);
 
-                    // Extract confirmation link from rawEmail
-                    // Look for https://mail.google.com/... or https://www.google.com/...
-                    const linkMatch = rawEmail.match(/(https:\/\/(?:mail\.google\.com|www\.google\.com)\/[^\s<>"]+)/);
+                    // Decode email body first (Gmail sends base64-encoded content)
+                    const emailBody = extractEmailBody(rawEmail);
+                    console.log('  📄 Decoded email body length:', emailBody.length);
+                    console.log('  📄 Email body preview (first 500 chars):', emailBody.substring(0, 500));
+
+                    // Extract confirmation link from decoded email body
+                    // Look for https://mail.google.com/mail/vf-... pattern
+                    const linkMatch = emailBody.match(/(https:\/\/mail\.google\.com\/mail\/vf-[^\s<>"]+)/);
                     const confirmationLink = linkMatch ? linkMatch[1] : null;
 
                     console.log('  🔗 Extracted confirmation link:', confirmationLink ? 'Found' : 'Not found');
+                    if (confirmationLink) {
+                        console.log('  🔗 Link preview:', confirmationLink.substring(0, 100) + '...');
+                    }
 
                     if (confirmationLink) {
                         parsedData = {
