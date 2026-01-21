@@ -271,6 +271,32 @@ export default function EmailsPage() {
                                                                     <span className="font-medium">処理内容:</span> 既に同じ内容で登録済みです
                                                                 </div>
                                                             )}
+                                                            {email.status === 'pending' && (
+                                                                <div className="text-sm text-orange-600">
+                                                                    <span className="font-medium">処理内容:</span> Gmail転送の承認が必要です
+                                                                </div>
+                                                            )}
+
+                                                            {/* Confirmation link for forwarding_confirmation emails */}
+                                                            {email.email_type === 'forwarding_confirmation' && email.parsed_data?.confirmation_link && (
+                                                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                                                                    <p className="text-sm text-gray-700 mb-2">
+                                                                        <span className="font-medium">対象メール:</span> {email.parsed_data.user_email}
+                                                                    </p>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.open(email.parsed_data.confirmation_link, '_blank');
+                                                                        }}
+                                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                                                    >
+                                                                        🔗 確認リンクを開く
+                                                                    </button>
+                                                                    <p className="text-xs text-gray-600 mt-2">
+                                                                        ※ リンクをクリックしてGmailの転送設定を承認してください
+                                                                    </p>
+                                                                </div>
+                                                            )}
 
                                                             {/* Inventory link */}
                                                             {email.parsed_data?.inventory_id && (

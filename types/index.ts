@@ -499,8 +499,8 @@ export interface RewardInput {
 }
 
 // Email log types - Based on DATABASE.md email_logs table
-export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'unknown';
-export type EmailLogStatus = 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error';
+export type EmailLogType = 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'forwarding_confirmation' | 'unknown';
+export type EmailLogStatus = 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'pending' | 'error';
 
 export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
     order_confirmation: '注文確認',
@@ -513,6 +513,7 @@ export const EMAIL_LOG_TYPES: Record<EmailLogType, string> = {
     amazon_shipping_notification: 'Amazon発送済み',
     amazon_out_for_delivery: 'Amazon配達中',
     amazon_delivered: 'Amazon配達済み',
+    forwarding_confirmation: '転送確認',
     unknown: '不明',
 };
 
@@ -520,6 +521,7 @@ export const EMAIL_LOG_STATUSES: Record<EmailLogStatus, string> = {
     success: '✅ 成功',
     skipped_unsupported: '⏭️ スキップ（未対応）',
     skipped_duplicate: '⏭️ スキップ（重複）',
+    pending: '⏳ 承認待ち',
     error: '❌ エラー',
 };
 
@@ -527,6 +529,7 @@ export const EMAIL_LOG_STATUS_COLORS: Record<EmailLogStatus, string> = {
     success: 'bg-green-100 text-green-800',
     skipped_unsupported: 'bg-yellow-100 text-yellow-800',
     skipped_duplicate: 'bg-blue-100 text-blue-800',
+    pending: 'bg-orange-100 text-orange-800',
     error: 'bg-red-100 text-red-800',
 };
 

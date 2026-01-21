@@ -429,11 +429,16 @@ export async function POST(request: NextRequest) {
         console.log('📨 Raw email length:', rawEmail?.length || 0);
 
         // Determine email type from sender and subject
-        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'unknown' = 'unknown';
+        let emailType: 'order_confirmation' | 'order_thanks' | 'shipping_notification' | 'delivery_update' | 'invoice' | 'survey' | 'amazon_order_confirmation' | 'amazon_shipping_notification' | 'amazon_out_for_delivery' | 'amazon_delivered' | 'forwarding_confirmation' | 'unknown' = 'unknown';
 
-        // Check for Amazon emails first (by sender address)
-        const amazonType = detectAmazonEmailType(from, subject);
-        if (amazonType !== 'unknown') {
+        // Check for Gmail forwarding confirmation email first
+        if (from.includes('forwarding-noreply@google.com') && subject.includes('Gmail の転送の確認')) {
+            emailType = 'forwarding_confirmation';
+            console.log('  Type: Gmail forwarding confirmation');
+        }
+        // Check for Amazon emails (by sender address)
+        else if (detectAmazonEmailType(from, subject) !== 'unknown') {
+            const amazonType = detectAmazonEmailType(from, subject);
             if (amazonType === 'amazon_order') {
                 emailType = 'amazon_order_confirmation';
                 console.log('  Type: Amazon order confirmation');
@@ -472,7 +477,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Variables for logging
-        let processResult: 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'error' = 'skipped_unsupported';
+        let processResult: 'success' | 'skipped_unsupported' | 'skipped_duplicate' | 'pending' | 'error' = 'skipped_unsupported';
         let inventoryId: string | null = null;
         let logNotes: string | null = null;
         let userId: string | null = null;
@@ -580,6 +585,57 @@ export async function POST(request: NextRequest) {
             logNotes = result.notes || null;
             orderNumber = result.orderNumber || null;
             parsedData = result.parsedData || null;
+        } else if (emailType === 'forwarding_confirmation') {
+            // Process Gmail forwarding confirmation email
+            console.log('  📧 Processing Gmail forwarding confirmation...');
+
+            // Extract email address from subject: "Gmail の転送の確認 - xxx@gmail.com"
+            const emailMatch = subject.match(/Gmail の転送の確認\s*-\s*([^\s]+@[^\s]+)/);
+            const userEmail = emailMatch ? emailMatch[1] : null;
+
+            console.log('  📧 Extracted user email from subject:', userEmail);
+
+            if (userEmail) {
+                // Look up user by email in contact_emails
+                const { data: contactEmailData } = await supabaseAdmin
+                    .from('contact_emails')
+                    .select('user_id')
+                    .eq('email', userEmail)
+                    .limit(1)
+                    .single();
+
+                if (contactEmailData) {
+                    userId = contactEmailData.user_id;
+                    console.log('  ✅ Found user_id for forwarding confirmation:', userId);
+
+                    // Extract confirmation link from rawEmail
+                    // Look for https://mail.google.com/... or https://www.google.com/...
+                    const linkMatch = rawEmail.match(/(https:\/\/(?:mail\.google\.com|www\.google\.com)\/[^\s<>"]+)/);
+                    const confirmationLink = linkMatch ? linkMatch[1] : null;
+
+                    console.log('  🔗 Extracted confirmation link:', confirmationLink ? 'Found' : 'Not found');
+
+                    if (confirmationLink) {
+                        parsedData = {
+                            confirmation_link: confirmationLink,
+                            user_email: userEmail
+                        };
+                        processResult = 'pending';
+                        logNotes = `Forwarding confirmation for ${userEmail}`;
+                    } else {
+                        processResult = 'error';
+                        logNotes = 'Could not extract confirmation link from email';
+                    }
+                } else {
+                    console.log('  ⚠️  No user found for email:', userEmail);
+                    logNotes = `User not found for email: ${userEmail}`;
+                    processResult = 'error';
+                }
+            } else {
+                console.log('  ⚠️  Could not extract email from subject');
+                logNotes = 'Could not extract email address from subject';
+                processResult = 'error';
+            }
         } else {
             console.log('  Skipping processing for this email type');
             processResult = 'skipped_unsupported';
