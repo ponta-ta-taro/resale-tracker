@@ -175,6 +175,24 @@ export default function SettingsPage() {
         });
     };
 
+    // Helper function to check if master data is used in inventory
+    const checkUsageCount = async (type: 'apple' | 'payment' | 'email' | 'phone', id: string): Promise<number> => {
+        const fieldMap = {
+            apple: 'apple_account_id',
+            payment: 'payment_method_id',
+            email: 'contact_email_id',
+            phone: 'contact_phone_id'
+        };
+
+        try {
+            const response = await fetch(`/api/inventory?${fieldMap[type]}=${id}`);
+            const data = await response.json();
+            return data.data?.length || 0;
+        } catch (error) {
+            console.error('Error checking usage count:', error);
+            return 0;
+        }
+    };
 
     // Apple Account handlers
     const resetAppleForm = () => {
@@ -216,7 +234,13 @@ export default function SettingsPage() {
     };
 
     const handleDeleteApple = async (id: string) => {
-        if (!confirm('このApple IDを削除しますか？')) return;
+        const usageCount = await checkUsageCount('apple', id);
+        const message = usageCount > 0
+            ? `このApple IDは ${usageCount}件の在庫で使用されています。削除すると在庫のApple IDが未選択になります。続けますか？`
+            : 'このApple IDを削除しますか？';
+
+        if (!confirm(message)) return;
+
         try {
             const response = await fetch(`/api/apple-accounts/${id}`, { method: 'DELETE' });
             if (response.ok) await fetchAllData();
@@ -287,7 +311,13 @@ export default function SettingsPage() {
     };
 
     const handleDeletePayment = async (id: string) => {
-        if (!confirm('この支払い方法を削除しますか？')) return;
+        const usageCount = await checkUsageCount('payment', id);
+        const message = usageCount > 0
+            ? `この支払い方法は ${usageCount}件の在庫で使用されています。削除すると在庫の支払い方法が未選択になります。続けますか？`
+            : 'この支払い方法を削除しますか？';
+
+        if (!confirm(message)) return;
+
         try {
             const response = await fetch(`/api/payment-methods/${id}`, { method: 'DELETE' });
             if (response.ok) await fetchAllData();
@@ -338,7 +368,13 @@ export default function SettingsPage() {
     };
 
     const handleDeleteEmail = async (id: string) => {
-        if (!confirm('このメールアドレスを削除しますか？')) return;
+        const usageCount = await checkUsageCount('email', id);
+        const message = usageCount > 0
+            ? `このメールアドレスは ${usageCount}件の在庫で使用されています。削除すると在庫のメールアドレスが未選択になります。続けますか？`
+            : 'このメールアドレスを削除しますか？';
+
+        if (!confirm(message)) return;
+
         try {
             const response = await fetch(`/api/contact-emails/${id}`, { method: 'DELETE' });
             if (response.ok) await fetchAllData();
@@ -389,7 +425,13 @@ export default function SettingsPage() {
     };
 
     const handleDeletePhone = async (id: string) => {
-        if (!confirm('この電話番号を削除しますか？')) return;
+        const usageCount = await checkUsageCount('phone', id);
+        const message = usageCount > 0
+            ? `この電話番号は ${usageCount}件の在庫で使用されています。削除すると在庫の電話番号が未選択になります。続けますか？`
+            : 'この電話番号を削除しますか？';
+
+        if (!confirm(message)) return;
+
         try {
             const response = await fetch(`/api/contact-phones/${id}`, { method: 'DELETE' });
             if (response.ok) await fetchAllData();
