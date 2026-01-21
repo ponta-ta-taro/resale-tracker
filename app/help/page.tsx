@@ -47,19 +47,8 @@ export default function HelpPage() {
                                         ResaleTrackerはAppleからのメールを自動で取り込んで在庫登録します。<br />
                                         以下の手順でGmail転送を設定してください。
                                     </p>
-                                    <div className="bg-blue-50 p-4 rounded-md">
-                                        <h4 className="font-semibold text-gray-900 mb-2">【手順】</h4>
-                                        <ol className="list-decimal list-inside space-y-2 text-gray-700">
-                                            <li>Gmailを開く（PC推奨）</li>
-                                            <li>右上の歯車アイコン → 「すべての設定を表示」</li>
-                                            <li>「メール転送とPOP/IMAP」タブを開く</li>
-                                            <li>「転送先アドレスを追加」をクリック</li>
-                                            <li><code className="bg-white px-2 py-1 rounded">import@rt-mail.uk</code> を入力して「次へ」</li>
-                                            <li>確認メールが届くので、記載されたリンクをクリック</li>
-                                            <li>Gmailに戻り「受信メールを import@rt-mail.uk に転送」を選択</li>
-                                            <li>「変更を保存」</li>
-                                        </ol>
-                                    </div>
+
+                                    {/* 転送対象メール一覧 */}
                                     <div>
                                         <h4 className="font-semibold text-gray-900 mb-2">【転送対象メール】</h4>
                                         <div className="overflow-x-auto">
@@ -97,7 +86,7 @@ export default function HelpPage() {
                                                         </td>
                                                         <td className="border border-gray-300 px-4 py-2">
                                                             <span className="text-yellow-700 font-semibold">🚧 未実装</span>
-                                                            <span className="text-xs text-gray-600 block mt-1">（注文確認と内容が重複）</span>
+                                                            <span className="text-xs text-gray-600 block mt-1">（注文確認と内容重複）</span>
                                                         </td>
                                                     </tr>
                                                     <tr className="bg-yellow-50">
@@ -119,6 +108,43 @@ export default function HelpPage() {
                                             </p>
                                         </div>
                                     </div>
+
+                                    {/* ステップ1: 転送先アドレスの登録 */}
+                                    <div className="bg-purple-50 p-4 rounded-md">
+                                        <h4 className="font-semibold text-gray-900 mb-2">【ステップ1】転送先アドレスの登録</h4>
+                                        <p className="text-sm text-gray-700 mb-2">まず、転送先アドレスを登録します（最初の1回のみ）。</p>
+                                        <ol className="list-decimal list-inside space-y-2 text-gray-700 text-sm">
+                                            <li>Gmailを開く（PC推奨）</li>
+                                            <li>右上の歯車アイコン → 「すべての設定を表示」</li>
+                                            <li>「メール転送とPOP/IMAP」タブを開く</li>
+                                            <li>「転送先アドレスを追加」をクリック</li>
+                                            <li><code className="bg-white px-2 py-1 rounded text-xs">import@rt-mail.uk</code> を入力して「次へ」</li>
+                                            <li>確認メールが届くので、記載されたリンクをクリック</li>
+                                            <li>「変更を保存」（「受信メールを転送」は選択しない）</li>
+                                        </ol>
+                                    </div>
+
+                                    {/* ステップ2: フィルター設定 */}
+                                    <div className="bg-green-50 p-4 rounded-md">
+                                        <h4 className="font-semibold text-gray-900 mb-2">【ステップ2】Gmailフィルター設定</h4>
+                                        <p className="text-sm text-gray-700 mb-2">特定のAppleメールのみを転送するフィルターを作成します。</p>
+                                        <ol className="list-decimal list-inside space-y-2 text-gray-700 text-sm">
+                                            <li>Gmailの設定画面で「フィルタとブロック中のアドレス」タブを選択</li>
+                                            <li>「新しいフィルタを作成」をクリック</li>
+                                            <li>From欄に <code className="bg-white px-2 py-1 rounded text-xs">noreply_apac@orders.apple.com</code> を入力</li>
+                                            <li>「フィルタを作成」をクリック</li>
+                                            <li>「次のアドレスに転送する」にチェックを入れ、<code className="bg-white px-2 py-1 rounded text-xs">import@rt-mail.uk</code> を選択</li>
+                                            <li>「フィルタを作成」で完了</li>
+                                            <li><strong>同じ手順を繰り返して</strong>、<code className="bg-white px-2 py-1 rounded text-xs">shipping_notification_jp@orders.apple.com</code> のフィルターも作成</li>
+                                        </ol>
+                                        <div className="mt-3 bg-white p-3 rounded border border-green-300">
+                                            <p className="text-xs text-gray-700">
+                                                💡 <strong>ポイント</strong>：対応済みの2つのメールアドレスそれぞれに対してフィルターを作成してください。<br />
+                                                これにより、必要なメールだけが自動転送されます。
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded">
                                         ※ Apple注文時に連絡先として使うGmailアカウントすべてに設定してください
                                     </p>
