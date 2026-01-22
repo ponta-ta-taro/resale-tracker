@@ -496,6 +496,11 @@ export default function Dashboard() {
                     <div className="mb-8">
                         <PriceChart />
                     </div>
+
+                    {/* Payment Schedule - moved to bottom */}
+                    <div className="mb-8">
+                        <PaymentSchedule />
+                    </div>
                 </div>
             </main>
         </>
