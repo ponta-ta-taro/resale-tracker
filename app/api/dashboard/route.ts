@@ -171,20 +171,48 @@ export async function GET(request: Request) {
         const oldInventoryAlerts: any[] = [];
         const paymentDelayAlerts: any[] = [];
 
+        // Group price drop alerts by model/storage
+        const priceDropGroups = new Map<string, {
+            model: string;
+            storage: string;
+            drop: number;
+            expectedPrice: number;
+            currentPrice: number;
+            orderDate: string | null;
+            affectedOrders: Array<{ id: string; code: string }>;
+        }>();
+
+        // Target statuses for price drop alerts (exclude paid and buyer_completed)
+        const targetStatuses = ['ordered', 'processing', 'preparing_shipment', 'shipped', 'delivered', 'sent_to_buyer'];
+
         inventory?.forEach(item => {
-            const key = `${item.model_name}_${item.storage}`;
+            const key = `${item.model_name?.trim()}_${item.storage?.trim()}`;
             const currentPrice = marketPrices.get(key);
 
-            // Price drop alerts
-            if (item.expected_price && currentPrice && currentPrice < item.expected_price) {
-                priceDropAlerts.push({
+            // Price drop alerts - only for target statuses
+            if (targetStatuses.includes(item.status) && item.expected_price && currentPrice && currentPrice < item.expected_price) {
+                if (!priceDropGroups.has(key)) {
+                    priceDropGroups.set(key, {
+                        model: item.model_name?.trim() || '',
+                        storage: item.storage?.trim() || '',
+                        drop: item.expected_price - currentPrice,
+                        expectedPrice: item.expected_price,
+                        currentPrice,
+                        orderDate: item.order_date,
+                        affectedOrders: [],
+                    });
+                }
+
+                const group = priceDropGroups.get(key)!;
+                group.affectedOrders.push({
                     id: item.id,
-                    model: `${item.model_name} ${item.storage}`,
-                    drop: item.expected_price - currentPrice,
-                    expectedPrice: item.expected_price,
-                    currentPrice,
-                    orderDate: item.order_date, // 注文日を追加（期間表示用）
+                    code: item.inventory_code || item.id,
                 });
+
+                // Update to earliest order date
+                if (item.order_date && (!group.orderDate || item.order_date < group.orderDate)) {
+                    group.orderDate = item.order_date;
+                }
             }
 
             // Old inventory alerts (14+ days since arrival, not yet selling/sold/paid)
@@ -214,6 +242,24 @@ export async function GET(request: Request) {
                     });
                 }
             }
+        });
+
+        // Convert price drop groups to array with calculated days
+        priceDropGroups.forEach((group) => {
+            const daysSinceOrder = group.orderDate
+                ? Math.floor((now.getTime() - new Date(group.orderDate).getTime()) / (1000 * 60 * 60 * 24))
+                : 0;
+
+            priceDropAlerts.push({
+                model: group.model,
+                storage: group.storage,
+                drop: group.drop,
+                expectedPrice: group.expectedPrice,
+                currentPrice: group.currentPrice,
+                orderDate: group.orderDate,
+                daysSinceOrder,
+                affectedOrders: group.affectedOrders,
+            });
         });
 
         // Calculate monthly profit trend (last 6 months)

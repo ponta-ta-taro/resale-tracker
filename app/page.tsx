@@ -33,7 +33,16 @@ interface DashboardMetrics {
         expectedProfitAtOrder: number;
     };
     alerts: {
-        priceDrops: Array<{ id: string; model: string; drop: number; expectedPrice: number; currentPrice: number; orderDate: string | null }>;
+        priceDrops: Array<{
+            model: string;
+            storage: string;
+            drop: number;
+            expectedPrice: number;
+            currentPrice: number;
+            orderDate: string | null;
+            daysSinceOrder: number;
+            affectedOrders: Array<{ id: string; code: string }>;
+        }>;
         oldInventory: Array<{ id: string; model: string; days: number; arrivedAt: string }>;
         paymentDelays: Array<{ id: string; model: string; days: number; soldAt: string }>;
     };
@@ -399,29 +408,40 @@ export default function Dashboard() {
                             <div className="space-y-4">
                                 {metrics.alerts.priceDrops.length > 0 && (
                                     <div className="bg-red-50 border border-red-200 p-6 rounded-lg">
-                                        <h3 className="text-lg font-semibold text-red-900 mb-3">⚠️ 相場下落中 ({metrics.alerts.priceDrops.length}件)</h3>
-                                        <div className="space-y-2">
-                                            {metrics.alerts.priceDrops.slice(0, 5).map(alert => {
+                                        <h3 className="text-lg font-semibold text-red-900 mb-3">⚠️ 相場下落中 ({metrics.alerts.priceDrops.length}機種)</h3>
+                                        <div className="space-y-4">
+                                            {metrics.alerts.priceDrops.slice(0, 5).map((alert, index) => {
                                                 const orderDate = alert.orderDate ? new Date(alert.orderDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : null;
                                                 const currentDate = new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
-                                                const daysSinceOrder = alert.orderDate ? Math.floor((new Date().getTime() - new Date(alert.orderDate).getTime()) / (1000 * 60 * 60 * 24)) : null;
 
                                                 return (
-                                                    <div key={alert.id} className="flex justify-between items-center text-sm">
-                                                        <Link href={`/inventory/${alert.id}`} className="text-red-700 hover:underline flex-1">
-                                                            {alert.model}
+                                                    <div key={index} className="border-b border-red-200 last:border-0 pb-3 last:pb-0">
+                                                        <div className="font-semibold text-red-900 mb-1">
+                                                            {alert.model} {alert.storage}
+                                                        </div>
+                                                        <div className="text-sm text-red-700 mb-2">
                                                             {orderDate && (
-                                                                <span className="ml-2 text-red-600 font-normal">
-                                                                    {orderDate} → {currentDate} ({daysSinceOrder}日間)
+                                                                <span>
+                                                                    {orderDate} → {currentDate} ({alert.daysSinceOrder}日間)
                                                                 </span>
                                                             )}
-                                                        </Link>
-                                                        <span className="text-red-600 font-medium ml-4">↓ {formatCurrency(alert.drop)}</span>
+                                                            <span className="font-medium ml-2">{formatCurrency(alert.drop * -1)}</span>
+                                                        </div>
+                                                        <div className="text-sm text-red-600">
+                                                            該当: {alert.affectedOrders.map((order, i) => (
+                                                                <span key={order.id}>
+                                                                    <Link href={`/inventory/${order.id}`} className="hover:underline font-medium">
+                                                                        {order.code}
+                                                                    </Link>
+                                                                    {i < alert.affectedOrders.length - 1 && ', '}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
                                             {metrics.alerts.priceDrops.length > 5 && (
-                                                <p className="text-sm text-red-600 mt-2">他 {metrics.alerts.priceDrops.length - 5}件</p>
+                                                <p className="text-sm text-red-600 mt-2">他 {metrics.alerts.priceDrops.length - 5}機種</p>
                                             )}
                                         </div>
                                     </div>
