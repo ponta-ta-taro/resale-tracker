@@ -33,7 +33,7 @@ interface DashboardMetrics {
         expectedProfitAtOrder: number;
     };
     alerts: {
-        priceDrops: Array<{ id: string; model: string; drop: number; expectedPrice: number; currentPrice: number }>;
+        priceDrops: Array<{ id: string; model: string; drop: number; expectedPrice: number; currentPrice: number; orderDate: string | null }>;
         oldInventory: Array<{ id: string; model: string; days: number; arrivedAt: string }>;
         paymentDelays: Array<{ id: string; model: string; days: number; soldAt: string }>;
     };
@@ -406,14 +406,25 @@ export default function Dashboard() {
                                     <div className="bg-red-50 border border-red-200 p-6 rounded-lg">
                                         <h3 className="text-lg font-semibold text-red-900 mb-3">⚠️ 相場下落中 ({metrics.alerts.priceDrops.length}件)</h3>
                                         <div className="space-y-2">
-                                            {metrics.alerts.priceDrops.slice(0, 5).map(alert => (
-                                                <div key={alert.id} className="flex justify-between items-center text-sm">
-                                                    <Link href={`/inventory/${alert.id}`} className="text-red-700 hover:underline">
-                                                        {alert.model}
-                                                    </Link>
-                                                    <span className="text-red-600 font-medium">↓ {formatCurrency(alert.drop)}</span>
-                                                </div>
-                                            ))}
+                                            {metrics.alerts.priceDrops.slice(0, 5).map(alert => {
+                                                const orderDate = alert.orderDate ? new Date(alert.orderDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : null;
+                                                const currentDate = new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
+                                                const daysSinceOrder = alert.orderDate ? Math.floor((new Date().getTime() - new Date(alert.orderDate).getTime()) / (1000 * 60 * 60 * 24)) : null;
+
+                                                return (
+                                                    <div key={alert.id} className="flex justify-between items-center text-sm">
+                                                        <Link href={`/inventory/${alert.id}`} className="text-red-700 hover:underline flex-1">
+                                                            {alert.model}
+                                                            {orderDate && (
+                                                                <span className="ml-2 text-red-600 font-normal">
+                                                                    {orderDate} → {currentDate} ({daysSinceOrder}日間)
+                                                                </span>
+                                                            )}
+                                                        </Link>
+                                                        <span className="text-red-600 font-medium ml-4">↓ {formatCurrency(alert.drop)}</span>
+                                                    </div>
+                                                );
+                                            })}
                                             {metrics.alerts.priceDrops.length > 5 && (
                                                 <p className="text-sm text-red-600 mt-2">他 {metrics.alerts.priceDrops.length - 5}件</p>
                                             )}

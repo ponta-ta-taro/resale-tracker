@@ -15,6 +15,7 @@ export default function InventoryDetailPage() {
     const [saving, setSaving] = useState(false);
     const [inventory, setInventory] = useState<InventoryV2 | null>(null);
     const [formData, setFormData] = useState<Partial<InventoryV2Input>>({});
+    const [statusAutoUpdated, setStatusAutoUpdated] = useState(false); // ステータス自動更新フラグ
 
     // Master data states
     const [paymentMethods, setPaymentMethods] = useState<Array<{ id: string; name: string }>>([]);
@@ -202,29 +203,34 @@ export default function InventoryDetailPage() {
         receipt_received_at: 'receipt_received'
     };
 
-    // Handle date field blur with status auto-update
-    const handleDateBlur = (field: keyof InventoryV2Input, value: string) => {
+    // Handle date field change with status auto-update
+    const handleDateChange = (field: keyof InventoryV2Input, value: string) => {
+        updateField(field, value);
+
         // Check if this date field has a corresponding status
         const targetStatus = DATE_STATUS_MAP[field];
-        if (!targetStatus) return;
+        if (!targetStatus || !value) {
+            setStatusAutoUpdated(false);
+            return;
+        }
 
-        // Only suggest if date was newly filled (previous value was empty)
+        // Only auto-update if date was newly filled (previous value was empty)
         const previousValue = inventory?.[field as keyof InventoryV2];
-        if (previousValue || !value) return;
+        if (previousValue) {
+            setStatusAutoUpdated(false);
+            return;
+        }
 
         // Check if current status is before target status
         const currentStatusIndex = INVENTORY_STATUSES.indexOf(formData.status || 'ordered');
         const targetStatusIndex = INVENTORY_STATUSES.indexOf(targetStatus);
 
         if (currentStatusIndex < targetStatusIndex) {
-            const statusLabel = STATUS_V2_LABELS[targetStatus];
-            const confirmed = window.confirm(
-                `${getDateFieldLabel(field)}が入力されました。ステータスを「${statusLabel}」に変更しますか？`
-            );
-
-            if (confirmed) {
-                updateField('status', targetStatus);
-            }
+            // 自動的にステータスを更新
+            updateField('status', targetStatus);
+            setStatusAutoUpdated(true);
+        } else {
+            setStatusAutoUpdated(false);
         }
     };
 
@@ -297,6 +303,23 @@ export default function InventoryDetailPage() {
                         </div>
 
                         <StatusProgressBar currentStatus={formData.status || 'ordered'} />
+
+                        {/* ステータス自動更新通知バナー */}
+                        {statusAutoUpdated && (
+                            <div className="mt-4 bg-blue-50 border-2 border-blue-400 rounded-lg p-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 text-2xl">ℹ️</div>
+                                    <div className="flex-1">
+                                        <p className="text-blue-900 font-semibold mb-1">
+                                            ステータスを「{STATUS_V2_LABELS[formData.status || 'ordered']}」に変更しました
+                                        </p>
+                                        <p className="text-blue-800 text-sm">
+                                            下の「更新する」ボタンを押して情報を保存してください
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Apple Order Status Button */}
                         {inventory.order_number && inventory.contact_email && (
@@ -456,8 +479,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.order_date || ''}
-                                    onChange={(e) => updateField('order_date', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('order_date', e.target.value)}
+                                    onChange={(e) => handleDateChange('order_date', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -467,8 +489,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.delivered_at || ''}
-                                    onChange={(e) => updateField('delivered_at', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('delivered_at', e.target.value)}
+                                    onChange={(e) => handleDateChange('delivered_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -611,8 +632,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.shipped_to_buyer_at || ''}
-                                    onChange={(e) => updateField('shipped_to_buyer_at', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('shipped_to_buyer_at', e.target.value)}
+                                    onChange={(e) => handleDateChange('shipped_to_buyer_at', e.target.value)}
                                     disabled={!!inventory?.shipment_id}
                                     className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${inventory?.shipment_id ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
                                         }`}
@@ -676,8 +696,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.sold_at || ''}
-                                    onChange={(e) => updateField('sold_at', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('sold_at', e.target.value)}
+                                    onChange={(e) => handleDateChange('sold_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -687,8 +706,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.paid_at || ''}
-                                    onChange={(e) => updateField('paid_at', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('paid_at', e.target.value)}
+                                    onChange={(e) => handleDateChange('paid_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -698,8 +716,7 @@ export default function InventoryDetailPage() {
                                 <input
                                     type="date"
                                     value={formData.receipt_received_at || ''}
-                                    onChange={(e) => updateField('receipt_received_at', e.target.value)}
-                                    onBlur={(e) => handleDateBlur('receipt_received_at', e.target.value)}
+                                    onChange={(e) => handleDateChange('receipt_received_at', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>

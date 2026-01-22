@@ -183,6 +183,7 @@ export async function GET(request: Request) {
                     drop: item.expected_price - currentPrice,
                     expectedPrice: item.expected_price,
                     currentPrice,
+                    orderDate: item.order_date, // 注文日を追加（期間表示用）
                 });
             }
 
