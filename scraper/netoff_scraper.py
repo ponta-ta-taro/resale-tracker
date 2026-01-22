@@ -38,9 +38,11 @@ class NetoffScraper(BaseScraper):
             
             try:
                 print(f"アクセス中: {self.url}")
-                page.goto(self.url, wait_until="networkidle", timeout=60000)
+                # domcontentloadedで待機（networkidleは使わない）
+                page.goto(self.url, wait_until="domcontentloaded", timeout=90000)
                 
-                # ページが完全に読み込まれるまで待機
+                # 価格リンクが表示されるまで待機
+                page.wait_for_selector('a.pricelist_link', timeout=30000)
                 page.wait_for_timeout(2000)
                 
                 # スクリーンショットを保存
