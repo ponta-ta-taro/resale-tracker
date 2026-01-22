@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
 import Header from '@/components/Header';
 import type { EmailLog, EmailLogType, EmailLogStatus } from '@/types';
 import { EMAIL_LOG_TYPES, EMAIL_LOG_STATUSES, EMAIL_LOG_STATUS_COLORS } from '@/types';
@@ -274,6 +275,20 @@ export default function EmailsPage() {
                                                             {email.status === 'pending' && (
                                                                 <div className="text-sm text-orange-600">
                                                                     <span className="font-medium">処理内容:</span> Gmail転送の承認が必要です
+                                                                    {email.parsed_data?.confirmation_url && (
+                                                                        <div className="mt-2">
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    window.open(email.parsed_data?.confirmation_url, '_blank');
+                                                                                }}
+                                                                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                                                            >
+                                                                                <ExternalLink size={16} />
+                                                                                確認リンクを開く
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             )}
 
