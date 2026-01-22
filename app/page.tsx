@@ -387,11 +387,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Payment Schedule */}
-                    <div className="mb-8">
-                        <PaymentSchedule />
-                    </div>
-
                     {/* Alerts */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">アラート</h2>
