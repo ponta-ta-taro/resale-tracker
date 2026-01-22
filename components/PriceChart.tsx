@@ -37,7 +37,9 @@ export default function PriceChart() {
             const result = await response.json()
 
             if (result.data) {
-                setData(result.data)
+                // mineoを除外
+                const filteredData = result.data.filter((item: PriceHistory) => item.source !== 'mineo')
+                setData(filteredData)
             }
         } catch (error) {
             console.error('Failed to fetch prices:', error)
@@ -46,10 +48,50 @@ export default function PriceChart() {
         }
     }
 
-    // 機種×容量の一覧を取得（iPhone 17シリーズのみ）
+    // カスタムソート関数
+    const sortModelStorage = (a: string, b: string): number => {
+        // 海外版かどうかを判定
+        const isOverseasA = a.includes('海外版')
+        const isOverseasB = b.includes('海外版')
+
+        // 国内版 → 海外版の順
+        if (isOverseasA !== isOverseasB) {
+            return isOverseasA ? 1 : -1
+        }
+
+        // モデル順序: 無印 → Pro → Pro Max
+        const getModelOrder = (str: string): number => {
+            if (str.includes('Pro Max')) return 3
+            if (str.includes('Pro')) return 2
+            return 1 // 無印
+        }
+
+        const modelOrderA = getModelOrder(a)
+        const modelOrderB = getModelOrder(b)
+
+        if (modelOrderA !== modelOrderB) {
+            return modelOrderA - modelOrderB
+        }
+
+        // 容量順序: 256GB → 512GB → 1TB → 2TB
+        const getStorageOrder = (str: string): number => {
+            if (str.includes('2TB')) return 4
+            if (str.includes('1TB')) return 3
+            if (str.includes('512GB')) return 2
+            if (str.includes('256GB')) return 1
+            return 0
+        }
+
+        const storageOrderA = getStorageOrder(a)
+        const storageOrderB = getStorageOrder(b)
+
+        return storageOrderA - storageOrderB
+    }
+
+    // 機種×容量の一覧を取得（iPhone 17シリーズのみ、カスタムソート適用）
     const modelStorageOptions = Array.from(
         new Set(data.map(item => `${item.model_name} ${item.storage}`))
-    ).sort()
+    ).sort(sortModelStorage)
 
     // 初期選択
     useEffect(() => {
@@ -167,8 +209,8 @@ export default function PriceChart() {
                     <button
                         onClick={() => setYAxisMode('auto')}
                         className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'auto'
-                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                             }`}
                     >
                         自動調整
@@ -176,8 +218,8 @@ export default function PriceChart() {
                     <button
                         onClick={() => setYAxisMode('full')}
                         className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'full'
-                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                             }`}
                     >
                         全体表示
@@ -185,8 +227,8 @@ export default function PriceChart() {
                     <button
                         onClick={() => setYAxisMode('custom')}
                         className={`px-3 py-1 rounded-md text-sm transition-colors ${yAxisMode === 'custom'
-                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                             }`}
                     >
                         カスタム
