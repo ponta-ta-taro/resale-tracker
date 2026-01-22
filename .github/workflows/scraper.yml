@@ -1,0 +1,57 @@
+name: Daily Price Scraper
+
+on:
+  # 毎日 JST 10:00 (UTC 1:00) に実行
+  schedule:
+    - cron: '0 1 * * *'
+  
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('scraper/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Python dependencies
+        run: |
+          cd scraper
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install Playwright and Chromium
+        run: |
+          playwright install chromium --with-deps
+      
+      - name: Run scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          cd scraper
+          python main.py
+      
+      - name: Upload screenshots (if any)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ github.run_number }}
+          path: scraper/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore
