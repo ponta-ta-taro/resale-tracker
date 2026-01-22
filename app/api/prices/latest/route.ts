@@ -14,10 +14,12 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // 各機種の最新価格を取得
+        // 各機種の最新価格を取得（iPhone 17シリーズのみ）
         const { data, error } = await supabase
             .from('price_history')
             .select('*')
+            .like('model_name', '%iPhone 17%')
+            .not('model_name', 'like', '%Air%')
             .order('captured_at', { ascending: false })
 
         if (error) {

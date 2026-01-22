@@ -17,6 +17,8 @@ export async function GET() {
         const { data, error } = await supabase
             .from('price_history')
             .select('*')
+            .like('model_name', '%iPhone 17%')
+            .not('model_name', 'like', '%Air%')
             .order('captured_at', { ascending: false })
 
         if (error) {

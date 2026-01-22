@@ -1,6 +1,7 @@
 // Database types
 export interface PriceHistory {
     id: string;
+    source: string;
     model_name: string;
     storage: string;
     price: number;
