@@ -7,50 +7,16 @@ import re
 from datetime import datetime
 from typing import List, Dict
 from playwright.sync_api import sync_playwright
+from base_scraper import BaseScraper
 
 
-class MobileMixScraper:
+class MobileMixScraper(BaseScraper):
     def __init__(self, output_dir: str = "screenshots"):
-        self.url = "https://mobile-mix.jp/"
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
-    
-    def parse_model_and_storage(self, text: str) -> tuple:
-        """
-        モデル名テキストから機種名と容量を分離
-        
-        Args:
-            text: "iPhone 17 Pro Max 256GB" のようなテキスト
-            
-        Returns:
-            tuple: (model_name, storage)
-        """
-        # 容量パターン（256GB, 1TBなど）
-        storage_match = re.search(r'(\d+(?:GB|TB))', text)
-        if storage_match:
-            storage = storage_match.group(1)
-            # 容量部分を除いた残りがモデル名
-            model_name = text[:storage_match.start()].strip()
-        else:
-            model_name = text.strip()
-            storage = "不明"
-        
-        return model_name, storage
-    
-    def parse_price(self, price_text: str) -> int:
-        """
-        価格テキストを数値に変換
-        
-        Args:
-            price_text: "203,000円" のようなテキスト
-            
-        Returns:
-            int: 価格（円）
-        """
-        # 数字とカンマのみ抽出
-        price_str = re.sub(r'[^\d,]', '', price_text)
-        # カンマを削除して数値に変換
-        return int(price_str.replace(',', ''))
+        super().__init__(
+            source="mobile_mix",
+            url="https://mobile-mix.jp/",
+            output_dir=output_dir
+        )
     
     def extract_prices(self) -> List[Dict]:
         """
@@ -139,13 +105,15 @@ class MobileMixScraper:
                                 # 価格を数値に変換
                                 price = self.parse_price(price_text)
                                 
-                                prices.append({
-                                    'model_name': model_name,
-                                    'storage': storage,
-                                    'price': price,
-                                    'color_note': None,
-                                    'captured_at': captured_at.isoformat()
-                                })
+                                # 価格データを作成
+                                price_data = self.create_price_data(
+                                    model_name=model_name,
+                                    storage=storage,
+                                    price=price,
+                                    color_note=None,
+                                    captured_at=captured_at
+                                )
+                                prices.append(price_data)
                                 
                                 print(f"  ✓ {model_name} {storage}: {price:,}円")
                     
