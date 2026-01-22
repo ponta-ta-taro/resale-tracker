@@ -48,19 +48,30 @@ class BaseScraper:
     
     def parse_price(self, price_text: str) -> int:
         """
-        価格テキストを数値に変換
+        価格テキストを数値に変換（複数価格がある場合は最初のみ）
         
         Args:
-            price_text: "203,000円" のようなテキスト
+            price_text: "203,000円" または "115,000円 108,000円" のようなテキスト
             
         Returns:
             int: 価格（円）
         """
-        # 数字とカンマのみ抽出
-        price_str = re.sub(r'[^\d,]', '', price_text)
-        # カンマを削除して数値に変換
-        if price_str:
+        # 価格パターン（数字+カンマ+円）を検索
+        price_match = re.search(r'([\d,]+)円', price_text)
+        if price_match:
+            # 最初にマッチした価格のみを取得
+            price_str = price_match.group(1)
+            # カンマを削除して数値に変換
             return int(price_str.replace(',', ''))
+        
+        # 円がない場合は数字とカンマのみ抽出（後方互換性）
+        price_str = re.sub(r'[^\d,]', '', price_text)
+        if price_str:
+            # 最初の数字の塊のみを取得
+            first_number = re.match(r'[\d,]+', price_str)
+            if first_number:
+                return int(first_number.group(0).replace(',', ''))
+        
         return 0
     
     def create_price_data(
