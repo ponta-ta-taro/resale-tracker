@@ -7,20 +7,27 @@ import Header from '@/components/Header';
 import type { InventoryV2, InventoryV2Status } from '@/types';
 import { STATUS_V2_LABELS, STATUS_V2_COLORS, INVENTORY_STATUSES } from '@/types';
 
-function exportInventoryCSV(items: InventoryV2[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function exportInventoryCSV(items: any[]) {
     const headers = [
         '在庫コード', '注文番号', '機種', '容量', 'カラー', 'ステータス',
         '仕入価格', '予想売価', '実売価', '利益', '利益率',
-        '仕入先', '売却先', '注文日', '配送日', '売却日', '入金日',
+        '仕入先', '支払い方法', 'Apple ID', '連絡先メール', '連絡先電話番号',
+        '売却先', '注文日', '配送日', '売却日', '入金日',
         'シリアル番号', 'IMEI', '備考',
     ];
 
-    const rows = items.map((item) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows = items.map((item: any) => {
         const profit = item.actual_price && item.purchase_price
             ? item.actual_price - item.purchase_price
             : null;
         const profitRate = profit && item.purchase_price
             ? ((profit / item.purchase_price) * 100).toFixed(1) + '%'
+            : '';
+        const appleAccount = item.apple_accounts;
+        const appleIdStr = appleAccount
+            ? [appleAccount.name, appleAccount.email].filter(Boolean).join(' / ')
             : '';
         return [
             item.inventory_code,
@@ -28,13 +35,17 @@ function exportInventoryCSV(items: InventoryV2[]) {
             item.model_name || '',
             item.storage || '',
             item.color || '',
-            STATUS_V2_LABELS[item.status] || item.status,
+            STATUS_V2_LABELS[item.status as InventoryV2Status] || item.status,
             item.purchase_price ?? '',
             item.expected_price ?? '',
             item.actual_price ?? '',
             profit ?? '',
             profitRate,
             item.purchase_source || '',
+            item.payment_methods?.name || '',
+            appleIdStr,
+            item.contact_emails?.email || '',
+            item.contact_phones?.phone || '',
             item.sold_to || '',
             item.order_date || '',
             item.delivered_at || '',

@@ -63,7 +63,11 @@ export async function GET(request: NextRequest) {
                 payment_method_id,
                 shipment_id,
                 created_at,
-                updated_at
+                updated_at,
+                apple_accounts!apple_account_id(name, email),
+                contact_emails!contact_email_id(email),
+                contact_phones!contact_phone_id(phone),
+                payment_methods!payment_method_id(name)
             `, { count: 'exact' })
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
