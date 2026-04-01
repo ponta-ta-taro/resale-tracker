@@ -2,6 +2,11 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    // ログインページ、コールバック、Webhookは認証不要（セッション取得前に判定）
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth/callback') ||
+        request.nextUrl.pathname.startsWith('/api/mail/webhook')
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -54,22 +59,31 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    const { data: { session } } = await supabase.auth.getSession()
-
-    // ログインページ、コールバック、Webhookは認証不要
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/auth/callback') ||
-        request.nextUrl.pathname.startsWith('/api/mail/webhook')
+    // セッション取得にタイムアウトを設定（5秒）
+    let session = null
+    try {
+        const result = await Promise.race([
+            supabase.auth.getSession(),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Session check timeout')), 5000)
+            ),
+        ])
+        session = result.data.session
+    } catch {
+        // タイムアウトまたはエラー時：認証ルートはそのまま通す、それ以外はログインへ
+        if (isAuthRoute) {
+            return response
+        }
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
 
     if (isAuthRoute) {
-        // 既にログイン済みの場合はダッシュボードへ
         if (session) {
             return NextResponse.redirect(new URL('/', request.url))
         }
         return response
     }
 
-    // 未認証の場合はログインページへ
     if (!session) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
